@@ -20,9 +20,9 @@
 #define NC 50
 #include "R.h"
 
-void F77_NAME(xdsifa)(double[][], int *, int *, int *, int *);
-void F77_NAME(xdsisl)(double[][], int *, int *, int *, double *);
-void F77_NAME(xdsidi)(double[][], int *, int *, int *, double *, int *, double *, int *);
+void F77_NAME(xdsifa)(double[][NC], int *, int *, int *, int *);
+void F77_NAME(xdsisl)(double[][NC], int *, int *, int *, double *);
+void F77_NAME(xdsidi)(double[][NC], int *, int *, int *, double *, int *, double *, int *);
 void F77_NAME(xssort)(double *, double *, int *, int *);
 
 static double knots[NC],coef[NC][4][NC],zheta[NC],czheta,xg[NC],dfunpar[6];
