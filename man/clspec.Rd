@@ -49,12 +49,12 @@ linear modeling (with discussion) (1997).  \emph{Annals of Statistics},
 \seealso{\code{\link{lspec}}, \code{\link{plot.lspec}}, \code{\link{summary.lspec}}.}
 \examples{
 data(co2)
-co2.detrend <- lm(co2~c(1:468))$residuals
+co2.detrend <- lm(co2~c(1:length(co2)))$residuals
 fit <- lspec(co2.detrend)
 clspec(0:12,fit)
 plspec((0:314)/100, fit)
 dlspec((0:314)/100, fit)
-rlspec(468,fit)
+rlspec(length(co2),fit)
 }
 \keyword{ts}
 \keyword{smooth}

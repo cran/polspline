@@ -165,16 +165,22 @@ in fitting the model.
 algorithm of Friedman (1991), though it has many similarities. (The name
 \code{polymars} has been used for this algorithm well before MARS was trademarked.)
 Some of the main differences are:
-\item \code{polymars} requires linear terms of a predictor to be in the model
-before nonlinear terms using the same predictor can be added
-\item \code{polymars} requires a univariate basis function to be in the model
+
+\code{polymars} requires linear terms of a predictor to be in the model
+before nonlinear terms using the same predictor can be added;
+
+\code{polymars} requires a univariate basis function to be in the model
 before a tensor-product basis function involving the univariate
-basis function can be in the model
-\item during stepwise deletion the same hierarchy is maintained
-\item \code{polymars} can be fit to multiple outcomes simultaneously; with
-categorical outcomes it can be used for multiple classification
-\item \code{\link{polyclass}} uses the same modeling strategy as \code{polymars},
-but uses a logistic (polychotomous) likelihood}
+basis function can be in the model;
+
+during stepwise deletion the same hierarchy is maintained;
+
+\code{polymars} can be fit to multiple outcomes simultaneously, with
+categorical outcomes it can be used for multiple classification; and
+
+\code{\link{polyclass}} uses the same modeling strategy as \code{polymars},
+but uses a logistic (polychotomous) likelihood.}
+
 \references{Charles Kooperberg, Smarajit Bose, and  Charles J. Stone (1997).
 Polychotomous regression. \emph{Journal of the American Statistical
 Association}, \bold{92}, 117--127.

@@ -22,7 +22,7 @@ linear modeling (with discussion) (1997).  \emph{Annals of Statistics},
 \link{plspec}, \link{rlspec}.}
 \examples{
 data(co2)
-co2.detrend <- lm(co2~c(1:468))$residuals
+co2.detrend <- lm(co2~c(1:length(co2)))$residuals
 fit <- lspec(co2.detrend)
 summary(fit)
 }

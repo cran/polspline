@@ -27,8 +27,8 @@
 
 /* we want to be able to use those everywhere */
 
-#define MAXSPACE 100
-#define MAXKNOTS 23
+#define MAXSPACE 53
+#define MAXKNOTS 1
 #define DIM5 MAXSPACE+5
 
 /* MAXSPACE - maximum dimensionality of the model
@@ -109,8 +109,8 @@ struct basisfunct {
    values2   - value of the complete basis-function in datapoints */
 
 struct subdim {
-   int dim1,**kts1;
-   double *ktsc;
+   short int dim1,**kts1;
+   float *ktsc;
 };
 
 /* a structurte describing a subdimension - it can depend on either one
@@ -129,6 +129,8 @@ static double *searchsorted,*searchkts,*searchsorted2,*remdimy,*raoss;
 static double *raoscorecopy,*newtonscp,*compallss,*complogbasis0,*complogbasis1;
 static double *remdimxty,**raohhh,**getsexx,**compallhhh,**remdimxtx;
 static double *dgvector(),**dgmatrix(),testbasis();
+static float *ddgvector();
+static short **iigmatrix(),*iigvector();
 static int *igvector(),**igmatrix(),zlocation();
 static double newton(),adders(),search(),eint(),xeint();
 static struct space *definegspace(),*hdefinegspace();
@@ -188,6 +190,7 @@ int ndmax,mind,**exclude,strt,silent,*ad,*lins;
    trynew=definegspace((*data).ncov,(*data).ndata);
    current=definegspace((*data).ncov,(*data).ndata);
    if(strt<0)swapgspace(current,best,(*data).ndata,(*data).ncov);
+
 
 /* initialization */
    ndm2=ndmax;
@@ -2744,7 +2747,7 @@ int ncov,ndata;
 
 /* for the 2-covariate subdimensions */
    for(i=0;i<ncov;i++) for(j=i+1;j<ncov;j++){
-      (*newspace).sub[i][j].kts1=igmatrix(MAXKNOTS+1,MAXKNOTS+1);
+      (*newspace).sub[i][j].kts1=iigmatrix(MAXKNOTS+1,MAXKNOTS+1);
       (*newspace).sub[i][j].dim1=0;
       for(k=0;k<MAXKNOTS+1;k++) for(l=0;l<MAXKNOTS+1;l++){
          (*newspace).sub[i][j].kts1[k][l]=0;
@@ -2753,13 +2756,13 @@ int ncov,ndata;
 
 /* for the 1-covariate subdimensions */
    for(j=0;j<=ncov;j++){
-      (*newspace).sub[j][ncov].ktsc=dgvector(MAXKNOTS);
+      (*newspace).sub[j][ncov].ktsc=ddgvector(MAXKNOTS);
       (*newspace).sub[j][ncov].dim1=0;
    }
 
 /* for the 1-covariate and time subdimensions */
    for(j=0;j<=ncov;j++){
-      (*newspace).sub[ncov][j].kts1=igmatrix(MAXKNOTS+1,MAXKNOTS+1);
+      (*newspace).sub[ncov][j].kts1=iigmatrix(MAXKNOTS+1,MAXKNOTS+1);
       (*newspace).sub[ncov][j].dim1=0;
       for(k=0;k<MAXKNOTS+1;k++) for(l=0;l<MAXKNOTS+1;l++){
          (*newspace).sub[ncov][j].kts1[k][l]=0;
@@ -2806,6 +2809,17 @@ int l;
    return v;
 }
 /******************************************************************************/
+static float *ddgvector(l)
+int l;
+/* allocate a float vector with subscript range v[0...l] */
+{
+   float *v;
+   int i;
+   v=(float *)Salloc(l+1,float);
+   for(i=0;i<=l;i++)v[i]=0.;
+   return v;
+}
+/******************************************************************************/
 static double *dgvector(l)
 int l;
 /* allocate a double vector with subscript range v[0...l] */
@@ -2815,6 +2829,19 @@ int l;
    v=(double *)Salloc(l+1,double);
    for(i=0;i<=l;i++)v[i]=0.;
    return v;
+}
+/******************************************************************************/
+static short int **iigmatrix(r,c)
+int r,c;
+/* allocate an int matrix with subscript range m[0..r][0..c] */
+{
+   short int i,j,**m;
+   m=(short int **) Salloc(r+1,short int*);
+   for(i=0;i<=r;i++){
+      m[i]=(short int *) Salloc(c+1,short int);
+      for(j=0;j<=c;j++)m[i][j]=0;
+   }
+   return m;
 }
 /******************************************************************************/
 static int **igmatrix(r,c)
@@ -3643,7 +3670,7 @@ int ncov,ndata;
 
 /* for the 1-covariate subdimensions */
    for(j=0;j<=ncov;j++){
-      (*newspace).sub[j][ncov].ktsc=dgvector(MAXKNOTS);
+      (*newspace).sub[j][ncov].ktsc=ddgvector(MAXKNOTS);
       (*newspace).sub[j][ncov].dim1=0;
    }
 

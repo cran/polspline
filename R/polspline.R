@@ -18,293 +18,293 @@ unstrip <- function(x)
 }
    
 hare <- function(data, delta, cov, penalty, maxdim, exclude,
-	include, prophaz = FALSE, additive = FALSE, linear, fit, silent = TRUE)
+   include, prophaz = FALSE, additive = FALSE, linear, fit, silent = TRUE)
 {
 # get the parameters from the C-program
-	call <- match.call()
+   call <- match.call()
         if(!missing(data)) data <- unstrip(data)
         if(!missing(delta)) delta <- unstrip(delta)
         if(!missing(cov)) cov <- unstrip(cov)
         if(!missing(exclude)) exclude <- unstrip(exclude)
         if(!missing(include)) include <- unstrip(include)
-	MAXKNOTS <- -3
-	MAXSPACE <- -3
-	z <- .C("sharex",
-		mk = as.integer(MAXKNOTS),
-		ms = as.integer(MAXSPACE))
-	MAXKNOTS <- z$mk
-	MAXSPACE <- z$ms	# 
+   MAXKNOTS <- -3
+   MAXSPACE <- -3
+   z <- .C("sharex",
+      mk = as.integer(MAXKNOTS),
+      ms = as.integer(MAXSPACE))
+   MAXKNOTS <- z$mk
+   MAXSPACE <- z$ms   # 
 # a few elementary data checks
-	if(missing(data))
-		stop("there has to be data")
-	if(length(data) < 25)
-		stop("not enough data")
-	if(min(data) < 0)
-		stop("negative data")
-	if(missing(delta))
-		delta <- data - data + 1
-	if(length(data) != length(delta))
-		stop("data and delta have different length")
-	dd <- abs(delta - 0.5)
-	if(min(dd) < 0.5 || max(dd) > 0.5)
-		stop("delta not all 0 or 1")
-	ndata <- length(data)	#
+   if(missing(data))
+      stop("there has to be data")
+   if(length(data) < 25)
+      stop("not enough data")
+   if(min(data) < 0)
+      stop("negative data")
+   if(missing(delta))
+      delta <- data - data + 1
+   if(length(data) != length(delta))
+      stop("data and delta have different length")
+   dd <- abs(delta - 0.5)
+   if(min(dd) < 0.5 || max(dd) > 0.5)
+      stop("delta not all 0 or 1")
+   ndata <- length(data)   #
 # dealing with the covariates, sorting the cases 
 # first if there are no covariates
-	if(missing(cov)) {
-		ncov <- 0
-		cov <- 0
-		iia <- order(data)
-		delta <- delta[iia]
-		data <- data[iia]
-	}
-	else {
-		if(length(cov) == ndata)
-			cov <- matrix(cov, ncol = 1, nrow = ndata)
-		if(length(cov[, 1]) != ndata)
-			stop("covariates not ndata * ncov matrix")
-		ncov <- length(cov[1,  ])
-		cov <- cbind(cov, 1)
-		y <- cbind(data, cov)
-		keys <- 1:ndata
-		for(i in (ncov + 2):1)
-			keys <- keys[sort.list(y[keys, i])]
-		data <- data[keys]
-		delta <- delta[keys]
-		cov <- cov[keys, 1:ncov]
-	}
-	if(additive) {
-		if(!missing(exclude))
-			stop("cannot have exclude and additive")
-		if(!missing(include))
-			stop("cannot have include and additive")
-		prophaz <- FALSE
-		include <- c(0, 0)
-	}
-	if(missing(exclude) + missing(include) == 0)
-		stop("only 1 from exclude and include allowed")
-	vexclude <- 0	#
+   if(missing(cov)) {
+      ncov <- 0
+      cov <- 0
+      iia <- order(data)
+      delta <- delta[iia]
+      data <- data[iia]
+   }
+   else {
+      if(length(cov) == ndata)
+         cov <- matrix(cov, ncol = 1, nrow = ndata)
+      if(length(cov[, 1]) != ndata)
+         stop("covariates not ndata * ncov matrix")
+      ncov <- length(cov[1,  ])
+      cov <- cbind(cov, 1)
+      y <- cbind(data, cov)
+      keys <- 1:ndata
+      for(i in (ncov + 2):1)
+         keys <- keys[sort.list(y[keys, i])]
+      data <- data[keys]
+      delta <- delta[keys]
+      cov <- cov[keys, 1:ncov]
+   }
+   if(additive) {
+      if(!missing(exclude))
+         stop("cannot have exclude and additive")
+      if(!missing(include))
+         stop("cannot have include and additive")
+      prophaz <- FALSE
+      include <- c(0, 0)
+   }
+   if(missing(exclude) + missing(include) == 0)
+      stop("only 1 from exclude and include allowed")
+   vexclude <- 0   #
 # using exclude
-	if(missing(exclude) == FALSE) {
-		if(length(exclude) == 2)
-			exclude <- matrix(exclude, ncol = 2, nrow = 1)
-		if(length(exclude[1,  ]) != 2)
-			stop("exclude has wrong shape")
-		if(min(exclude) < 0 || max(exclude) > ncov)
-			stop("exclude has wrong values")
-		vexclude <- as.vector(t(exclude))
-		vexclude <- c(length(vexclude)/2, vexclude)	#
+   if(missing(exclude) == FALSE) {
+      if(length(exclude) == 2)
+         exclude <- matrix(exclude, ncol = 2, nrow = 1)
+      if(length(exclude[1,  ]) != 2)
+         stop("exclude has wrong shape")
+      if(min(exclude) < 0 || max(exclude) > ncov)
+         stop("exclude has wrong values")
+      vexclude <- as.vector(t(exclude))
+      vexclude <- c(length(vexclude)/2, vexclude)   #
 # proportional hazards model
-		if(prophaz && ncov > 0) {
-			vexclude <- c(vexclude, as.vector(rbind(1:ncov, 0)))
-			vexclude[1] <- vexclude[1] + ncov
-		}
-	}
+      if(prophaz && ncov > 0) {
+         vexclude <- c(vexclude, as.vector(rbind(1:ncov, 0)))
+         vexclude[1] <- vexclude[1] + ncov
+      }
+   }
 #
 # using include
-	if(missing(include) == FALSE || additive) {
-		if(length(include) == 2)
-			include <- matrix(include, ncol = 2, nrow = 1)
-		if(length(include[1,  ]) != 2)
-			stop("include has wrong shape")
-		if(min(include) < 0 || max(include) > ncov)
-			stop("include has wrong values")
-		include <- t(apply(include, 1, sort))
-		if(length(include) == 2)
-			include <- matrix(include, ncol = 2, nrow = 1)
-		if(prophaz)
-			include <- include[include[, 1] > 0,  ]
-		vexclude <- as.vector(t(include))
-		vexclude <- c( - length(vexclude)/2, vexclude)
-	}
+   if(missing(include) == FALSE || additive) {
+      if(length(include) == 2)
+         include <- matrix(include, ncol = 2, nrow = 1)
+      if(length(include[1,  ]) != 2)
+         stop("include has wrong shape")
+      if(min(include) < 0 || max(include) > ncov)
+         stop("include has wrong values")
+      include <- t(apply(include, 1, sort))
+      if(length(include) == 2)
+         include <- matrix(include, ncol = 2, nrow = 1)
+      if(prophaz)
+         include <- include[include[, 1] > 0,  ]
+      vexclude <- as.vector(t(include))
+      vexclude <- c( - length(vexclude)/2, vexclude)
+   }
 #
 # using proprtional hazards
-	if(missing(include) && missing(exclude) && prophaz && ncov > 0) 
-			vexclude <- c(ncov, as.vector(rbind(1:ncov, 0)))	
-	# set parameters
-	mindist <- 5
-	if(missing(penalty))
-		penalty <- log(ndata)
-	if(missing(maxdim)) {
-		maxdim <- floor(6 * (ndata)^0.2)
-		if(maxdim > MAXSPACE - 1)
-			maxdim <- MAXSPACE - 1
-		maxdim <-  - maxdim
-	}
-	if(maxdim > MAXSPACE - 1) {
-		maxdim <- MAXSPACE - 1
-		print(paste("maximum dimension reduced to", maxdim))
-	}
-	lins <- rep(0, MAXSPACE)
-	if(!missing(linear)) {
-		linear[linear <= 0] <- ncov + 1
-		linear[linear > ncov + 1] <- ncov + 1
-		lins[linear] <- 1
-	}
-	if(additive)
-		vexclude <- c(-1, 0, 0)	# do it
-	fitter <- 0
-	bbtt <- matrix(0, ncol = 6, nrow = abs(maxdim))
-	cckk <- matrix(0, ncol = (MAXKNOTS + 1), nrow = (ncov + 1))
-	if(!missing(fit)) {
+   if(missing(include) && missing(exclude) && prophaz && ncov > 0) 
+         vexclude <- c(ncov, as.vector(rbind(1:ncov, 0)))   
+   # set parameters
+   mindist <- 5
+   if(missing(penalty))
+      penalty <- log(ndata)
+   if(missing(maxdim)) {
+      maxdim <- floor(6 * (ndata)^0.2)
+      if(maxdim > MAXSPACE - 1)
+         maxdim <- MAXSPACE - 1
+      maxdim <-  - maxdim
+   }
+   if(maxdim > MAXSPACE - 1) {
+      maxdim <- MAXSPACE - 1
+      print(paste("maximum dimension reduced to", maxdim))
+   }
+   lins <- rep(0, MAXSPACE)
+   if(!missing(linear)) {
+      linear[linear <= 0] <- ncov + 1
+      linear[linear > ncov + 1] <- ncov + 1
+      lins[linear] <- 1
+   }
+   if(additive)
+      vexclude <- c(-1, 0, 0)   # do it
+   fitter <- 0
+   bbtt <- matrix(0, ncol = 6, nrow = abs(maxdim))
+   cckk <- matrix(0, ncol = (MAXKNOTS + 1), nrow = (ncov + 1))
+   if(!missing(fit)) {
                 if(class(fit)!="hare")
-			stop("fit is not a hare object")
-		fitter <- fit$ndim
-		if(fit$ncov != ncov)
-			stop("ncov and fit's ncov are different")
-		bbtt[1:fit$ndim,  ] <- fit$fcts
-		bbtt <- as.vector(t(bbtt))
-		bbtt[is.na(bbtt)] <- -1
-		a1 <- length(fit$knots[1,  ])
-		cckk[, 1:a1] <- fit$knots
-		cckk <- as.vector(cckk)
-		cckk[is.na(cckk)] <- -1
-	}
-	z <- .C("share",
-		as.integer(ncov),
-		ndim = as.integer(ndata),
-		as.double(data),
-		as.integer(delta),
-		as.double(cov),
-		as.double(penalty),
-		as.integer(mindist),
-		as.integer(maxdim),
-		bbtt = as.double(bbtt),
-		cckk = as.double(cckk),
-		as.integer(vexclude),
-		as.integer(lins),
-		as.integer(silent),
-		logl = as.double(rep(0, MAXSPACE)),
-		as.integer(fitter),
-		ad = as.integer(rep(0, MAXSPACE)),
-		as.integer(0))	# 
+         stop("fit is not a hare object")
+      fitter <- fit$ndim
+      if(fit$ncov != ncov)
+         stop("ncov and fit's ncov are different")
+      bbtt[1:fit$ndim,  ] <- fit$fcts
+      bbtt <- as.vector(t(bbtt))
+      bbtt[is.na(bbtt)] <- -1
+      a1 <- length(fit$knots[1,  ])
+      cckk[, 1:a1] <- fit$knots
+      cckk <- as.vector(cckk)
+      cckk[is.na(cckk)] <- -1
+   }
+   z <- .C("share",
+      as.integer(ncov),
+      ndim = as.integer(ndata),
+      as.double(data),
+      as.integer(delta),
+      as.double(cov),
+      as.double(penalty),
+      as.integer(mindist),
+      as.integer(maxdim),
+      bbtt = as.double(bbtt),
+      cckk = as.double(cckk),
+      as.integer(vexclude),
+      as.integer(lins),
+      as.integer(silent),
+      logl = as.double(rep(0, MAXSPACE)),
+      as.integer(fitter),
+      ad = as.integer(rep(0, MAXSPACE)),
+      as.integer(0))   # 
 # organize bbtt and cckk
-	maxdim <- abs(maxdim)
-	z$bbtt <- matrix(z$bbtt, nrow = maxdim, ncol = 6, byrow = TRUE)[1:z$ndim,  
-		]
-	z$cckk <- matrix(z$cckk, nrow = ncov + 1, ncol = MAXKNOTS + 1, byrow = 
-		TRUE)
-	z$cckk <- z$cckk[, 1:(1 + max(z$cckk[, 1]))]
-	z$cckk <- matrix(z$cckk, nrow = ncov + 1)
-	l1 <- max(z$cckk[, 1])
-	for(i in 1:(ncov + 1))
-		if(z$cckk[i, 1] != l1) z$cckk[i, (z$cckk[i, 1] + 2):(l1 + 1)] <- 
-				NA
-	if(l1 > 0 && ncov > 0)
-		dimnames(z$cckk) <- list(c("T", 1:ncov), c("K", 1:l1))
-	if(l1 > 0 && ncov == 0)
-		dimnames(z$cckk) <- list(c("T"), c("K", 1:l1))
-	if(l1 == 0 && ncov > 0)
-		dimnames(z$cckk) <- list(c("T", 1:ncov), "K")
-	if(l1 == 0 && ncov == 0)
-		dimnames(z$cckk) <- list(c("T"), "K")
-	l1 <- max((1:MAXSPACE)[z$logl > -1e+100])
-	z$bbtt <- matrix(z$bbtt, ncol = 6)
-	dimnames(z$bbtt) <- list(1:(z$ndim), c("dim1", "knot1", "dim2", "knot2",
-		"beta", "SE"))
-	z$bbtt[z$bbtt[, 3] == -1, 3:4] <- NA
-	if(is.na(l1)) {
-		z$logl <- z$logl[1]
-		z$ad <- z$ad[1]
-	}
-	else {
-		z$logl <- z$logl[1:l1]
-		z$ad <- z$ad[1:l1]
-	}
-	z$ad[z$logl < -1e+100] <- NA
-	z$logl[z$logl < -1e+100] <- NA
-	z$logl <- cbind(z$logl, z$ad)
-	dimnames(z$logl) <- list(NULL, c("log-lik", "A/D"))
-	ranges <- NA
-	if(ncov == 1)
-		ranges <- matrix(range(cov), ncol = 1, nrow = 2)
-	if(ncov > 1)
-		ranges <- apply(cov, 2, range)	# done
-	fit <- list(call = call, ncov = ncov, ndim = z$ndim, fcts = z$bbtt, knots 
-		 = z$cckk, penalty = penalty, max = max(data), ranges = ranges,
-		logl = z$logl, sample = ndata)
+   maxdim <- abs(maxdim)
+   z$bbtt <- matrix(z$bbtt, nrow = maxdim, ncol = 6, byrow = TRUE)[1:z$ndim,  
+      ]
+   z$cckk <- matrix(z$cckk, nrow = ncov + 1, ncol = MAXKNOTS + 1, byrow = 
+      TRUE)
+   z$cckk <- z$cckk[, 1:(1 + max(z$cckk[, 1]))]
+   z$cckk <- matrix(z$cckk, nrow = ncov + 1)
+   l1 <- max(z$cckk[, 1])
+   for(i in 1:(ncov + 1))
+      if(z$cckk[i, 1] != l1) z$cckk[i, (z$cckk[i, 1] + 2):(l1 + 1)] <- 
+            NA
+   if(l1 > 0 && ncov > 0)
+      dimnames(z$cckk) <- list(c("T", 1:ncov), c("K", 1:l1))
+   if(l1 > 0 && ncov == 0)
+      dimnames(z$cckk) <- list(c("T"), c("K", 1:l1))
+   if(l1 == 0 && ncov > 0)
+      dimnames(z$cckk) <- list(c("T", 1:ncov), "K")
+   if(l1 == 0 && ncov == 0)
+      dimnames(z$cckk) <- list(c("T"), "K")
+   l1 <- max((1:MAXSPACE)[z$logl > -1e+100])
+   z$bbtt <- matrix(z$bbtt, ncol = 6)
+   dimnames(z$bbtt) <- list(1:(z$ndim), c("dim1", "knot1", "dim2", "knot2",
+      "beta", "SE"))
+   z$bbtt[z$bbtt[, 3] == -1, 3:4] <- NA
+   if(is.na(l1)) {
+      z$logl <- z$logl[1]
+      z$ad <- z$ad[1]
+   }
+   else {
+      z$logl <- z$logl[1:l1]
+      z$ad <- z$ad[1:l1]
+   }
+   z$ad[z$logl < -1e+100] <- NA
+   z$logl[z$logl < -1e+100] <- NA
+   z$logl <- cbind(z$logl, z$ad)
+   dimnames(z$logl) <- list(NULL, c("log-lik", "A/D"))
+   ranges <- NA
+   if(ncov == 1)
+      ranges <- matrix(range(cov), ncol = 1, nrow = 2)
+   if(ncov > 1)
+      ranges <- apply(cov, 2, range)   # done
+   fit <- list(call = call, ncov = ncov, ndim = z$ndim, fcts = z$bbtt, knots 
+       = z$cckk, penalty = penalty, max = max(data), ranges = ranges,
+      logl = z$logl, sample = ndata)
         class(fit) <- "hare"
         fit
 }
 plot.hare <- function(x, cov, n = 100, which = 0, what = "d", time, add = FALSE,
-	xlim, xlab, ylab, type, ...)
+   xlim, xlab, ylab, type, ...)
 {
     if(class(x)!="hare")
        stop("x is not a hare object")
     if(!missing(cov))cov <- unstrip(cov)
     if(!missing(time))time <- unstrip(time)
       fit <- x
-	nocov <- 0
-	if(fit$ncov == 0)
-		nocov <- 1
-	else {
+   nocov <- 0
+   if(fit$ncov == 0)
+      nocov <- 1
+   else {
            if(length(cov) != fit$ncov)
-		stop("covariates are wrong")
+      stop("covariates are wrong")
         }
-	if(which == 0) {
-		if(missing(xlim)) {
-			if(nocov == 0) {
-				u1 <- qhare(0.01, cov, fit)
-				u2 <- qhare(0.99, cov, fit)
-			}
-			else {
-				u1 <- qhare(0.01, fit = fit)
-				u2 <- qhare(0.99, fit = fit)
-			}
-			u3 <- 1.1 * u1 - 0.1 * u2
-			u2 <- min(u2, fit$max)
-			u4 <- 1.1 * u2 - 0.1 * u1
-			if(u3 < 0)
-				u3 <- 0
-			else if(u4/u3 > 5)
-				u3 <- 0
-		}
-		else {
-			u3 <- xlim[1]
-			u4 <- xlim[2]
-		}
-		xx <- (0:(n - 1))/(n - 1) * (u4 - u3) + u3
-		if(fit$ncov > 0)
-			yy <- cov
-	}
-	else {
-		if(which < 0 || which > fit$ncov)
-			stop("which is wrong")
-		if(missing(time))
-			stop("time is missing")
-		if(missing(xlim)) {
-			u3 <- fit$ranges[1, which]
-			u4 <- fit$ranges[2, which]
-		}
-		else {
-			u3 <- xlim[1]
-			u4 <- xlim[2]
-		}
-		xx <- (0:(n - 1))/(n - 1) * (u4 - u3) + u3
-		yy <- matrix(cov, ncol = fit$ncov, nrow = n, byrow = TRUE)
-		yy[, which] <- xx
-		xx <- time
-	}
-	iwhat <- 0
-	if(what == "d" || what == "D")
-		iwhat <- 3
-	if(what == "h" || what == "H")
-		iwhat <- 2
-	if(nocov == 0)
-		yy <- xhare(iwhat, xx, yy, fit)
-	else yy <- xhare(iwhat, xx, arg4 = fit)
-	if(what == "s" || what == "S")
-		yy <- 1 - yy
-	if(missing(xlab))
-		xlab <- ""
-	if(missing(ylab))
-		ylab <- ""
-	if(missing(type))
-		type <- "l"
-	xx <- (0:(n - 1))/(n - 1) * (u4 - u3) + u3
-	if(!add)
-		plot(xx, yy, xlab = xlab, ylab = ylab, type = type, ...)
-	else lines(xx, yy, type = type, ...)
+   if(which == 0) {
+      if(missing(xlim)) {
+         if(nocov == 0) {
+            u1 <- qhare(0.01, cov, fit)
+            u2 <- qhare(0.99, cov, fit)
+         }
+         else {
+            u1 <- qhare(0.01, fit = fit)
+            u2 <- qhare(0.99, fit = fit)
+         }
+         u3 <- 1.1 * u1 - 0.1 * u2
+         u2 <- min(u2, fit$max)
+         u4 <- 1.1 * u2 - 0.1 * u1
+         if(u3 < 0)
+            u3 <- 0
+         else if(u4/u3 > 5)
+            u3 <- 0
+      }
+      else {
+         u3 <- xlim[1]
+         u4 <- xlim[2]
+      }
+      xx <- (0:(n - 1))/(n - 1) * (u4 - u3) + u3
+      if(fit$ncov > 0)
+         yy <- cov
+   }
+   else {
+      if(which < 0 || which > fit$ncov)
+         stop("which is wrong")
+      if(missing(time))
+         stop("time is missing")
+      if(missing(xlim)) {
+         u3 <- fit$ranges[1, which]
+         u4 <- fit$ranges[2, which]
+      }
+      else {
+         u3 <- xlim[1]
+         u4 <- xlim[2]
+      }
+      xx <- (0:(n - 1))/(n - 1) * (u4 - u3) + u3
+      yy <- matrix(cov, ncol = fit$ncov, nrow = n, byrow = TRUE)
+      yy[, which] <- xx
+      xx <- time
+   }
+   iwhat <- 0
+   if(what == "d" || what == "D")
+      iwhat <- 3
+   if(what == "h" || what == "H")
+      iwhat <- 2
+   if(nocov == 0)
+      yy <- xhare(iwhat, xx, yy, fit)
+   else yy <- xhare(iwhat, xx, arg4 = fit)
+   if(what == "s" || what == "S")
+      yy <- 1 - yy
+   if(missing(xlab))
+      xlab <- ""
+   if(missing(ylab))
+      ylab <- ""
+   if(missing(type))
+      type <- "l"
+   xx <- (0:(n - 1))/(n - 1) * (u4 - u3) + u3
+   if(!add)
+      plot(xx, yy, xlab = xlab, ylab = ylab, type = type, ...)
+   else lines(xx, yy, type = type, ...)
 }
 print.hare <- function(x,...)
 {
@@ -315,52 +315,52 @@ summary.hare <- function(object,...)
     if(class(object)!="hare")
        stop("object is not a hare object")
              fit <- object
-	s3 <- as.vector(t(fit$logl))
-	s3[is.na(s3)] <- 0
-	s1 <- as.vector(t(fit$fcts))
-	s2 <- as.vector(fit$knots)
-	s1[is.na(s1)] <- -1
-	s2[is.na(s2)] <- -1
-	.C("ssumm",
-		as.double(fit$penalty),
-		as.integer(fit$sample),
-		as.double(s3),
-		as.integer(length(s3)/2),
-		as.double(s2),
-		as.double(s1),
-		as.integer(fit$ndim),
-		as.integer(fit$ncov))
-	invisible()
+   s3 <- as.vector(t(fit$logl))
+   s3[is.na(s3)] <- 0
+   s1 <- as.vector(t(fit$fcts))
+   s2 <- as.vector(fit$knots)
+   s1[is.na(s1)] <- -1
+   s2[is.na(s2)] <- -1
+   .C("ssumm",
+      as.double(fit$penalty),
+      as.integer(fit$sample),
+      as.double(s3),
+      as.integer(length(s3)/2),
+      as.double(s2),
+      as.double(s1),
+      as.integer(fit$ndim),
+      as.integer(fit$ncov))
+   invisible()
 }
 dhare <- function(q,cov,fit)
 {
     if(class(fit)!="hare")
        stop("fit is not a hare object")
-	xhare(3, q,cov,fit)
+   xhare(3, q,cov,fit)
 }
 hhare <- function(q,cov,fit)
 {
     if(class(fit)!="hare")
        stop("fit is not a hare object")
-	xhare(2, q,cov,fit)
+   xhare(2, q,cov,fit)
 }
 phare <- function(q,cov,fit)
 {
     if(class(fit)!="hare")
        stop("fit is not a hare object")
-	xhare(0, q,cov,fit)
+   xhare(0, q,cov,fit)
 }
 qhare <- function(p,cov,fit)
 {
     if(class(fit)!="hare")
        stop("fit is not a hare object")
-	xhare(1, p,cov,fit)
+   xhare(1, p,cov,fit)
 }
 rhare <- function(n, cov,fit)
 {
     if(class(fit)!="hare")
        stop("fit is not a hare object")
-	xhare(1, runif(n), cov,fit)
+   xhare(1, runif(n), cov,fit)
 }
 xhare <- function(arg1,arg2,arg3,arg4)
 {
@@ -374,216 +374,216 @@ xhare <- function(arg1,arg2,arg3,arg4)
     if(class(fit)!="hare")
        stop("fit is not a hare object")
         zz <- 0
-	if(missing(fit)) {
+   if(missing(arg4)) {
                 zz <- 7
-		fit <- cov
-		if(is.null(fit$ncov))
-			stop("fit missing")
-	}
-	if(fit$ncov == 0) {
-		if(!missing(cov) && zz==0)
-			stop("there should be no covariates")
-		else cov <- 0
-	}
-	else {
-		if(is.matrix(cov) == FALSE)
-			cov <- matrix(cov, ncol = fit$ncov)
-		nd <- length(cov[, 1])
-		nc <- length(cov[1,  ])
-		nq <- length(q)
-		if(nc != fit$ncov)
-			stop("not the right number of covariates")
-		if(nd != 1 && nq != 1 && nd != nq)
-			stop("no matching number of cases")
-		if(nq == 1)
-			q <- rep(q, nd)
-		if(nd == 1 && nq != 1)
-			cov <- matrix(cov, nrow = nq, ncol = nc, byrow = TRUE)
-	}
-	fit$fcts <- as.vector(t(fit$fcts))
-	fit$fcts[is.na(fit$fcts)] <- -1
-	fit$knots <- as.vector(fit$knots)
-	fit$knots[is.na(fit$knots)] <- 0
-	z <- .C("sphare",
-		as.integer(fit$ncov),
-		as.integer(fit$ndim),
-		as.integer(length(q)),
-		as.double(cov),
-		as.integer(iwhat),
-		q = as.double(q),
-		as.double(fit$knots),
-		as.double(fit$fcts))
-	z$q
+      fit <- cov
+      if(is.null(fit$ncov))
+         stop("fit missing")
+   }
+   if(fit$ncov == 0) {
+      if(!missing(arg3) && zz==0)
+         stop("there should be no covariates")
+      else cov <- 0
+   }
+   else {
+      if(is.matrix(cov) == FALSE)
+         cov <- matrix(cov, ncol = fit$ncov)
+      nd <- length(cov[, 1])
+      nc <- length(cov[1,  ])
+      nq <- length(q)
+      if(nc != fit$ncov)
+         stop("not the right number of covariates")
+      if(nd != 1 && nq != 1 && nd != nq)
+         stop("no matching number of cases")
+      if(nq == 1)
+         q <- rep(q, nd)
+      if(nd == 1 && nq != 1)
+         cov <- matrix(cov, nrow = nq, ncol = nc, byrow = TRUE)
+   }
+   fit$fcts <- as.vector(t(fit$fcts))
+   fit$fcts[is.na(fit$fcts)] <- -1
+   fit$knots <- as.vector(fit$knots)
+   fit$knots[is.na(fit$knots)] <- 0
+   z <- .C("sphare",
+      as.integer(fit$ncov),
+      as.integer(fit$ndim),
+      as.integer(length(q)),
+      as.double(cov),
+      as.integer(iwhat),
+      q = as.double(q),
+      as.double(fit$knots),
+      as.double(fit$fcts))
+   z$q
 }
 heft <- function(data, delta, penalty, knots, leftlin, shift,
-	leftlog, rightlog, maxknots, mindist, silent = TRUE)
+   leftlog, rightlog, maxknots, mindist, silent = TRUE)
 {
-	call <- match.call()
+   call <- match.call()
         if(!missing(data))data <- unstrip(data)
         if(!missing(delta))delta <- unstrip(delta)
         if(!missing(knots))knots<- unstrip(knots)
-	if(missing(leftlin))leftlin<-2
-	leftlin<-leftlin*1
-	nx <- -1
-	z <- .C("sheftx",
-		z = as.integer(nx))
-	lgth <- z$z
-	lgth <- 40
-	if(missing(mindist))
-		mindist <- 5
-	if(mindist < 2) {
-		warning("mindist reset to 2")
-		mindist <- 2
-	}
-	if(missing(delta))
-		delta <- data - data + 1
-	if(length(data) != length(delta))
-		stop("data and delta have different length")
-	if(min(data) < 0)
-		stop("negative data")
-	if(min(data) == 0) {
-		if(!missing(leftlog)){
-		if(leftlog != 0) 
-			stop("** hard-zeros, leftlog has to be 0 **")
-		}
-		else{
-			leftlog <- 0
-			warning("*** hard zeros: leftlog set to 0 ***")
-		}
-		if(leftlin==2){
-			warning("*** hard zeros: leftlin set to TRUE ***")
-			leftlin <- 1
- 		}
-	}
-	leftlin <- (leftlin==1)
-	dd <- abs(delta - 0.5)
-	if(min(dd) < 0.5 || max(dd) > 0.5)
-		stop("delta not all 0 or 1")
-	delta <- delta[order(data)]
-	data <- sort(data)
-	nx <- length(data)
-	if(!missing(maxknots) && !missing(knots) && maxknots < length(knots))
-		stop("maxknots is smaller than length(knots)")
-	if(missing(maxknots))
-		maxknots <- 0
-	if(missing(penalty))
-		penalty <- log(nx)
-	if(maxknots > lgth - 5) {
-		maxknots <- lgth - 5
-		warning(paste("maxknots reduced to", maxknots))
-	}
-	if(!missing(shift))
-		if(shift <=  - min(data))
-			stop("shift too small")
-	if(missing(shift))
-		shift <- quantile(data[delta==1], 0.75)
-	nknots <- 0
-	iauto <- 0
-	if(!missing(knots)) {
-		nknots <- length(knots)
-		if(nknots > lgth - 5)
-			stop(paste("nknots can be at most", lgth - 5))
-		iauto <- 2
-		uu <- knots[2:nknots] - knots[1:(nknots - 1)]
-		if(min(uu) < 0)
-			stop("knots not in sequence")
-		if(knots[1] < 0)
-			stop("knot 1 is negative")
-		knots <- c(knots, rep(0, lgth - nknots))
-	}
-	if(iauto < 2)
-		knots <- rep(0, lgth)
-	error <- c(1, rep(0, 20))
-	if(silent != TRUE)
-		error[7] <- 37
-	tails <- c(0, 0, 0, 0, 1)
-	if(!missing(leftlog) || min(data) == 0) {
-		if(leftlog <= -1)
-			stop("leftlog should be smaller than -1")
-		tails[1] <- 1
-		tails[2] <- leftlog
-	}
-	if(!missing(rightlog)) {
-		if(rightlog < -1)
-			stop("rightlog should be at least -1")
-		tails[3] <- 1
-		tails[4] <- rightlog
-	}
-	if(leftlin)
-		tails[5] <- 0
-	z <- .C("sheft",
-		as.integer(nx),
-		as.double(data),
-		as.integer(delta),
-		nk = as.integer(nknots),
-		knots = as.double(knots),
-		as.double(penalty),
-		tails = as.double(tails),
-		as.integer(iauto),
-		logl = as.double(rep(0, lgth)),
-		theta = as.double(rep(0, lgth)),
-		iknots = as.integer(rep(0, lgth)),
-		error = as.integer(error),
-		as.double(shift),
-		as.integer(maxknots),
-		ad = as.integer(rep(0, lgth)),
-		as.integer(mindist))
-	error <- z$error
-	z$logl[abs(z$logl) < 1e-100] <- 0
-	z$logl[z$ad == 2] <- 0
-	if(error[2] == 0){
-	   fit <-list(call = call, knots = z$knots[1:z$nk], logl = z$logl[2:(z$nk
-			+ 1)], thetak = z$theta[1:z$nk], thetap = z$theta[z$nk +
-			(1:2)], thetal = z$theta[z$nk + (3:4)], penalty = 
-			penalty, shift = shift, sample = length(data), logse = 
-			z$tails[c(2, 4)], max = max(data), adddel = z$ad[2:(z$nk
-			 + 1)])
+   if(missing(leftlin))leftlin<-2
+   leftlin<-leftlin*1
+   nx <- -1
+   z <- .C("sheftx",
+      z = as.integer(nx))
+   lgth <- z$z
+   lgth <- 40
+   if(missing(mindist))
+      mindist <- 5
+   if(mindist < 2) {
+      warning("mindist reset to 2")
+      mindist <- 2
+   }
+   if(missing(delta))
+      delta <- data - data + 1
+   if(length(data) != length(delta))
+      stop("data and delta have different length")
+   if(min(data) < 0)
+      stop("negative data")
+   if(min(data) == 0) {
+      if(!missing(leftlog)){
+      if(leftlog != 0) 
+         stop("** hard-zeros, leftlog has to be 0 **")
+      }
+      else{
+         leftlog <- 0
+         warning("*** hard zeros: leftlog set to 0 ***")
+      }
+      if(leftlin==2){
+         warning("*** hard zeros: leftlin set to TRUE ***")
+         leftlin <- 1
+       }
+   }
+   leftlin <- (leftlin==1)
+   dd <- abs(delta - 0.5)
+   if(min(dd) < 0.5 || max(dd) > 0.5)
+      stop("delta not all 0 or 1")
+   delta <- delta[order(data)]
+   data <- sort(data)
+   nx <- length(data)
+   if(!missing(maxknots) && !missing(knots) && maxknots < length(knots))
+      stop("maxknots is smaller than length(knots)")
+   if(missing(maxknots))
+      maxknots <- 0
+   if(missing(penalty))
+      penalty <- log(nx)
+   if(maxknots > lgth - 5) {
+      maxknots <- lgth - 5
+      warning(paste("maxknots reduced to", maxknots))
+   }
+   if(!missing(shift))
+      if(shift <=  - min(data))
+         stop("shift too small")
+   if(missing(shift))
+      shift <- quantile(data[delta==1], 0.75)
+   nknots <- 0
+   iauto <- 0
+   if(!missing(knots)) {
+      nknots <- length(knots)
+      if(nknots > lgth - 5)
+         stop(paste("nknots can be at most", lgth - 5))
+      iauto <- 2
+      uu <- knots[2:nknots] - knots[1:(nknots - 1)]
+      if(min(uu) < 0)
+         stop("knots not in sequence")
+      if(knots[1] < 0)
+         stop("knot 1 is negative")
+      knots <- c(knots, rep(0, lgth - nknots))
+   }
+   if(iauto < 2)
+      knots <- rep(0, lgth)
+   error <- c(1, rep(0, 20))
+   if(silent != TRUE)
+      error[7] <- 37
+   tails <- c(0, 0, 0, 0, 1)
+   if(!missing(leftlog) || min(data) == 0) {
+      if(leftlog <= -1)
+         stop("leftlog should be smaller than -1")
+      tails[1] <- 1
+      tails[2] <- leftlog
+   }
+   if(!missing(rightlog)) {
+      if(rightlog < -1)
+         stop("rightlog should be at least -1")
+      tails[3] <- 1
+      tails[4] <- rightlog
+   }
+   if(leftlin)
+      tails[5] <- 0
+   z <- .C("sheft",
+      as.integer(nx),
+      as.double(data),
+      as.integer(delta),
+      nk = as.integer(nknots),
+      knots = as.double(knots),
+      as.double(penalty),
+      tails = as.double(tails),
+      as.integer(iauto),
+      logl = as.double(rep(0, lgth)),
+      theta = as.double(rep(0, lgth)),
+      iknots = as.integer(rep(0, lgth)),
+      error = as.integer(error),
+      as.double(shift),
+      as.integer(maxknots),
+      ad = as.integer(rep(0, lgth)),
+      as.integer(mindist))
+   error <- z$error
+   z$logl[abs(z$logl) < 1e-100] <- 0
+   z$logl[z$ad == 2] <- 0
+   if(error[2] == 0){
+      fit <-list(call = call, knots = z$knots[1:z$nk], logl = z$logl[2:(z$nk
+         + 1)], thetak = z$theta[1:z$nk], thetap = z$theta[z$nk +
+         (1:2)], thetal = z$theta[z$nk + (3:4)], penalty = 
+         penalty, shift = shift, sample = length(data), logse = 
+         z$tails[c(2, 4)], max = max(data), adddel = z$ad[2:(z$nk
+          + 1)])
            class(fit) <- "heft"
            fit
         }
-	else {
-		print("sorry......")
-		invisible()
-	}
+   else {
+      print("sorry......")
+      invisible()
+   }
 }
 plot.heft <- function(x, n = 100, what = "d", add = FALSE, xlim, xlab, ylab, type,
-	 ...)
+    ...)
 {
     if(class(x)!="heft")
        stop("x is not a heft object")
         fit <- x
-	if(missing(xlim)) {
-		u2 <- min(qheft(0.99, fit), fit$max)
-		u3 <- 0
-		u4 <- 1.1 * u2
-		xlim <- c(u3, u4)
-	}
-	u3 <- xlim[1]
-	u4 <- xlim[2]
-	xx <- (0:(n - 1))/(n - 1) * (u4 - u3) + u3
-	if(u3 == 0)
-		xx <- (1:n)/n * u4
-	yy <- c(-10, -10)
-	if(what == "d" || what == "D")
-		yy <- dheft(xx, fit)
-	if(what == "h" || what == "H")
-		yy <- hheft(xx, fit)
-	if(what == "f" || what == "F" || what == "p" || what == "P")
-		yy <- pheft(xx, fit)
-	if(what == "s" || what == "S")
-		yy <- 1-pheft(xx, fit)
-	if(yy[1] < -8)
-		stop("What is wrong? Well: what is wrong.")
-	if(missing(xlab))
-		xlab <- ""
-	if(missing(ylab))
-		ylab <- ""
-	if(missing(type))
-		type <- "l"
-	if(!add)
-		plot(xx, yy, xlim = xlim, xlab = xlab, ylab = ylab, type = type,
-			...)
-	else lines(xx, yy, type = type, ...)
+   if(missing(xlim)) {
+      u2 <- min(qheft(0.99, fit), fit$max)
+      u3 <- 0
+      u4 <- 1.1 * u2
+      xlim <- c(u3, u4)
+   }
+   u3 <- xlim[1]
+   u4 <- xlim[2]
+   xx <- (0:(n - 1))/(n - 1) * (u4 - u3) + u3
+   if(u3 == 0)
+      xx <- (1:n)/n * u4
+   yy <- c(-10, -10)
+   if(what == "d" || what == "D")
+      yy <- dheft(xx, fit)
+   if(what == "h" || what == "H")
+      yy <- hheft(xx, fit)
+   if(what == "f" || what == "F" || what == "p" || what == "P")
+      yy <- pheft(xx, fit)
+   if(what == "s" || what == "S")
+      yy <- 1-pheft(xx, fit)
+   if(yy[1] < -8)
+      stop("What is wrong? Well: what is wrong.")
+   if(missing(xlab))
+      xlab <- ""
+   if(missing(ylab))
+      ylab <- ""
+   if(missing(type))
+      type <- "l"
+   if(!add)
+      plot(xx, yy, xlim = xlim, xlab = xlab, ylab = ylab, type = type,
+         ...)
+   else lines(xx, yy, type = type, ...)
 }
 print.heft <- function(x,...)
 {
@@ -594,147 +594,147 @@ summary.heft <- function(object,...)
     if(class(object)!="heft")
        stop("object is not a heft object")
         fit <- object 
-	ul <- fit$penalty
-	um <- fit$sample
-	ll <- fit$logl
-	kk <- (1:length(ll))
-	kk <- kk[fit$ad != 2]
-	ll <- ll[fit$ad != 2]
-	ad <- fit$ad[fit$ad != 2]
-	bb <- -2 * ll + ul * (kk-2)
-	if(fit$thetal[1]!=0) bb <- bb+ul
-	if(fit$thetal[2]!=0) bb <- bb+ul
-	if(fit$thetap[2]!=0) bb <- bb+ul
-	if(fit$thetap[2]==0 && min(kk)==2) bb <- bb+ul
-	cc1 <- bb
-	cc2 <- bb
-	cc2[1] <- Inf
-	cc1[length(bb)] <- 0
-	if(length(bb) > 1) {
-		for(i in 1:(length(bb) - 1)) {
-			cc1[i] <- max((ll[(i + 1):(length(bb))] - ll[i])/(kk[(i +
-				1):(length(bb))] - kk[i]))
-			cc2[i + 1] <- min((ll[1:i] - ll[i + 1])/(kk[1:i] - kk[i +
-				1]))
-		}
-	}
-	c3 <- cc2 - cc1
-	cc1[c3 < 0] <- NA
-	cc2[c3 < 0] <- NA
-	uu <- cbind(kk, ad, ll, bb, 2 * cc1, 2 * cc2)
-	ww <- rep("", length(bb))
-	dimnames(uu) <- list(ww, c("knots", "A(0)/D(1)", "loglik", "AIC", 
-		"minimum penalty", "maximum penalty"))
-	print(round(uu, 2))
-	cat(paste("the present optimal number of knots is ", kk[bb == min(bb)], 
-		"\n"))
-	if(ul == log(um))
-		cat(paste("penalty(AIC) was the default: BIC=log(samplesize): log(",
-			um, ")=", round(ul, 2), "\n"))
-	else cat(paste("penalty(AIC) was ", round(ul, 2), 
-			", the default (BIC) ", "would have been", round(log(um
-			), 2), "\n"))
-	if(min(kk) == 3 && fit$thetap[2] != 0) {
-		cat(paste("models with fewer than", kk[1], "knots", 
-			"can be fitted, but they are not optimal for the\n"))
-		cat(paste("present choice of penalty - choose penalty in", 
-			"heft larger to see these fits\n"))
-	}
-	if(min(kk) > 3) {
-		cat(paste("models with fewer than", kk[1], "knots", 
-			"can be fitted, but they are not optimal for the\n"))
-		cat(paste("present choice of penalty - choose penalty in", 
-			"heft larger to see these fits\n"))
-	}
-	uuu <- matrix(NA, ncol = 3, nrow = 2, dimnames = list(c("left tail", 
-		"right tail"), c("theta", "SE", "t")))
-	uuu[, 1] <- fit$thetal
-	if(fit$logse[1] > 0) {
-		uuu[1, 2] <- fit$logse[1]
-		uuu[1, 3] <- abs(fit$thetal[1]/fit$logse[1])
-	}
-	if(fit$logse[2] > 0) {
-		uuu[2, 2] <- fit$logse[2]
-		uuu[2, 3] <- abs(fit$thetal[2]/fit$logse[2])
-	}
-	print(round(uuu, 2))
-	invisible()
+   ul <- fit$penalty
+   um <- fit$sample
+   ll <- fit$logl
+   kk <- (1:length(ll))
+   kk <- kk[fit$ad != 2]
+   ll <- ll[fit$ad != 2]
+   ad <- fit$ad[fit$ad != 2]
+   bb <- -2 * ll + ul * (kk-2)
+   if(fit$thetal[1]!=0) bb <- bb+ul
+   if(fit$thetal[2]!=0) bb <- bb+ul
+   if(fit$thetap[2]!=0) bb <- bb+ul
+   if(fit$thetap[2]==0 && min(kk)==2) bb <- bb+ul
+   cc1 <- bb
+   cc2 <- bb
+   cc2[1] <- Inf
+   cc1[length(bb)] <- 0
+   if(length(bb) > 1) {
+      for(i in 1:(length(bb) - 1)) {
+         cc1[i] <- max((ll[(i + 1):(length(bb))] - ll[i])/(kk[(i +
+            1):(length(bb))] - kk[i]))
+         cc2[i + 1] <- min((ll[1:i] - ll[i + 1])/(kk[1:i] - kk[i +
+            1]))
+      }
+   }
+   c3 <- cc2 - cc1
+   cc1[c3 < 0] <- NA
+   cc2[c3 < 0] <- NA
+   uu <- cbind(kk, ad, ll, bb, 2 * cc1, 2 * cc2)
+   ww <- rep("", length(bb))
+   dimnames(uu) <- list(ww, c("knots", "A(0)/D(1)", "loglik", "AIC", 
+      "minimum penalty", "maximum penalty"))
+   print(round(uu, 2))
+   cat(paste("the present optimal number of knots is ", kk[bb == min(bb)], 
+      "\n"))
+   if(ul == log(um))
+      cat(paste("penalty(AIC) was the default: BIC=log(samplesize): log(",
+         um, ")=", round(ul, 2), "\n"))
+   else cat(paste("penalty(AIC) was ", round(ul, 2), 
+         ", the default (BIC) ", "would have been", round(log(um
+         ), 2), "\n"))
+   if(min(kk) == 3 && fit$thetap[2] != 0) {
+      cat(paste("models with fewer than", kk[1], "knots", 
+         "can be fitted, but they are not optimal for the\n"))
+      cat(paste("present choice of penalty - choose penalty in", 
+         "heft larger to see these fits\n"))
+   }
+   if(min(kk) > 3) {
+      cat(paste("models with fewer than", kk[1], "knots", 
+         "can be fitted, but they are not optimal for the\n"))
+      cat(paste("present choice of penalty - choose penalty in", 
+         "heft larger to see these fits\n"))
+   }
+   uuu <- matrix(NA, ncol = 3, nrow = 2, dimnames = list(c("left tail", 
+      "right tail"), c("theta", "SE", "t")))
+   uuu[, 1] <- fit$thetal
+   if(fit$logse[1] > 0) {
+      uuu[1, 2] <- fit$logse[1]
+      uuu[1, 3] <- abs(fit$thetal[1]/fit$logse[1])
+   }
+   if(fit$logse[2] > 0) {
+      uuu[2, 2] <- fit$logse[2]
+      uuu[2, 3] <- abs(fit$thetal[2]/fit$logse[2])
+   }
+   print(round(uuu, 2))
+   invisible()
 }
 dheft <- function(q, fit)
 {
     if(class(fit)!="heft")
        stop("fit is not a heft object")
-	y <- hheft(q, fit)
-	z <- 1 - pheft(q, fit)
-	y * z
+   y <- hheft(q, fit)
+   z <- 1 - pheft(q, fit)
+   y * z
 }
 hheft <- function(q, fit)
 {
     if(class(fit)!="heft")
        stop("fit is not a heft object")
         q <- unstrip(q)
-	y <- fit$thetap[1] + q * fit$thetap[2] + fit$thetal[1] * log(q/(q + fit$
-		shift)) + fit$thetal[2] * log(q + fit$shift)
-	for(i in 1:length(fit$knots)) {
-		if(fit$thetak[i] != 0)
-			y <- y + fit$thetak[i] * ((abs(q - fit$knots[i]) + q - 
-				fit$knots[i])/2)^3
-	}
-	exp(y)
+   y <- fit$thetap[1] + q * fit$thetap[2] + fit$thetal[1] * log(q/(q + fit$
+      shift)) + fit$thetal[2] * log(q + fit$shift)
+   for(i in 1:length(fit$knots)) {
+      if(fit$thetak[i] != 0)
+         y <- y + fit$thetak[i] * ((abs(q - fit$knots[i]) + q - 
+            fit$knots[i])/2)^3
+   }
+   exp(y)
 }
 pheft <- function(q, fit)
 {
     if(class(fit)!="heft")
        stop("fit is not a heft object")
         q <- unstrip(q)
-	sq <- rank(q)
-	q <- sort(q)
-	z <- .C("heftpq",
-		as.double(fit$knots),
-		as.double(fit$shift),
-		as.double(fit$thetak),
-		as.double(fit$thetal),
-		as.double(fit$thetap),
-		as.integer(1),
-		pp = as.double(q),
-		as.double(q),
-		as.integer(length(fit$knots)),
-		as.integer(length(q)))
-	zz <- z$pp[sq]
-	zz[q < 0] <- 0
-	zz
+   sq <- rank(q)
+   q <- sort(q)
+   z <- .C("heftpq",
+      as.double(fit$knots),
+      as.double(fit$shift),
+      as.double(fit$thetak),
+      as.double(fit$thetal),
+      as.double(fit$thetap),
+      as.integer(1),
+      pp = as.double(q),
+      as.double(q),
+      as.integer(length(fit$knots)),
+      as.integer(length(q)))
+   zz <- z$pp[sq]
+   zz[q < 0] <- 0
+   zz
 }
 qheft <- function(p, fit)
 {
     if(class(fit)!="heft")
        stop("fit is not a heft object")
         p <- unstrip(p)
-	sp <- rank(p)
-	p <- sort(p)
-	z <- .C("heftpq",
-		as.double(fit$knots),
-		as.double(fit$shift),
-		as.double(fit$thetak),
-		as.double(fit$thetal),
-		as.double(fit$thetap),
-		as.integer(0),
-		as.double(p),
-		qq = as.double(p),
-		as.integer(length(fit$knots)),
-		as.integer(length(p)))
-	zz <- z$qq[sp]
-	zz[p < 0] <- NA
-	zz[p == 0] <- 0
-	zz[p == 1] <- Inf
-	zz[p > 1] <- NA
-	zz
+   sp <- rank(p)
+   p <- sort(p)
+   z <- .C("heftpq",
+      as.double(fit$knots),
+      as.double(fit$shift),
+      as.double(fit$thetak),
+      as.double(fit$thetal),
+      as.double(fit$thetap),
+      as.integer(0),
+      as.double(p),
+      qq = as.double(p),
+      as.integer(length(fit$knots)),
+      as.integer(length(p)))
+   zz <- z$qq[sp]
+   zz[p < 0] <- NA
+   zz[p == 0] <- 0
+   zz[p == 1] <- Inf
+   zz[p > 1] <- NA
+   zz
 }
 rheft <- function(n, fit)
 {
     if(class(fit)!="heft")
        stop("fit is not a heft object")
-	pp <- runif(n)
-	qheft(pp, fit)
+   pp <- runif(n)
+   qheft(pp, fit)
 }
 poldlogspline <- function(q, fit)
 {
@@ -1074,7 +1074,7 @@ oldlogspline <- function(uncensored, right, left, interval, lbound, ubound,
         if(SorC[22] == 1) {
                 cat("possible discontinuity at lower end\n")
                 cat(paste("consider rerunning with lbound=", z$kt[1],
-			"\n"))
+         "\n"))
 
         }
         if(SorC[22] == 3) {
@@ -1094,7 +1094,7 @@ oldlogspline <- function(uncensored, right, left, interval, lbound, ubound,
         if(SorC[23] == 1) {
                 cat("possible discontinuity at upper end\n")
                 cat(paste("consider rerunning with ubound=", z$kt[z$nk],
-			"\n"))
+         "\n"))
 
         }
         if(delete && SorC[28]>0)delete<-3
@@ -1110,156 +1110,156 @@ oldlogspline <- function(uncensored, right, left, interval, lbound, ubound,
 lspec <- function(data, period, penalty, minmass, knots, maxknots, atoms, 
         maxatoms, maxdim, odd = FALSE, updown = 3,silent=TRUE)
 {
-	call <- match.call()
+   call <- match.call()
         if(!missing(data))data <- unstrip(data)
         if(!missing(period))period <- unstrip(period)
         if(!missing(knots))knots <- unstrip(knots)
         if(!missing(atoms))atoms <- unstrip(atoms)
-	if(missing(period) && missing(data))
-		stop(" either data or period should be specified ")
-	if(!missing(period) && !missing(data))
-		stop(" only one of data or period should be specified ")
-	if(!missing(period))
-		ny <- 2 * length(period)
-	if(missing(period)) {
-		ny <- length(data)
-		period <- Mod(fft(data))^2/(ny * 2 * pi)
-		period <- period[1:floor((length(period) + 2)/2)]
-		odd <- TRUE
-		if(floor(ny/2) == ny/2)
-			odd <- FALSE
-	}
+   if(missing(period) && missing(data))
+      stop(" either data or period should be specified ")
+   if(!missing(period) && !missing(data))
+      stop(" only one of data or period should be specified ")
+   if(!missing(period))
+      ny <- 2 * length(period)
+   if(missing(period)) {
+      ny <- length(data)
+      period <- Mod(fft(data))^2/(ny * 2 * pi)
+      period <- period[1:floor((length(period) + 2)/2)]
+      odd <- TRUE
+      if(floor(ny/2) == ny/2)
+         odd <- FALSE
+   }
         else{
-	      if(odd) ny <- ny + 1
-        	period <- c(1,period)
+         if(odd) ny <- ny + 1
+           period <- c(1,period)
         }
-	if(min(period) <= 0)
-		stop(" all period elements should be larger than 0 ")
-	if(length(period) < 10)
-		stop("too few observations")
-	z <- .C("tspspsx",
-		z = as.integer(rep(-1, 12)))
-	lgth <- z$z[1]
-	nx <- length(period)
-	if(missing(penalty))
-		penalty <- log(nx - 1)
-	dimatt <- 0
-	ktsatt <- 1
-	spkatt <- 1
-	nknots <- 0
-	natoms <- 0
-	if(!missing(maxknots)){
-		maxknots <- max(1, maxknots)
+   if(min(period) <= 0)
+      stop(" all period elements should be larger than 0 ")
+   if(length(period) < 10)
+      stop("too few observations")
+   z <- .C("tspspsx",
+      z = as.integer(rep(-1, 12)))
+   lgth <- z$z[1]
+   nx <- length(period)
+   if(missing(penalty))
+      penalty <- log(nx - 1)
+   dimatt <- 0
+   ktsatt <- 1
+   spkatt <- 1
+   nknots <- 0
+   natoms <- 0
+   if(!missing(maxknots)){
+      maxknots <- max(1, maxknots)
         }
-	else {
-		maxknots <- -1
-		ktsatt <- 0
-	}
-	if(!missing(maxatoms)){
-		maxatoms <- max(0, maxatoms)
+   else {
+      maxknots <- -1
+      ktsatt <- 0
+   }
+   if(!missing(maxatoms)){
+      maxatoms <- max(0, maxatoms)
         }
-	else {
-		maxatoms <- -1
-		spkatt <- 0
-	}
-	if(missing(minmass)){
-		if(!missing(data))
-			minmass <- var(data)*(-log(1-0.95^(1/nx))-1)/ny
-		else{
-			minmass <- mean(period[2:length(period)])*2*pi
-			minmass <- minmass*(-log(1-0.95^(1/nx))-1)/ny
+   else {
+      maxatoms <- -1
+      spkatt <- 0
+   }
+   if(missing(minmass)){
+      if(!missing(data))
+         minmass <- var(data)*(-log(1-0.95^(1/nx))-1)/ny
+      else{
+         minmass <- mean(period[2:length(period)])*2*pi
+         minmass <- minmass*(-log(1-0.95^(1/nx))-1)/ny
                 }
         }
-	minmass <- minmass * ny /(2*pi)
-	if(!missing(knots)) {
-		nknots <- length(knots)
-		if(nknots>1){
-		uu <- knots[2:nknots] - knots[1:(nknots - 1)]
-		if(min(uu) <= 0)
-			stop("knots not in sequence")
-		}
-		if(knots[1] < 0)
-			stop("knot 1 too small")
-		if(knots[nknots] > pi)
-			stop("last knot too large")
-		knots <- c(knots, rep(0, lgth - nknots))
-		if(ktsatt * maxknots < ktsatt * nknots)
-			stop("more knots than maxknots")
-	}
+   minmass <- minmass * ny /(2*pi)
+   if(!missing(knots)) {
+      nknots <- length(knots)
+      if(nknots>1){
+      uu <- knots[2:nknots] - knots[1:(nknots - 1)]
+      if(min(uu) <= 0)
+         stop("knots not in sequence")
+      }
+      if(knots[1] < 0)
+         stop("knot 1 too small")
+      if(knots[nknots] > pi)
+         stop("last knot too large")
+      knots <- c(knots, rep(0, lgth - nknots))
+      if(ktsatt * maxknots < ktsatt * nknots)
+         stop("more knots than maxknots")
+   }
         else{
-		knots <- rep(0, lgth)
+      knots <- rep(0, lgth)
         }
-	if(!missing(atoms)) {
-		natoms <- length(atoms)
-		atoms <- round((atoms * ny)/(2 * pi))
-		if(natoms>1){
-		uu <- atoms[2:natoms] - knots[1:(natoms - 1)]
-		if(min(uu) <= 0)
-			stop("atoms not in sequence or too close")
-		}
-		if(atoms[1] < 1)
-			stop("atom 1 too small")
-		if(atoms[natoms] > ny/2)
-			stop("last atom too large")
-		atoms <- c(atoms, rep(0, lgth - natoms))
-		if(spkatt * maxatoms < spkatt * natoms)
-			stop("more atoms than maxatoms")
-	}
+   if(!missing(atoms)) {
+      natoms <- length(atoms)
+      atoms <- round((atoms * ny)/(2 * pi))
+      if(natoms>1){
+      uu <- atoms[2:natoms] - knots[1:(natoms - 1)]
+      if(min(uu) <= 0)
+         stop("atoms not in sequence or too close")
+      }
+      if(atoms[1] < 1)
+         stop("atom 1 too small")
+      if(atoms[natoms] > ny/2)
+         stop("last atom too large")
+      atoms <- c(atoms, rep(0, lgth - natoms))
+      if(spkatt * maxatoms < spkatt * natoms)
+         stop("more atoms than maxatoms")
+   }
         else{
-		atoms <- rep(0, lgth)
+      atoms <- rep(0, lgth)
        }
-	u1 <- max(nknots, 1, maxknots) + max(natoms, maxatoms)
-	if(u1 > lgth - 5)
-		stop("too many dimensions")
-	if(!missing(maxdim)) {
-		dimatt <- 1
-		if(u1 > maxdim)
-			stop("maxdim too small for other specifications")
-		if(maxdim > lgth - 5)
-			stop(paste("maxdim can be at most", lgth - 5))
-	}
+   u1 <- max(nknots, 1, maxknots) + max(natoms, maxatoms)
+   if(u1 > lgth - 5)
+      stop("too many dimensions")
+   if(!missing(maxdim)) {
+      dimatt <- 1
+      if(u1 > maxdim)
+         stop("maxdim too small for other specifications")
+      if(maxdim > lgth - 5)
+         stop(paste("maxdim can be at most", lgth - 5))
+   }
         else{
-		maxdim <- max(4 * nx^0.2, 15, u1)
+      maxdim <- max(4 * nx^0.2, 15, u1)
         }
-	dims <- c(nx, maxdim, dimatt, maxknots, ktsatt, nknots, maxatoms, 
-		spkatt, natoms, odd, updown, 1*silent, 0)
-	z <- .C("tspsps",
-		dims = as.integer(dims),
-		as.double(period),
-		knots = as.double(knots),
-		atoms = as.integer(atoms),
-		as.double(penalty),
-		logl = as.double(rep(0, lgth)),
-		theta = as.double(rep(0, lgth)),
-		ad = as.integer(rep(0, lgth)),
-		minmass = as.double(minmass))
-	dims <- z$dims
-	minmass <- minmass /( ny /(2*pi))
-	if(dims[12] == 1)
-		stop(paste("numerical problems -\n", 
-			"probably too many knots or knots too close together", 
-			" or a very sharp atom"))
-	if(dims[12] == 2)
-		stop("no convergence")
-	z$logl[abs(z$logl) < 1e-100] <- 0
-	z$logl[z$ad == 2] <- 0
-	mass <- ((z$theta[(dims[6] + 4) + (1:dims[9])]) * 2 * pi)/ny
-	atoms <- (z$atoms[1:dims[9]] * 2 * pi)/ny
-	if(dims[9] == 0) {
-		mass <- 0
-		atoms <- 0
-	}
-	thetak <- z$theta[5:(dims[6] + 4)]
-	knots <- z$knots[1:dims[6]]
-	if(dims[6] == 0) {
-		thetak <- 0
-		knots <- 0
-	}
-	logl <- z$logl[dims[6]+dims[9]]
-	fit <- list(call = call, thetap = z$theta[1:4], nknots = dims[6], knots = 
-		knots, thetak = thetak, natoms = dims[9], atoms = atoms, 
-		mass = mass, penalty = penalty, minmass = minmass,
-		sample = ny, logl = logl, updown = dims[11])
+   dims <- c(nx, maxdim, dimatt, maxknots, ktsatt, nknots, maxatoms, 
+      spkatt, natoms, odd, updown, 1*silent, 0)
+   z <- .C("tspsps",
+      dims = as.integer(dims),
+      as.double(period),
+      knots = as.double(knots),
+      atoms = as.integer(atoms),
+      as.double(penalty),
+      logl = as.double(rep(0, lgth)),
+      theta = as.double(rep(0, lgth)),
+      ad = as.integer(rep(0, lgth)),
+      minmass = as.double(minmass))
+   dims <- z$dims
+   minmass <- minmass /( ny /(2*pi))
+   if(dims[12] == 1)
+      stop(paste("numerical problems -\n", 
+         "probably too many knots or knots too close together", 
+         " or a very sharp atom"))
+   if(dims[12] == 2)
+      stop("no convergence")
+   z$logl[abs(z$logl) < 1e-100] <- 0
+   z$logl[z$ad == 2] <- 0
+   mass <- ((z$theta[(dims[6] + 4) + (1:dims[9])]) * 2 * pi)/ny
+   atoms <- (z$atoms[1:dims[9]] * 2 * pi)/ny
+   if(dims[9] == 0) {
+      mass <- 0
+      atoms <- 0
+   }
+   thetak <- z$theta[5:(dims[6] + 4)]
+   knots <- z$knots[1:dims[6]]
+   if(dims[6] == 0) {
+      thetak <- 0
+      knots <- 0
+   }
+   logl <- z$logl[dims[6]+dims[9]]
+   fit <- list(call = call, thetap = z$theta[1:4], nknots = dims[6], knots = 
+      knots, thetak = thetak, natoms = dims[9], atoms = atoms, 
+      mass = mass, penalty = penalty, minmass = minmass,
+      sample = ny, logl = logl, updown = dims[11])
         class(fit) <- "lspec"
         fit
 }
@@ -1268,52 +1268,52 @@ clspec <- function(lag, fit, cov = TRUE, mm)
         if(class(fit)!="lspec")
           stop("fit is not an lspec object")
         if(!missing(lag))lag <- unstrip(lag)
-	llag <- abs(lag)
-	if(max(abs(round(llag) - llag)) > 0.01)
-		stop("some lags are not integer")
-	if(missing(mm)) {
-		mm <- max(c(1024, fit$sample, max(llag + 1)))
-		mm <- 2^(1 + floor(log(mm - 0.1)/log(2)))
-	}
-	if(mm < max(llag + 1))
-		stop("mm too small")
-	rr <- dlspec(((0:mm) * pi)/mm, fit)$d
-	rr <- c(rr, rr[mm:2])
-	rr <- (Re(fft(rr)) * pi)/mm
-	rr <- rr[llag + 1]
+   llag <- abs(lag)
+   if(max(abs(round(llag) - llag)) > 0.01)
+      stop("some lags are not integer")
+   if(missing(mm)) {
+      mm <- max(c(1024, fit$sample, max(llag + 1)))
+      mm <- 2^(1 + floor(log(mm - 0.1)/log(2)))
+   }
+   if(mm < max(llag + 1))
+      stop("mm too small")
+   rr <- dlspec(((0:mm) * pi)/mm, fit)$d
+   rr <- c(rr, rr[mm:2])
+   rr <- (Re(fft(rr)) * pi)/mm
+   rr <- rr[llag + 1]
         if(fit$natoms>0){
-	for(i in 1:fit$natoms) {
-		rr <- rr + 2 * cos(lag * fit$atoms[i]) * fit$mass[i]
-	}
-	}
-	if(cov == FALSE)
-		rr <- rr/rr[1]
-	rr
+   for(i in 1:fit$natoms) {
+      rr <- rr + 2 * cos(lag * fit$atoms[i]) * fit$mass[i]
+   }
+   }
+   if(cov == FALSE)
+      rr <- rr/rr[1]
+   rr
 }
 dlspec <- function(freq, fit)
 {
         if(class(fit)!="lspec")
           stop("fit is not an lspec object")
         if(!missing(freq))freq <- unstrip(freq)
-	freq <- freq - floor(freq/(2 * pi)) * 2 * pi
-	freq[freq > pi] <- 2 * pi - freq[freq > pi]
-	y <- rep(fit$thetap[1], length(freq)) + freq * fit$thetap[2]
-	y <- y + freq^2 * fit$thetap[3] + freq^3 * fit$thetap[4]
-	if(fit$nknots > 0) {
-		for(i in 1:fit$nknots) {
-			z <- freq - fit$knots[i]
-			y[z > 0] <- y[z > 0] + z[z > 0]^3 * fit$thetak[i]
-		}
-	}
-	d1 <- exp(y)
-	modfreq <- round((freq * fit$sample)/(2 * pi))
-	modmatch <- round((fit$atoms * fit$sample)/(2 * pi))
-	uu <- rep(0, round(fit$sample/2) + 2)
-	uu[modmatch] <- fit$mass
-	uu <- c(NA, uu)
-	l1 <- uu[modfreq+1]
-	modfreq <- ((2 * pi)/fit$sample) * modfreq
-	list(d = d1, modfreq = modfreq, m = l1)
+   freq <- freq - floor(freq/(2 * pi)) * 2 * pi
+   freq[freq > pi] <- 2 * pi - freq[freq > pi]
+   y <- rep(fit$thetap[1], length(freq)) + freq * fit$thetap[2]
+   y <- y + freq^2 * fit$thetap[3] + freq^3 * fit$thetap[4]
+   if(fit$nknots > 0) {
+      for(i in 1:fit$nknots) {
+         z <- freq - fit$knots[i]
+         y[z > 0] <- y[z > 0] + z[z > 0]^3 * fit$thetak[i]
+      }
+   }
+   d1 <- exp(y)
+   modfreq <- round((freq * fit$sample)/(2 * pi))
+   modmatch <- round((fit$atoms * fit$sample)/(2 * pi))
+   uu <- rep(0, round(fit$sample/2) + 2)
+   uu[modmatch] <- fit$mass
+   uu <- c(NA, uu)
+   l1 <- uu[modfreq+1]
+   modfreq <- ((2 * pi)/fit$sample) * modfreq
+   list(d = d1, modfreq = modfreq, m = l1)
 }
 plspec <- function(freq, fit, mm)
 {
@@ -1375,9 +1375,9 @@ rlspec <- function(n, fit, mean = 0, cosmodel = FALSE, mm)
         uu <- Re(fft(uu))
         uu <- uu[1:n] + mean
         if(fit$natoms > 0) {
-		cc <- runif(1)*2*pi-pi
-		if(cosmodel) aa <- 2*sqrt(fit$mass)
-		else
+      cc <- runif(1)*2*pi-pi
+      if(cosmodel) aa <- 2*sqrt(fit$mass)
+      else
                 aa <- 2 * rnorm(fit$natoms, 0, sqrt(fit$mass))
                 aa[fit$atoms == pi] <- 2 * aa[fit$atoms == pi]
                 for(i in 1:fit$natoms)
@@ -1390,145 +1390,145 @@ plot.lspec <- function(x, what = "b", n, add = FALSE, xlim, ylim, xlab, ylab, ty
         fit <- x
         if(class(fit)!="lspec")
           stop("fit is not an lspec object")
-	if(add) {
-		plim <- (par()$usr)[1:2]
-		if(!missing(xlim)) {
-			plim[1] <- max(xlim[1], plim[1])
-			plim[2] <- min(xlim[2], plim[2])
-		}
-	}
-	else {
-		plim <- c(0, pi)
-		if(what =="p"||what=="P"||what=="f"||what=="F")plim[1]<- -pi
-		if(!missing(xlim)) {
-			plim[1] <- xlim[1]
-			plim[2] <- xlim[2]
-		}
-	}
-	if(missing(xlab))
-		xlab <- ""
-	if(missing(ylab))
-		ylab <- ""
-	if(what == "l" || what == "L") {
-		if(missing(type))
-			type <- "h"
-		if(fit$natoms>0){
-		x5 <- c(-fit$atoms,fit$atoms)
-		tt <- round(plim[2]/(2*pi))+1
-		vv <- round(plim[1]/(2*pi))-1
-		x1 <- x5
-		for(i in vv:tt)
-			if(i!=0)x1 <- c(x1, x5+i*2*pi)
-		y1 <- dlspec(x1,fit)$m
-		y1 <- y1[x1 <= plim[2]]
-		x1 <- x1[x1 <= plim[2]]
-		y1 <- y1[x1 > plim[1]]
-		x1 <- x1[x1 > plim[1]]
-		x1 <- c(x1[1], x1)
-		y1 <- c(0, y1)
-		if(!add)
-			plot(x1, y1, xlim = plim, xlab = xlab, ylab = ylab, 
-				type = type, ...)
-		else lines(x1, y1, type = type, ...)
-		abline(h = 0)}
-		else{
-		if(add) abline(h=0)
-		else plot(plim,c(0,0),xlab = xlab, ylab = ylab,type="l",...)
+   if(add) {
+      plim <- (par()$usr)[1:2]
+      if(!missing(xlim)) {
+         plim[1] <- max(xlim[1], plim[1])
+         plim[2] <- min(xlim[2], plim[2])
+      }
+   }
+   else {
+      plim <- c(0, pi)
+      if(what =="p"||what=="P"||what=="f"||what=="F")plim[1]<- -pi
+      if(!missing(xlim)) {
+         plim[1] <- xlim[1]
+         plim[2] <- xlim[2]
+      }
+   }
+   if(missing(xlab))
+      xlab <- ""
+   if(missing(ylab))
+      ylab <- ""
+   if(what == "l" || what == "L") {
+      if(missing(type))
+         type <- "h"
+      if(fit$natoms>0){
+      x5 <- c(-fit$atoms,fit$atoms)
+      tt <- round(plim[2]/(2*pi))+1
+      vv <- round(plim[1]/(2*pi))-1
+      x1 <- x5
+      for(i in vv:tt)
+         if(i!=0)x1 <- c(x1, x5+i*2*pi)
+      y1 <- dlspec(x1,fit)$m
+      y1 <- y1[x1 <= plim[2]]
+      x1 <- x1[x1 <= plim[2]]
+      y1 <- y1[x1 > plim[1]]
+      x1 <- x1[x1 > plim[1]]
+      x1 <- c(x1[1], x1)
+      y1 <- c(0, y1)
+      if(!add)
+         plot(x1, y1, xlim = plim, xlab = xlab, ylab = ylab, 
+            type = type, ...)
+      else lines(x1, y1, type = type, ...)
+      abline(h = 0)}
+      else{
+      if(add) abline(h=0)
+      else plot(plim,c(0,0),xlab = xlab, ylab = ylab,type="l",...)
                 }
-	}
-	if(what == "d" || what == "D" || what == "b" || what == "B") {
-		if(missing(type))
-			type <- "l"
-		if(missing(n))
-			n <- max(100, fit$sample + 1)
-		xx <- (0:(n - 1))/(n - 1) * (plim[2] - plim[1]) + plim[1]
-		yy <- dlspec(xx, fit)$d
-		if(fit$natoms == 0)
-			what <- "d"
-		if(missing(ylim))ylim<-range(yy)
-	}
-	if(what == "b" || what == "B") {
-		type <- "l"
+   }
+   if(what == "d" || what == "D" || what == "b" || what == "B") {
+      if(missing(type))
+         type <- "l"
+      if(missing(n))
+         n <- max(100, fit$sample + 1)
+      xx <- (0:(n - 1))/(n - 1) * (plim[2] - plim[1]) + plim[1]
+      yy <- dlspec(xx, fit)$d
+      if(fit$natoms == 0)
+         what <- "d"
+      if(missing(ylim))ylim<-range(yy)
+   }
+   if(what == "b" || what == "B") {
+      type <- "l"
                 
-		x5 <- c(-fit$atoms,fit$atoms)
-		tt <- round(plim[2]/(2*pi))+1
-		vv <- round(plim[1]/(2*pi))-1
-		x3 <- x5
-		for(i in vv:tt)
-			if(i!=0)x3 <- c(x3, x5+i*2*pi)
-		y3 <- dlspec(x3, fit)
-		y3 <- max(yy)*1.1
-		if(fit$nknots==1)y3 <- 2*y3
-		if(!missing(ylim))y3 <- ylim[2]
-		x2 <- x3 
-		y2 <- dlspec(x2, fit)$d
-		x4 <- x3 
-		y4 <- y2
-		for(i in 1:length(x3)) {
-			yy <- c(yy[xx < x2[i]], y2[i], y3, y4[i], yy[xx > x4[
-				i]])
-			xx <- c(xx[xx < x2[i]], x2[i], x3[i], x4[i], xx[xx > x4[
-				i]])
-		}
-		if(missing(ylim))ylim<-range(yy)
-		yy <- yy[xx >= plim[1]]
-		xx <- xx[xx >= plim[1]]
-		yy <- yy[xx <= plim[2]]
-		xx <- xx[xx <= plim[2]]
-		y2 <- y2[x2 >= plim[1]]
-		x2 <- x2[x2 >= plim[1]]
-		y2 <- y2[x2 <= plim[2]]
-		x2 <- x2[x2 <= plim[2]]
-	}
-	if(what == "f" || what == "F" || what == "p" || what == "P") {
-		if(!missing(xlim)){
-			if(xlim[1]< -pi || xlim[2]>pi)
-		stop("for this plot the range cannot strecth beyond (-pi,pi)")
-		}
-		if(missing(xlim)){
-			plim[1] <- max(plim[1],-pi)
-			plim[2] <- min(plim[2],pi)
-		}
-		if(missing(type))
-			type <- "l"
-		if(missing(n))
-			n <- max(100, fit$sample + 1)
-		xx <- (0:(n - 1))/(n - 1) * (plim[2] - plim[1]) + plim[1]
-		yy <- plspec(xx, fit)
-		if(missing(ylim))ylim<-range(yy)
-		if(fit$natoms > 0) {
-			x2 <- fit$atoms
-			y3 <- plspec(x2, fit)
-			y2 <- y3 - fit$mass
-			for(i in 1:fit$natoms) {
-				yy <- c(yy[xx < x2[i]], y2[i], y3[i], yy[xx > 
-				  x2[i]])
-				xx <- c(xx[xx < x2[i]], x2[i], x2[i], xx[xx > 
-				  x2[i]])
-			}
-			x2 <- -fit$atoms
-			y3 <- plspec(x2, fit)
-			y2 <- y3 - fit$mass
-			for(i in 1:fit$natoms) {
-				yy <- c(yy[xx < x2[i]], y2[i], y3[i], yy[xx > 
-				  x2[i]])
-				xx <- c(xx[xx < x2[i]], x2[i], x2[i], xx[xx > 
-				  x2[i]])
-			}
-			yy <- yy[xx >= plim[1]]
-			xx <- xx[xx >= plim[1]]
-			yy <- yy[xx <= plim[2]]
-			xx <- xx[xx <= plim[2]]
-		}
-	}
-	if(what != "l" && what != "L") {
-		if(!add)
-			plot(xx, yy, xlim = plim, xlab = xlab, ylab = ylab, 
-				type = type, ylim = ylim, ...)
-		else lines(xx, yy, type = type, ...)
-		if(what =="b" || what=="B")points(x2,y2)
-	}
-	invisible()
+      x5 <- c(-fit$atoms,fit$atoms)
+      tt <- round(plim[2]/(2*pi))+1
+      vv <- round(plim[1]/(2*pi))-1
+      x3 <- x5
+      for(i in vv:tt)
+         if(i!=0)x3 <- c(x3, x5+i*2*pi)
+      y3 <- dlspec(x3, fit)
+      y3 <- max(yy)*1.1
+      if(fit$nknots==1)y3 <- 2*y3
+      if(!missing(ylim))y3 <- ylim[2]
+      x2 <- x3 
+      y2 <- dlspec(x2, fit)$d
+      x4 <- x3 
+      y4 <- y2
+      for(i in 1:length(x3)) {
+         yy <- c(yy[xx < x2[i]], y2[i], y3, y4[i], yy[xx > x4[
+            i]])
+         xx <- c(xx[xx < x2[i]], x2[i], x3[i], x4[i], xx[xx > x4[
+            i]])
+      }
+      if(missing(ylim))ylim<-range(yy)
+      yy <- yy[xx >= plim[1]]
+      xx <- xx[xx >= plim[1]]
+      yy <- yy[xx <= plim[2]]
+      xx <- xx[xx <= plim[2]]
+      y2 <- y2[x2 >= plim[1]]
+      x2 <- x2[x2 >= plim[1]]
+      y2 <- y2[x2 <= plim[2]]
+      x2 <- x2[x2 <= plim[2]]
+   }
+   if(what == "f" || what == "F" || what == "p" || what == "P") {
+      if(!missing(xlim)){
+         if(xlim[1]< -pi || xlim[2]>pi)
+      stop("for this plot the range cannot strecth beyond (-pi,pi)")
+      }
+      if(missing(xlim)){
+         plim[1] <- max(plim[1],-pi)
+         plim[2] <- min(plim[2],pi)
+      }
+      if(missing(type))
+         type <- "l"
+      if(missing(n))
+         n <- max(100, fit$sample + 1)
+      xx <- (0:(n - 1))/(n - 1) * (plim[2] - plim[1]) + plim[1]
+      yy <- plspec(xx, fit)
+      if(missing(ylim))ylim<-range(yy)
+      if(fit$natoms > 0) {
+         x2 <- fit$atoms
+         y3 <- plspec(x2, fit)
+         y2 <- y3 - fit$mass
+         for(i in 1:fit$natoms) {
+            yy <- c(yy[xx < x2[i]], y2[i], y3[i], yy[xx > 
+              x2[i]])
+            xx <- c(xx[xx < x2[i]], x2[i], x2[i], xx[xx > 
+              x2[i]])
+         }
+         x2 <- -fit$atoms
+         y3 <- plspec(x2, fit)
+         y2 <- y3 - fit$mass
+         for(i in 1:fit$natoms) {
+            yy <- c(yy[xx < x2[i]], y2[i], y3[i], yy[xx > 
+              x2[i]])
+            xx <- c(xx[xx < x2[i]], x2[i], x2[i], xx[xx > 
+              x2[i]])
+         }
+         yy <- yy[xx >= plim[1]]
+         xx <- xx[xx >= plim[1]]
+         yy <- yy[xx <= plim[2]]
+         xx <- xx[xx <= plim[2]]
+      }
+   }
+   if(what != "l" && what != "L") {
+      if(!add)
+         plot(xx, yy, xlim = plim, xlab = xlab, ylab = ylab, 
+            type = type, ylim = ylim, ...)
+      else lines(xx, yy, type = type, ...)
+      if(what =="b" || what=="B")points(x2,y2)
+   }
+   invisible()
 }
 print.lspec <- function(x,...)
 {
@@ -1539,898 +1539,728 @@ summary.lspec <- function(object,...)
         fit <- object
         if(class(fit)!="lspec")
           stop("fit is not an lspec object")
-	aa <- " Logspline Spectral Estimation\n"
-	aa <- paste(aa,"=============================\n")
-	aa <- paste(aa,"The fit was obtained by the command:\n ")
-	cat(aa)
-	print(fit$call)
-	aic <- round(-2*fit$logl+fit$penalty*(fit$nknots+fit$natoms),2)
-	logl <- round(fit$logl,2)
-	ns <- fit$natoms
-	nk <- fit$nknots
-	nd <- ns + nk
-	if(ns==0 && nk==1)
-	aa <- paste(" Only 1 basis function, a constant, was fitted.\n")
-	if(ns==0 && nk>1)
-	aa <- paste(" A spline with",nk,"knots, was fitted;",
-		"there were no lines in the model.\n")
-	if(ns>0 && nk>1)
-	aa <- paste(" A spline with",nk,"knots, was fitted;",
-		"there were also",ns,"lines in the model.\n")
-	if(ns>0 && nk==1)
-	aa <- paste(" There were",nd,"basisfunctions, a constant and",
-		ns,"lines, in the model.\n")
-	aa <- paste(aa,"The log-likelihood of the model was",logl,
-		"which corresponds to an AIC\n value of",aic,".\n\n")
-	aa <- paste(aa,"The program went though",abs(fit$updown))
-	if(fit$updown>0)
-	aa <-paste(aa,"updown cycles, and reached a stable solution.\n")
-	if(fit$updown<0)
-	aa <-paste(aa,"updown cycles, and did not reach a stable solution.\n")
-	p1 <- round(fit$penalty,2)
-	n1 <- round(fit$minmass,4)
-	nn <- floor(fit$sample/2)
-	p2 <- round(log(nn),2)
-	uu <- plspec(pi,fit)
-	n2 <- round(uu*(-log(1-0.95^(1/nn))-1)/fit$sample,4)
-	p3 <- (p1==p2)
-	p4 <- TRUE
-	if(n1/n2 > 1.2 || n2/n1 > 1.2) p4 <- FALSE
-	if(p3==TRUE && p4==TRUE)aa<-paste(aa,
+   aa <- " Logspline Spectral Estimation\n"
+   aa <- paste(aa,"=============================\n")
+   aa <- paste(aa,"The fit was obtained by the command:\n ")
+   cat(aa)
+   print(fit$call)
+   aic <- round(-2*fit$logl+fit$penalty*(fit$nknots+fit$natoms),2)
+   logl <- round(fit$logl,2)
+   ns <- fit$natoms
+   nk <- fit$nknots
+   nd <- ns + nk
+   if(ns==0 && nk==1)
+   aa <- paste(" Only 1 basis function, a constant, was fitted.\n")
+   if(ns==0 && nk>1)
+   aa <- paste(" A spline with",nk,"knots, was fitted;",
+      "there were no lines in the model.\n")
+   if(ns>0 && nk>1)
+   aa <- paste(" A spline with",nk,"knots, was fitted;",
+      "there were also",ns,"lines in the model.\n")
+   if(ns>0 && nk==1)
+   aa <- paste(" There were",nd,"basisfunctions, a constant and",
+      ns,"lines, in the model.\n")
+   aa <- paste(aa,"The log-likelihood of the model was",logl,
+      "which corresponds to an AIC\n value of",aic,".\n\n")
+   aa <- paste(aa,"The program went though",abs(fit$updown))
+   if(fit$updown>0)
+   aa <-paste(aa,"updown cycles, and reached a stable solution.\n")
+   if(fit$updown<0)
+   aa <-paste(aa,"updown cycles, and did not reach a stable solution.\n")
+   p1 <- round(fit$penalty,2)
+   n1 <- round(fit$minmass,4)
+   nn <- floor(fit$sample/2)
+   p2 <- round(log(nn),2)
+   uu <- plspec(pi,fit)
+   n2 <- round(uu*(-log(1-0.95^(1/nn))-1)/fit$sample,4)
+   p3 <- (p1==p2)
+   p4 <- TRUE
+   if(n1/n2 > 1.2 || n2/n1 > 1.2) p4 <- FALSE
+   if(p3==TRUE && p4==TRUE)aa<-paste(aa,
 "Both penalty (AIC) and minmass were the default values. For penalty this\n",
 "was log(n)=log(",nn,")=",p1," (as in BIC) and for minmass this was",n1,".\n")
-	if(p3==TRUE && p4==FALSE)aa<-paste(aa,
-	"Penalty (AIC) had the default values",
-	"log(n)=log(",nn,")=",p1," (as in BIC).\n Minmass was",n1,
-	", the default would have been",n2,".\n")
-	if(p3==FALSE && p4==FALSE)aa<-paste(aa,
-	"Penalty was",p1,", the default would have been",
-	"log(n)=log(",nn,")=",p2,"\n(as in BIC). Minmass was",n1,
-	", the default would have been",n2,".\n")
-	if(p3==FALSE && p4==TRUE)aa<-paste(aa,
-	"Penalty was",p1,", the default would have been, log(n)=log(",nn,")=",
+   if(p3==TRUE && p4==FALSE)aa<-paste(aa,
+   "Penalty (AIC) had the default values",
+   "log(n)=log(",nn,")=",p1," (as in BIC).\n Minmass was",n1,
+   ", the default would have been",n2,".\n")
+   if(p3==FALSE && p4==FALSE)aa<-paste(aa,
+   "Penalty was",p1,", the default would have been",
+   "log(n)=log(",nn,")=",p2,"\n(as in BIC). Minmass was",n1,
+   ", the default would have been",n2,".\n")
+   if(p3==FALSE && p4==TRUE)aa<-paste(aa,
+   "Penalty was",p1,", the default would have been, log(n)=log(",nn,")=",
         p2,"\n (as in BIC). Minmass was the default",n1,".\n\n")
-	if(nk>1){aa<-paste(aa,"The locations of the knots were:")
+   if(nk>1){aa<-paste(aa,"The locations of the knots were:")
              for(i in 1:nk)aa<-paste(aa,round(fit$knots[i],3))
-		aa<-paste(aa,"\n")
-	}
+      aa<-paste(aa,"\n")
+   }
         if(ns>0){
            aa<-paste(aa,"The locations and the mass in each line were:\n")
-	bb <- matrix(0,ncol=4,nrow=ns)
-	for(i in 1:ns){
-	bb[i,1]<-round(fit$atoms[i],3)
+   bb <- matrix(0,ncol=4,nrow=ns)
+   for(i in 1:ns){
+   bb[i,1]<-round(fit$atoms[i],3)
         bb[i,2]<-2*pi/(fit$atoms[i])
         bb[i,2]<-round(bb[i,2],2)
-	bb[i,3]<-round(fit$mass[i],5)
-	bb[i,4]<- round(100*fit$mass[i]/uu,2)
-	}
-	dimnames(bb) <- list(rep("",ns),c("angular frequency","period","mass",
+   bb[i,3]<-round(fit$mass[i],5)
+   bb[i,4]<- round(100*fit$mass[i]/uu,2)
+   }
+   dimnames(bb) <- list(rep("",ns),c("angular frequency","period","mass",
         "% of total mass"))
-	}
-	cat(aa)
-	if(ns>0)print(bb)
-	invisible()
-	
+   }
+   cat(aa)
+   if(ns>0)print(bb)
+   invisible()
+   
 }
 
-polymars<-function(responses,predictors,maxsize,gcv=4.0,additive=FALSE,startmodel,weights,no.interact,knots,knot.space=3,ts.resp,ts.pred,ts.weights,classify,factors,tolerance=1e-5,verbose=FALSE)
+polymars <- function(responses, predictors, maxsize, gcv = 4., additive = FALSE, startmodel,
+   weights, no.interact, knots, knot.space = 3, ts.resp, ts.pred, 
+   ts.weights, classify, factors, tolerance = 1e-05, verbose = FALSE)
 {
- #responses  - a vector (or matrix) of responses. (Can be a a vector of characters for classification)
- #predictors - a matrix of predictors with same number of cases as response. Columns are predictors.
- #OPTIONAL ARGUEMENTS
- #maxsize    - maximum number of basis function the model can contain 
- #gcv        - parameter for overall best model seletion
- #additive   - boolean, is the model to be additive
- #startmodel - either a matrix (m*4 or m*5) or a polymars object from a previous call to polymars 
- #             an initial model the procedure should start with in model selection
- #weights    - a vector of length equal to the number of cases
- #no.interact- a 2*l matrix of columns numbers of the predictor matrix( each row pair cannot 
- #              have interaction terms)
- #knots      - a vector specifying many knots per predictor are wanted (with -1 for categorical 
- #             variables) ncol(predictors)==length(knots), or a matrix with ncol(predictors) == 
- #             ncol(knots) with actual knot specified and filled out with NA's.
- #             Can also be a single number - "knots" number of knots per predictor                    
- #knot.space - minimum number of order statistics between knots
- #ts.resp    - testset reponses, same format as responses
- #ts.pred    - testset predictors, same format as predictors
- #ts.weights - testset weights, same format as weights
- #classify   - whether classification is to be done, set = TRUE if the response vector is integer, if 
- #             if character classify is automatically true
- #factors    - a vector of column numbers of the predictor matrix of categorical variables
- #tolerance  - a numerical parameter which may need to be made smaller if the program crashes
-
- #store the call to the polymars function
- call <- match.call()
- ism0 <- missing(classify)
- ism1 <- missing(ts.resp)
- ism2 <- missing(maxsize)
- ism3 <- missing(ts.pred)
- ism4 <- missing(ts.weights)
- ism5 <- missing(knots)
- ism6 <- missing(factors)
- ism7 <- missing(startmodel)
- ism8 <- missing(weights)
- ism9 <- missing(no.interact)
- if(!missing(responses))responses <- unstrip(responses)
- if(!missing(predictors))predictors <- unstrip(predictors)
- if(!missing(weights))weights <- unstrip(weights)
- if(!missing(no.interact))no.interact <- unstrip(no.interact)
- if(!missing(knots))knots <- unstrip(knots)
- if(!missing(ts.resp))ts.resp <- unstrip(ts.resp)
- if(!missing(ts.pred))ts.pred <- unstrip(ts.pred)
- if(!missing(ts.weights))ts.weights <- unstrip(ts.weights)
- if(!missing(factors))factors <- unstrip(factors)
-
- responses<-as.matrix(responses)
- predictors<-data.matrix(predictors)
- nresponses<-ncol(responses)
- npredictors<-ncol(predictors)
- ncases<-nrow(predictors)
- 
-
- if(ism0)classify<-FALSE
- if(mode(responses)=="character" || classify == TRUE)
-  {
-   if(ncol(responses) > 1)
-    {
-     stop("When using character responses  or classify = TRUE only 1 response per case is allowed\n")
-     
-    }
-   char.responses<-responses
-   int.responses<-as.integer(as.factor(responses))
-   
-   nresponses<-length(unique(responses))
-   responses<-matrix(ncol=nresponses,nrow=ncases,data=int.responses)
-   for(i in 1:nresponses)
-    {
-     responses[,i]<-(responses[,i] == (unique(int.responses)[i]))
-    }
-   conversion <- matrix(ncol=2,nrow=nresponses,c(unique(char.responses),unique(int.responses)))
-
-   classify<-TRUE
-   
-   if(!ism1)
-    {
-    
-     char.responses.test<-ts.resp
-
-     ts.resp<-matrix(ncol=nresponses,nrow=length(char.responses.test),data=0)
-
-     for(i in 1:nresponses)
-      {
-       
-
-       ts.resp[,i]<- as.integer(char.responses.test == conversion[i,1])
+   #responses  - a vector (or matrix) of responses. (Can be a a vector of characters for classification)
+   #predictors - a matrix of predictors with same number of cases as response. Columns are predictors.
+   #OPTIONAL ARGUEMENTS
+   #maxsize    - maximum number of basis function the model can contain 
+   #gcv        - parameter for overall best model seletion
+   #additive   - boolean, is the model to be additive
+   #startmodel - either a matrix (m*4 or m*5) or a polymars object from a previous call to polymars 
+   #             an initial model the procedure should start with in model selection
+   #weights    - a vector of length equal to the number of cases
+   #no.interact- a 2*l matrix of columns numbers of the predictor matrix( each row pair cannot 
+   #              have interaction terms)
+   #knots      - a vector specifying many knots per predictor are wanted (with -1 for categorical 
+   #             variables) ncol(predictors)==length(knots), or a matrix with ncol(predictors) == 
+   #             ncol(knots) with actual knot specified and filled out with NA's.
+   #             Can also be a single number - "knots" number of knots per predictor                    
+   #knot.space - minimum number of order statistics between knots
+   #ts.resp    - testset reponses, same format as responses
+   #ts.pred    - testset predictors, same format as predictors
+   #ts.weights - testset weights, same format as weights
+   #classify   - whether classification is to be done, set = TRUE if the response vector is integer, if 
+   #             if character classify is automatically true
+   #factors    - a vector of column numbers of the predictor matrix of categorical variables
+   #tolerance  - a numerical parameter which may need to be made smaller if the program crashes
+   #store the call to the polymars function
+   call <- match.call()
+   ism0 <- missing(classify)
+   ism1 <- missing(ts.resp)
+   ism2 <- missing(maxsize)
+   ism3 <- missing(ts.pred)
+   ism4 <- missing(ts.weights)
+   ism5 <- missing(knots)
+   ism6 <- missing(factors)
+   ism7 <- missing(startmodel)
+   ism8 <- missing(weights)
+   ism9 <- missing(no.interact)
+   if(!missing(responses))
+      responses <- unstrip(responses)
+   if(!missing(predictors))
+      predictors <- unstrip(predictors)
+   if(!missing(weights))
+      weights <- unstrip(weights)
+   if(!missing(no.interact))
+      no.interact <- unstrip(no.interact)
+   if(!missing(knots))
+      knots <- unstrip(knots)
+   if(!missing(ts.resp))
+      ts.resp <- unstrip(ts.resp)
+   if(!missing(ts.pred))
+      ts.pred <- unstrip(ts.pred)
+   if(!missing(ts.weights))
+      ts.weights <- unstrip(ts.weights)
+   if(!missing(factors))
+      factors <- unstrip(factors)
+   responses <- as.matrix(responses)
+   predictors <- data.matrix(predictors)
+   nresponses <- ncol(responses)
+   npredictors <- ncol(predictors)
+   ncases <- nrow(predictors)
+   if(ism0)
+      classify <- FALSE
+   if(mode(responses) == "character" || classify == TRUE) {
+      if(ncol(responses) > 1) {
+         stop("When using character responses  or classify = TRUE only 1 response per case is allowed\n"
+            )
       }
-     
-    }
-
-
-  }
- else
-  {
-   conversion <- FALSE
-   classify<-FALSE
-  }
-
- #maxsize that the model can grow to
- if(ism2)maxsize<-ceiling(min(6*(ncases**(1/3)),ncases/4,100))
- 
- #if a testset is to be used in model selection
- if(!ism1 || !ism3)
-  {
-   if(ism1 || ism3)
-    {
-     stop("Both ts.resp (testsets responses) and ts.pred (testset predictors) should be specified\n")
-    }
-   if(!is.matrix(ts.resp))ts.resp<-as.matrix(ts.resp)
-   if(!is.matrix(ts.pred))ts.pred<-as.matrix(ts.pred)
-   if(ncol(ts.resp) != nresponses)
-    {
-     stop("Testset should have the same number of responses as the training set\n ")
-     
-    }
-   if(ncol(ts.pred) != npredictors)
-    {
-     stop("Testset should have the same number of predictors as the training set\n ")
-     
-    }
-   if(nrow(ts.resp) != nrow(ts.pred))
-    {
-     stop("Testset ts.pred and ts.resp should have the same number of cases (rows)");
-    }
-   testsetmatrix<-cbind(ts.resp,ts.pred)
-   testsetcases<-nrow(testsetmatrix)
-   testset<-TRUE
-
-   if(!ism4)
-    {
-     if(length(ts.weights) != testsetcases)
-      {
-       stop("length of testset weights misspecified\n")
-       
+      char.responses <- responses
+      int.responses <- as.integer(as.factor(responses))
+      nresponses <- length(unique(responses))
+      responses <- matrix(ncol = nresponses, nrow = ncases, data = 
+         int.responses)
+      for(i in 1:nresponses) {
+         responses[, i] <- (responses[, i] == (unique(
+            int.responses)[i]))
       }
-     testset.weighted<-TRUE
-    }
-   else
-    {
-     testset.weighted<-FALSE
-     ts.weights<-0
-    }
-  }
- else
-  {
-   testsetmatrix<-0
-   testsetcases<-0
-   testset<-FALSE
-   testset.weighted<-FALSE
-   ts.weights<-0
-  }
-   
-
- #If the mesh is specified by the knots arguement this will be changed to
- #true later
- mesh.specified<-FALSE
- mesh.vector<-0
- if(nrow(responses) != nrow(predictors))
-  {
-   
-   stop("The number of rows (cases) of the response and predictor matricies should be the same")
-  }
- 
- if(!ism5 && !is.matrix(knots) && length(knots) != npredictors && length(knots) !=1)
-  {
-   
-   stop("Length of vector of `knots per predictor' should be equal to number of predictors or 1\n")
-   
-  }
-
-
- if(!ism5)
-  {
-   if(!is.matrix(knots))
-    {
-     #if knots is specified as a single number it is expanded to a vector 
-     #length npredictors
-     if(length(knots) ==1){knots<-rep(knots,npredictors)
-     if(!ism6)
-      {
-       for(i in 1:length(factors))
-        {
-         if(! is.vector(factors))
-          {
-           stop("`factors' should be a vector whose elements are indicies of predictors that are factors\n")
-	   
-          } 
-          # in knots the number of knots(per predictor) is specified
-          # or -1 if the predictor is a factor and all it values are levels  
-          knots[factors[i]] <- -1
+      conversion <- matrix(ncol = 2, nrow = nresponses, c(unique(
+         char.responses), unique(int.responses)))
+      classify <- TRUE
+      if(!ism1) {
+         char.responses.test <- ts.resp
+         ts.resp <- matrix(ncol = nresponses, nrow = length(
+            char.responses.test), data = 0)
+         for(i in 1:nresponses) {
+            ts.resp[, i] <- as.integer(char.responses.test ==
+               conversion[i, 1])
          }
-       }
-     }
-    }
-   else
-    {
-     mesh<-knots
-     mesh.vector<-vector(length=ncol(mesh)*nrow(mesh),mode="double")
-     knots<-vector(length=npredictors,mode="integer")
-     k<-0
-     for(i in 1:npredictors)
-      {
-       knots[i]<-length(unique(mesh[is.na(mesh[,i])==FALSE,i]))
-       for(j in 1:knots[i])
-        {
-         k<-k+1 
-         mesh.vector[k]<-unique(mesh[!is.na(mesh[,i]),i])[j]
-        }
       }
-     if(!ism6)
-      {
-       for(i in 1:length(factors))
-        {
-         if(! is.vector(factors))
-          {
-           stop("`factors' should be a vector whose elements are indicies of predictors that are factors\n")
-	   
-          } 
-         # in knots the number of knots(per predictor) is specified
-         # or -1 if the predictor is a factor and all it values are levels  
-         knots[factors[i]] <- -1
-        }
+   }
+   else {
+      conversion <- FALSE
+      classify <- FALSE
+   }
+   #maxsize that the model can grow to
+   if(ism2) maxsize <- ceiling(min(6 * (ncases^(1/3)), ncases/4, 100))
+   #if a testset is to be used in model selection
+   if(!ism1 || !ism3) {
+      if(ism1 || ism3) {
+         stop("Both ts.resp (testsets responses) and ts.pred (testset predictors) should be specified\n"
+            )
       }
-     mesh.specified <-TRUE
-    }
-   } 
-
-  if(ism5)
-   {
-   knots<-rep(min(20,round(ncases/4)), npredictors)
-   if(!ism6)
-    {
-     for(i in 1:length(factors))
-      {
-       if(! is.vector(factors))
-        {
-         stop("`factors' should be a vector whose elements are indicies of predictors that are factors\n")
-	 
-        } 
-         # in knots the number of knots(per predictor) is specified
-         # or -1 if the predictor is a factor and all it values are levels  
-         knots[factors[i]] <- -1
+      if(!is.matrix(ts.resp))
+         ts.resp <- as.matrix(ts.resp)
+      if(!is.matrix(ts.pred))
+         ts.pred <- as.matrix(ts.pred)
+      if(ncol(ts.resp) != nresponses) {
+         stop("Testset should have the same number of responses as the training set\n "
+            )
       }
-    }  
-  }
-  startmodelsize<-1
-  #A starting model must be specified as a object of class polymars
-  #or a matrix with 4 or 5 columns
-  no.remove<-0
-  no.remove.size<-0
-
-
-  if(!ism7)
-   {
-    
-    if(is.vector(startmodel))startmodel<-t(as.matrix(startmodel))
-    
-    v1 <- (class(startmodel)=="polymars")
-    if(length(v1)==0)v1 <- FALSE
-    if(
-       !(is.matrix(startmodel) || v1) || 
-      (is.matrix(startmodel) && (ncol(startmodel) != 4 &&  
-      (ncol(startmodel) != 5)))
-           )
-     {
-      stop(paste("startmodel should be a matrix with each row corresponding to", 
-          "a function with number of columns = 4 (or 5 for extra boolean\n", 
-          "column specifying predictors which cannot be removed)",
-          "or startmodel should be a polymars object\n"))
-      
-     }
-   
-    if(is.matrix(startmodel))
-     {
-      #Fifth column denotes which basis functions must remain in the model at 
-      #all times
-      if(ncol(startmodel) == 5)
-       {
-        no.remove<-vector(length=(nrow(startmodel)))
-        j<-0; 
-        for(i in 1:nrow(startmodel))
-         {
-          if(startmodel[i,5]==TRUE)
-           {
-            j<-j+1
-            no.remove[j]<-i
-           }
+      if(ncol(ts.pred) != npredictors) {
+         stop("Testset should have the same number of predictors as the training set\n "
+            )
+      }
+      if(nrow(ts.resp) != nrow(ts.pred)) {
+         stop("Testset ts.pred and ts.resp should have the same number of cases (rows)"
+            )
+      }
+      testsetmatrix <- cbind(ts.resp, ts.pred)
+      testsetcases <- nrow(testsetmatrix)
+      testset <- TRUE
+      if(!ism4) {
+         if(length(ts.weights) != testsetcases) {
+            stop("length of testset weights misspecified\n"
+               )
          }
-        no.remove.size<-j
-       }
-      
-     
-      #The startknots are taken from the startmodel and put into a vector
-      #The startmodel becomes a 4*n matrix with a "1" in the 2nd and 4th 
-      #columns where knots appear
-      startknots<-as.vector(t(cbind(startmodel[,2],startmodel[,4])))
-      
-      startknots[is.na(startknots)]<-0.0
-      
-      startmodel<-matrix(startmodel[,1:4],ncol=4)
-
-      startmodel[!is.na(startmodel[,2]),2]<-1
-
-     startmodel[is.na(startmodel[,2]),2]<-0
-
-    startmodel[is.na(startmodel[,3]),3]<-0
-    startmodel[startmodel[,3]==0,4]<-0
-      for(i in 1:nrow(startmodel))
-       {
-        if((!is.na(startmodel[i,4])) && startmodel[i,3]!=0)
-        startmodel[i,4]<-1
-       }
-      startmodel[is.na(startmodel[,4]),4]<-0
-      startmodelsize<-nrow(startmodel)+1
-
-     }
-    else
-     {
-      startmodelsize<-startmodel$model.size
-      
-     startmodel<-startmodel$model[-1,]
-     startknots1<-startmodel$knot1
-      startknots2<-startmodel$knot2
-     
-      L1<-FALSE
-     
-
-      if(!is.null(startmodel$level1))
-       {
-        L1<-TRUE
-        level1<-startmodel$level1
-       }
-     
-
-      
-      if(L1)
-       {
-       
-        startmodel$knot1[!is.na(level1)]<-1
-       
-        startknots1[!is.na(level1)]<-level1[!is.na(level1)]
-       }
-    
-     
-
-      startknots<-cbind(startknots1,startknots2)
-      
-      
-      startknots<-as.vector(t(startknots))
-      startknots[is.na(startknots)]<-0.0
-      startmodel<-cbind(startmodel[,"pred1"],
-                        startmodel[,"knot1"],
-                        startmodel[,"pred2"],
-                        startmodel[,"knot2"])
-      startmodel[,2]<-!is.na(startmodel[,2])
-      startmodel[,4]<-!is.na(startmodel[,4])
-     }
-
-    }
-   else
-    {
-     startmodel<-0
-     startknots<-0
-    }
-
-
- if(!ism8) 
-  {
-   if(length(weights) != ncases)
-    {
-     stop("Number of weights not equal to the numnber of cases\n")
-     
-    }
-   weighted<-TRUE
-  } 
- else
-  {
-   weighted<-FALSE
-   weights<-0
-  }
- 
- datamatrix<-cbind(responses,predictors)
-
- #Predictors which cannot interact together in the model are specified 
- #by a 2*n matrix of predictor indicies
- if(!ism9)
-  {
-   if(!is.matrix(no.interact) || ncol(no.interact)!=2) 
-    {
-     stop("list of interactions disallowed has been misspecified,must be a 2*n matrix")
-    }
-   no.interact<-t(no.interact)
-   no.interact.size<-ncol(no.interact)
-  } 
- else 
-  {
-   no.interact.size<-0
-   no.interact<-0
-  }
- 
- if(startmodelsize > maxsize)
-  {
-   stop("start model should not be of greater size than the max model size\n")
-   
-  }
-
- #Some error checking on the startmodel
- 
- if(startmodelsize != 1)
-  {
-   for(i in 1:(startmodelsize-1))
-    {
-     if(startmodel[i,1] ==0)
-      {
-       stop("first column of startmodel cannot be zero\n")
-       
-      } 
-     
-     if(startmodel[i,2] == 1)
-      {
-     	if(startknots[(i*2)-1] < min(predictors[,startmodel[i,1]]) 
-          || startknots[(i*2)-1] > max(predictors[,startmodel[i,1]]))
-        {
-         stop("Knot out of range of its predictor \n")
-        }	
+         testset.weighted <- TRUE
+         testsetmatrix <- cbind(ts.resp * ts.weights, ts.pred)
       }
-    
-    
-     if(startmodel[i,4] == 1)
-      {
-       
-       if(startknots[(i*2)] <= min(predictors[,startmodel[i,3]]) 
-           || startknots[(i*2)] >= max(predictors[,startmodel[i,3]]))
-        {
-         
-         stop("Knot out of range of its predictor\n")
-         
-        }
+      else {
+         testset.weighted <- FALSE
+         ts.weights <- 0
       }
-    }
-  
-   if(max(startmodel[,c(1,3)]>npredictors))
-    {
-     stop("Initial model misspecified on input\n")
-     
-    }
-  }
- 
- 
- 
- startmodel<-t(startmodel) 
- resultmodelsize<-0
- end.state<-0
- step.count <-0
- 
- z <- .C("polymars",
-         as.integer(npredictors),
-         as.integer(nresponses),
-         as.integer(ncases),
-	 as.double(datamatrix),
-         as.integer(knots),
-         as.double(mesh.vector),
-         as.integer(mesh.specified),
-         as.integer(maxsize),
-         as.double(gcv),
-	 as.integer(additive),
-         as.integer(startmodelsize),
-         start.model=as.integer(startmodel),
-         start.knots=as.double(startknots),
-         as.integer(weighted),
-         as.double(weights),
-         as.integer(no.interact.size),
-         as.integer(no.interact),
-         as.integer(no.remove.size),
-         as.integer(no.remove),
-         as.integer(knot.space),
-         as.integer(testset),
-         as.double(testsetmatrix),
-         as.integer(testsetcases),
-         as.integer(testset.weighted),
-         as.double(ts.weights),
-         as.integer(classify),
-         as.double(tolerance),
-         as.integer(verbose),
-         best.model = as.integer(matrix(nrow=maxsize,
-                                        ncol=4,
-                                        data=rep(0,maxsize*4))),
-         coefficients = as.double(matrix(nrow=maxsize,
-                                        ncol=nresponses,
-                                        data=rep(0.0,maxsize*nresponses))),
-         steps = as.integer(matrix(nrow=maxsize*2,
-                                   ncol=2,
-                                   data=rep(0,maxsize*4))),
-         rss.gcv = as.double(matrix(nrow=maxsize*2,
-                                    ncol=nresponses+1,
-                                    data=rep(0.0,maxsize*2*(nresponses+1)))),
-         modelsize=as.integer(resultmodelsize),
-	 modelknots = as.double(matrix(nrow=maxsize,
-                                       ncol=2,
-                                       data=rep(0.0,maxsize*2))),
-         coefficient.se.term = as.double(rep(0.0,maxsize)),
-	 end.state = as.integer(end.state),
-         step.count = as.integer(step.count))
- 
- #The C function returns information about how it ended
- 
- if(z$end.state != 0 && z$end.state !=5)
-  {
-   
-   switch(z$end.state,
-   stop("Mis-specification of initial model\n"),
-   stop("Initial model with non-linear function must contain the corresponding linear function\n"),
-   stop("Initial model contains two-predictor functions that require prerequisite functions\n"))
-  
-  }
- else
-  {
-   
-   
-   
-   model<-matrix(z$best.model[1:((z$modelsize-1)*4)],ncol=4,byrow=TRUE)
-   knot.values<-matrix(z$modelknots[1:((z$modelsize-1)*2)],ncol=2,byrow=TRUE)
-   
-   for(i in 1:nrow(model))
-    {
-     if(model[i,2] != 0){model[i,2]<-knot.values[i,1]}else{model[i,2]<-NA}
-     if(model[i,4] != 0){model[i,4]<-knot.values[i,2]}else{model[i,4]<-NA}
-    }
-  
-
-  
-  if(length(knots[model[,1]]) !=0 && min(knots[model[,1]])<0)
-   {
-    
-    factor1<-TRUE
-    levels1<-rep(NA,z$modelsize-1)
-    
-    factor.variables<-unique(model[knots[model[,1]]<0,1])
-    
-    
-    for( i in 1:length(factor.variables))
-     {
-      for( j in 1:length(model[,1]))
-       {	
-        if(model[j,1] == factor.variables[i]){levels1[j]<-model[j,2];}
-       }
-      model[model[,1] == factor.variables[i],2]<-NA
-     }
-    levels1<-c(NA,levels1)
-    
-   } 
-  else 
-   {factor1<-FALSE}
-  
-
-  
-  
-
-  coefs<-matrix(z$coefficients[1:(z$modelsize*nresponses)],ncol=nresponses)
-   #The model that the C-function returns does not explicitly contain an intercept
-   #so in formatting the output one is added
-   
-   
-   if(z$modelsize > 1)
-    { 
-     
-     
-     if(factor1==FALSE)
-      {
-       model<-rbind(c(0,NA,0,NA),model)
-       model<-data.frame(model,coefs)
-       if(nresponses == 1)
-        {
-         dimnames(model)<-list(1:z$modelsize,c("pred1","knot1","pred2",
-                               "knot2","coefs"))
-        }
-       else
-        {
-         dimnames(model)<-list(1:z$modelsize,c("pred1","knot1","pred2","knot2",
-                               paste("Coefs",1:nresponses)))
-        }
-      }
-    
-      
-     if(factor1==TRUE)
-      {
-              
-       
-       model[(knots[model[,1]]<0),2]<-NA
-       model<-rbind(c(0,NA,0,NA),model)
-       model<-data.frame(model[,1:2],levels1,model[,3:4],coefs)
-       if(nresponses == 1)
-        {
-         dimnames(model)<-list(1:z$modelsize,c("pred1","knot1","level1",
-                                               "pred2","knot2","coefs"))
-        }
-       else
-        {
-         dimnames(model)<-list(1:z$modelsize,c("pred1","knot1","level1",
-                               "pred2","knot2",paste("Coefs",1:nresponses)))
-        }
-      }
-      
-       
-    }
-   else
-    {
-     
-     
-     model<-data.frame(0,NA,0,NA,coefs)
-     
-     if(nresponses == 1)
-      {
-       dimnames(model)<-list(1:z$modelsize,c("pred1","knot1","pred2",
-                                           "knot2","coefs"))
-      }
-     else
-      {
-       dimnames(model)<-list(1:z$modelsize,c("pred1","knot1","pred2","knot2",
-                                           paste("Coefs",1:nresponses)))
-      }
-    }
- 
-   #for later plotting the ranges and medians of the predictors are stored
-   ranges.and.medians<-matrix(ncol=npredictors,nrow=3,data=0)
-   
-   
-   
-   for(i in 1:npredictors)
-    {ranges.and.medians[1,i]<-min(predictors[,i])}
-   for(i in 1:npredictors)
-    {ranges.and.medians[2,i]<-max(predictors[,i])}
-   for(i in 1:npredictors)
-    {ranges.and.medians[3,i]<-median(predictors[,i])}
-
-   # A table with information from the fitting is formatted here
-   steps<-matrix(z$steps[1:(2*(z$step.count+1))],ncol=2,byrow=TRUE)
-   rss.gcv<-matrix(z$rss.gcv[1:((nresponses+1)*(z$step.count+1))],
-                   ncol=nresponses+1,
-                   byrow=TRUE)
-   fitting<-data.frame(steps,rss.gcv)
-  
-   if(testset == FALSE)
-    {
-     if(nresponses == 1)
-      {
-       dimnames(fitting) <- list(1:(nrow(fitting)), 
-                                  c("0/1","size","RSS","GCV"))
-      }
-     else
-      {
-       dimnames(fitting) <- list(1:nrow(fitting), 
-                                 c("0/1",
-                                 "size", 
-                                 paste("RSS", 1:nresponses), 
-                                 "GCV"))
-      }
-    }
-   else
-    {
-     if(classify ==FALSE)
-      {
-       if(nresponses == 1)
-        {
-         dimnames(fitting) <- list(1:(nrow(fitting)), 
-                                  c("0/1","size","RSS","T.S. RSS"))
-        }
-       else
-        {
-         dimnames(fitting) <- list(1:nrow(fitting), 
-                                   c("0/1",
-                                   "size", 
-                                   paste("RSS", 1:nresponses), 
-                                   "T.S. RSS"))
-        } 
-      }
-    else
-     {
-      if(nresponses == 1)
-       {
-        dimnames(fitting) <- list(1:(nrow(fitting)), 
-                                  c("0/1","size","RSS","T.S.M.C."))
-        }
-       else
-        {
-         dimnames(fitting) <- list(1:nrow(fitting), 
-                                   c("0/1",
-                                   "size", 
-                                   paste("RSS", 1:nresponses), 
-                                   "T.S.M.C."))
-        } 
-      }
-    }
- 
-
-   #calculates fitted values and residual of the data according to the
-   #model returned 
-   if(z$modelsize >1)
-    {
-     temp<-list(model=model,
-                model.size = z$modelsize,
-                ranges.and.medians=ranges.and.medians,
-                responses = nresponses
-                )
-     class(temp)<-"polymars"
-     fitted<-matrix(ncol=nresponses,
-                    nrow=ncases,
-                    data=rep(0,nresponses*ncases))
-     residuals<-matrix(ncol=nresponses,
-                       nrow=ncases,
-                       data=rep(0,nresponses*ncases))
-     
-       fitted<-predict.polymars(temp,x=predictors)
-       residuals<-responses-fitted
-    #model<-model[,-c(nrow(model)-nreponses,nrow(model))]
-    }
-   else
-    {
-     fitted<-matrix(ncol=nresponses,nrow=ncases,data=coefs[1,1])
-     residuals<-matrix(ncol=nresponses,nrow=ncases,data=responses-coefs[1,1])
-    }
-
-
-  # if their are factors present in the model the factors must be stored for use during plotting
-  if(factor1 == TRUE)
-   {
-    model2<-model[-1,]
-    factors.in.model<-unique(model2[knots[model2[,1]]<0,1])
-    
-    maxfactors<-0
-    for(i in 1:length(factors.in.model))
-     {
-      maxfactors<-max(maxfactors,length(unique(predictors[,factors.in.model[i]])))
-     
-     }
-    
-
-   
-   
-   
-    factor.matrix<-matrix(ncol=length(factors.in.model),
-                        nrow=maxfactors+2,data=NA)
-    for(i in 1:length(factors.in.model))
-     {
-      factor.matrix[1,i]<-factors.in.model[i]
-      factor.matrix[2,i]<-length(unique(predictors[,factors.in.model[i]]))
-      for(j in 3:(length(unique(predictors[,factors.in.model[i]]))+2))
-       {
-        factor.matrix[j,i]<-unique(predictors[,factors.in.model[i]])[j-2]
-       }
-     }
-    
    }
-  else
-   {
-    factor.matrix<-0
+   else {
+      testsetmatrix <- 0
+      testsetcases <- 0
+      testset <- FALSE
+      testset.weighted <- FALSE
+      ts.weights <- 0
    }
-   
-   
-   
-   
-   
-   if(nresponses ==1)
-    {
-   
-     SE <- round(sqrt((sum(residuals^2)/(ncases-z$modelsize))*z$coefficient.se.term[1:z$modelsize]),4)
-     model<-cbind(model,SE)
-   
-     dimnames(model)[[2]][length(dimnames(model)[[2]])]<-"SE"
-   
-    }
-   else
-    {
-     
-     for(i in 1:nresponses)
-      {
-       SE <- round(sqrt((sum(residuals[,i]^2)/(ncases-z$modelsize))*z$coefficient.se.term[1:z$modelsize]),4)
-        
-       model<-cbind(model,SE)
-       
-       dimnames(model)[[2]][length(dimnames(model)[[2]])]<-paste("SE",i)
+   #If the mesh is specified by the knots arguement this will be changed to
+   #true later
+   mesh.specified <- FALSE
+   mesh.vector <- 0
+   if(nrow(responses) != nrow(predictors)) {
+      stop("The number of rows (cases) of the response and predictor matricies should be the same"
+         )
+   }
+   if(!ism5 && !is.matrix(knots) && length(knots) != npredictors && length(
+      knots) != 1) {
+      stop("Length of vector of `knots per predictor' should be equal to number of predictors or 1\n"
+         )
+   }
+   if(!ism5) {
+      if(!is.matrix(knots)) {
+         #if knots is specified as a single number it is expanded to a vector 
+         #length npredictors
+         if(length(knots) == 1) {
+            knots <- rep(knots, npredictors)
+            if(!ism6) {
+               for(i in 1:length(factors)) {
+                  if(!is.vector(factors)) {
+                     stop("`factors' should be a vector whose elements are indicies of predictors that are factors\n"
+                        )
+                  }
+                  # in knots the number of knots(per predictor) is specified
+                  # or -1 if the predictor is a factor and all it values are levels  
+                  knots[factors[i]] <- -1
+               }
+            }
+         }
       }
+      else {
+         mesh <- knots
+         mesh.vector <- vector(length = ncol(mesh) * nrow(mesh),
+            mode = "double")
+         knots <- vector(length = npredictors, mode = "integer")
+         k <- 0
+         for(i in 1:npredictors) {
+            knots[i] <- length(unique(mesh[is.na(mesh[
+               , i]) == FALSE, i]))
+            for(j in 1:knots[i]) {
+               k <- k + 1
+               mesh.vector[k] <- unique(mesh[!is.na(
+                  mesh[, i]), i])[j]
+            }
+         }
+         if(!ism6) {
+            for(i in 1:length(factors)) {
+               if(!is.vector(factors)) {
+                  stop("`factors' should be a vector whose elements are indicies of predictors that are factors\n"
+                     )
+               }
+               # in knots the number of knots(per predictor) is specified
+               # or -1 if the predictor is a factor and all it values are levels  
+               knots[factors[i]] <- -1
+            }
+         }
+         mesh.specified <- TRUE
+      }
+   }
+   if(ism5) {
+      knots <- rep(min(20, round(ncases/4)), npredictors)
+      if(!ism6) {
+         for(i in 1:length(factors)) {
+            if(!is.vector(factors)) {
+               stop("`factors' should be a vector whose elements are indicies of predictors that are factors\n"
+                  )
+            }
+            # in knots the number of knots(per predictor) is specified
+            # or -1 if the predictor is a factor and all it values are levels  
+            knots[factors[i]] <- -1
+         }
+      }
+   }
+   startmodelsize <- 1
+   #A starting model must be specified as a object of class polymars
+   #or a matrix with 4 or 5 columns
+   no.remove <- 0
+   no.remove.size <- 0
+   if(!ism7) {
+      if(is.vector(startmodel))
+         startmodel <- t(as.matrix(startmodel))
+      v1 <- (class(startmodel) == "polymars")
+      if(length(v1) == 0)
+         v1 <- FALSE
+      if(!(is.matrix(startmodel) || v1) || (is.matrix(startmodel) &&
+         (ncol(startmodel) != 4 && (ncol(startmodel) != 5)))) {
+         stop(paste(
+            "startmodel should be a matrix with each row corresponding to",
+            "a function with number of columns = 4 (or 5 for extra boolean\n",
+            "column specifying predictors which cannot be removed)",
+            "or startmodel should be a polymars object\n"))
+      }
+      if(is.matrix(startmodel)) {
+         #Fifth column denotes which basis functions must remain in the model at 
+         #all times
+         if(ncol(startmodel) == 5) {
+            no.remove <- vector(length = (nrow(startmodel))
+               )
+            j <- 0
+            for(i in 1:nrow(startmodel)) {
+               if(startmodel[i, 5] == TRUE) {
+                  j <- j + 1
+                  no.remove[j] <- i
+               }
+            }
+            no.remove.size <- j
+         }
+         #The startknots are taken from the startmodel and put into a vector
+         #The startmodel becomes a 4*n matrix with a "1" in the 2nd and 4th 
+         #columns where knots appear
+         startknots <- as.vector(t(cbind(startmodel[, 2], 
+            startmodel[, 4])))
+         startknots[is.na(startknots)] <- 0.
+         startmodel <- matrix(startmodel[, 1:4], ncol = 4)
+         startmodel[!is.na(startmodel[, 2]), 2] <- 1
+         startmodel[is.na(startmodel[, 2]), 2] <- 0
+         startmodel[is.na(startmodel[, 3]), 3] <- 0
+         startmodel[startmodel[, 3] == 0, 4] <- 0
+         for(i in 1:nrow(startmodel)) {
+            if((!is.na(startmodel[i, 4])) && startmodel[
+               i, 3] != 0)
+               startmodel[i, 4] <- 1
+         }
+         startmodel[is.na(startmodel[, 4]), 4] <- 0
+         startmodelsize <- nrow(startmodel) + 1
+      }
+      else {
+         startmodelsize <- startmodel$model.size
+         startmodel <- startmodel$model[-1,  ]
+         startknots1 <- startmodel$knot1
+         startknots2 <- startmodel$knot2
+         L1 <- FALSE
+         if(!is.null(startmodel$level1)) {
+            L1 <- TRUE
+            level1 <- startmodel$level1
+         }
+         if(L1) {
+            startmodel$knot1[!is.na(level1)] <- 1
+            startknots1[!is.na(level1)] <- level1[!is.na(
+               level1)]
+         }
+         startknots <- cbind(startknots1, startknots2)
+         startknots <- as.vector(t(startknots))
+         startknots[is.na(startknots)] <- 0.
+         startmodel <- cbind(startmodel[, "pred1"], startmodel[
+            , "knot1"], startmodel[, "pred2"], startmodel[
+            , "knot2"])
+         startmodel[, 2] <- !is.na(startmodel[, 2])
+         startmodel[, 4] <- !is.na(startmodel[, 4])
+      }
+   }
+   else {
+      startmodel <- 0
+      startknots <- 0
+   }
+   if(!ism8) {
+      if(length(weights) != ncases) {
+         stop("Number of weights not equal to the numnber of cases\n"
+            )
+      }
+      weighted <- TRUE
+      responses <- responses * weights
+   }
+   else {
+      weighted <- FALSE
+      weights <- 0
+   }
+   datamatrix <- cbind(responses, predictors)
+   #Predictors which cannot interact together in the model are specified 
+   #by a 2*n matrix of predictor indicies
+   if(!ism9) {
+      if(!is.matrix(no.interact) || ncol(no.interact) != 2) {
+         stop("list of interactions disallowed has been misspecified,must be a 2*n matrix"
+            )
+      }
+      no.interact <- t(no.interact)
+      no.interact.size <- ncol(no.interact)
+   }
+   else {
+      no.interact.size <- 0
+      no.interact <- 0
+   }
+   if(startmodelsize > maxsize) {
+      stop("start model should not be of greater size than the max model size\n"
+         )
+   }
+   #Some error checking on the startmodel
+   if(startmodelsize != 1) {
+      for(i in 1:(startmodelsize - 1)) {
+         if(startmodel[i, 1] == 0) {
+            stop("first column of startmodel cannot be zero\n"
+               )
+         }
+         if(startmodel[i, 2] == 1) {
+            if(startknots[(i * 2) - 1] < min(predictors[
+               , startmodel[i, 1]]) || startknots[
+               (i * 2) - 1] > max(predictors[, 
+               startmodel[i, 1]])) {
+               stop("Knot out of range of its predictor \n"
+                  )
+            }
+         }
+         if(startmodel[i, 4] == 1) {
+            if(startknots[(i * 2)] <= min(predictors[,
+               startmodel[i, 3]]) || startknots[(
+               i * 2)] >= max(predictors[, startmodel[
+               i, 3]])) {
+               stop("Knot out of range of its predictor\n"
+                  )
+            }
+         }
+      }
+      if(max(startmodel[, c(1, 3)] > npredictors)) {
+         stop("Initial model misspecified on input\n")
+      }
+   }
+   startmodel <- t(startmodel)
+   resultmodelsize <- 0
+   end.state <- 0
+   step.count <- 0
+   z <- .C("polymars",
+      as.integer(npredictors),
+      as.integer(nresponses),
+      as.integer(ncases),
+      as.double(datamatrix),
+      as.integer(knots),
+      as.double(mesh.vector),
+      as.integer(mesh.specified),
+      as.integer(maxsize),
+      as.double(gcv),
+      as.integer(additive),
+      as.integer(startmodelsize),
+      start.model = as.integer(startmodel),
+      start.knots = as.double(startknots),
+      as.integer(weighted),
+      as.double(weights),
+      as.integer(no.interact.size),
+      as.integer(no.interact),
+      as.integer(no.remove.size),
+      as.integer(no.remove),
+      as.integer(knot.space),
+      as.integer(testset),
+      as.double(testsetmatrix),
+      as.integer(testsetcases),
+      as.integer(testset.weighted),
+      as.double(ts.weights),
+      as.integer(classify),
+      as.double(tolerance),
+      as.integer(verbose),
+      best.model = as.integer(matrix(nrow = maxsize, ncol = 4, data
+          = rep(0, maxsize * 4))),
+      coefficients = as.double(matrix(nrow = maxsize, ncol = 
+         nresponses, data = rep(0., maxsize * nresponses))),
 
-    } 
-  
-   
-   
-   
-   
-   
-   
-   if(nresponses ==1)
-    {
-     
-     Rsquared<-1-(sum(residuals^2)/sum((responses-mean(responses))^2))
-    }
-   else
-    {
-     Rsquared<-NULL
-    } 
-   result<-list(model=model,
-                fitting=fitting,
-                model.size = z$modelsize,
-                fitted=fitted,
-                responses=nresponses,
-                residuals=residuals,
-	        ranges.and.medians=ranges.and.medians,
-                call=call,
-                conversion=conversion,
-                factor.matrix=factor.matrix,
-                Rsquared=Rsquared)
-   class(result)<-"polymars"
-   return(result)
-  }
+         steps = as.integer(matrix(nrow = maxsize * 2, ncol = 2,
+         data = rep(0, maxsize * 4))),
+      rss.gcv = as.double(matrix(nrow = maxsize * 2, ncol = 
+         nresponses + 1, data = rep(0., maxsize * 2 * (
+         nresponses + 1)))),
+      modelsize = as.integer(resultmodelsize),
+      modelknots = as.double(matrix(nrow = maxsize, ncol = 2, data = 
+         rep(0., maxsize * 2))),
+      coefficient.se.term = as.double(rep(0., maxsize)),
+      end.state = as.integer(end.state),
+      step.count = as.integer(step.count))
+   #The C function returns information about how it ended
+   if(z$end.state != 0 && z$end.state != 5) {
+      switch(z$end.state,
+         stop("Mis-specification of initial model\n"),
+         stop("Initial model with non-linear function must contain the corresponding linear function\n"
+            ),
+         stop("Initial model contains two-predictor functions that require prerequisite functions\n"
+            ))
+   }
+   else {
+      model <- matrix(z$best.model[1:((z$modelsize - 1) * 4)], ncol
+          = 4, byrow = TRUE)
+      knot.values <- matrix(z$modelknots[1:((z$modelsize - 1) * 2)],
+         ncol = 2, byrow = TRUE)
+      for(i in 1:nrow(model)) {
+         if(model[i, 2] != 0) {
+            model[i, 2] <- knot.values[i, 1]
+         }
+         else {
+            model[i, 2] <- NA
+         }
+         if(model[i, 4] != 0) {
+            model[i, 4] <- knot.values[i, 2]
+         }
+         else {
+            model[i, 4] <- NA
+         }
+      }
+      if(length(knots[model[, 1]]) != 0 && min(knots[model[, 1]]) <
+         0) {
+         factor1 <- TRUE
+         levels1 <- rep(NA, z$modelsize - 1)
+         factor.variables <- unique(model[knots[model[, 1]] <
+            0, 1])
+         for(i in 1:length(factor.variables)) {
+            for(j in 1:length(model[, 1])) {
+               if(model[j, 1] == factor.variables[
+                  i]) {
+                  levels1[j] <- model[j, 2]
+               }
+            }
+            model[model[, 1] == factor.variables[i], 2] <-
+               NA
+         }
+         levels1 <- c(NA, levels1)
+      }
+      else {
+         factor1 <- FALSE
+      }
+      coefs <- matrix(z$coefficients[1:(z$modelsize * nresponses)],
+         ncol = nresponses)
+      #The model that the C-function returns does not explicitly contain an intercept
+      #so in formatting the output one is added
+      if(z$modelsize > 1) {
+         if(factor1 == FALSE) {
+            model <- rbind(c(0, NA, 0, NA), model)
+            model <- data.frame(model, coefs)
+            if(nresponses == 1) {
+               dimnames(model) <- list(1:z$modelsize,
+                  c("pred1", "knot1", "pred2",
+                  "knot2", "coefs"))
+            }
+            else {
+               dimnames(model) <- list(1:z$modelsize,
+                  c("pred1", "knot1", "pred2",
+                  "knot2", paste("Coefs", 1:
+                  nresponses)))
+            }
+         }
+         if(factor1 == TRUE) {
+            model[(knots[model[, 1]] < 0), 2] <- NA
+            model <- rbind(c(0, NA, 0, NA), model)
+            model <- data.frame(model[, 1:2], levels1,
+               model[, 3:4], coefs)
+            if(nresponses == 1) {
+               dimnames(model) <- list(1:z$modelsize,
+                  c("pred1", "knot1", "level1",
+                  "pred2", "knot2", "coefs"))
+            }
+            else {
+               dimnames(model) <- list(1:z$modelsize,
+                  c("pred1", "knot1", "level1",
+                  "pred2", "knot2", paste("Coefs",
+                  1:nresponses)))
+            }
+         }
+      }
+      else {
+         model <- data.frame(0, NA, 0, NA, coefs)
+         if(nresponses == 1) {
+            dimnames(model) <- list(1:z$modelsize, c(
+               "pred1", "knot1", "pred2", "knot2",
+               "coefs"))
+         }
+         else {
+            dimnames(model) <- list(1:z$modelsize, c(
+               "pred1", "knot1", "pred2", "knot2",
+               paste("Coefs", 1:nresponses)))
+         }
+      }
+      #for later plotting the ranges and medians of the predictors are stored
+      ranges.and.medians <- matrix(ncol = npredictors, nrow = 3,
+         data = 0)
+      for(i in 1:npredictors) {
+         ranges.and.medians[1, i] <- min(predictors[, i])
+      }
+      for(i in 1:npredictors) {
+         ranges.and.medians[2, i] <- max(predictors[, i])
+      }
+      for(i in 1:npredictors) {
+         ranges.and.medians[3, i] <- median(predictors[, i])
+      }
+      # A table with information from the fitting is formatted here
+      steps <- matrix(z$steps[1:(2 * (z$step.count + 1))], ncol = 2,
+         byrow = TRUE)
+      rss.gcv <- matrix(z$rss.gcv[1:((nresponses + 1) * (z$step.count +
+         1))], ncol = nresponses + 1, byrow = TRUE)
+      fitting <- data.frame(steps, rss.gcv)
+      if(testset == FALSE) {
+         if(nresponses == 1) {
+            dimnames(fitting) <- list(1:(nrow(fitting)),
+               c("0/1", "size", "RSS", "GCV"))
+         }
+         else {
+            dimnames(fitting) <- list(1:nrow(fitting),
+               c("0/1", "size", paste("RSS", 1:
+               nresponses), "GCV"))
+         }
+      }
+      else {
+         if(classify == FALSE) {
+            if(nresponses == 1) {
+               dimnames(fitting) <- list(1:(nrow(
+                  fitting)), c("0/1", "size",
+                  "RSS", "T.S. RSS"))
+            }
+            else {
+               dimnames(fitting) <- list(1:nrow(
+                  fitting), c("0/1", "size",
+                  paste("RSS", 1:nresponses),
+                  "T.S. RSS"))
+            }
+         }
+         else {
+            if(nresponses == 1) {
+               dimnames(fitting) <- list(1:(nrow(
+                  fitting)), c("0/1", "size",
+                  "RSS", "T.S.M.C."))
+            }
+            else {
+               dimnames(fitting) <- list(1:nrow(
+                  fitting), c("0/1", "size",
+                  paste("RSS", 1:nresponses),
+                  "T.S.M.C."))
+            }
+         }
+      }
+      #calculates fitted values and residual of the data according to the
+      #model returned 
+      if(z$modelsize > 1) {
+         temp <- list(model = model, model.size = z$modelsize,
+            ranges.and.medians = ranges.and.medians, 
+            responses = nresponses)
+         class(temp) <- "polymars"
+         fitted <- matrix(ncol = nresponses, nrow = ncases,
+            data = rep(0, nresponses * ncases))
+         residuals <- matrix(ncol = nresponses, nrow = ncases,
+            data = rep(0, nresponses * ncases))
+         fitted <- predict.polymars(temp, x = predictors)
+         residuals <- responses - fitted
+      }
+      else {
+         fitted <- matrix(ncol = nresponses, nrow = ncases,
+            data = coefs[1, 1])
+         residuals <- matrix(ncol = nresponses, nrow = ncases,
+            data = responses - coefs[1, 1])
+      }
+      # if their are factors present in the model the factors must be stored for use during plotting
+      if(factor1 == TRUE) {
+         model2 <- model[-1,  ]
+         factors.in.model <- unique(model2[knots[model2[, 1]] <
+            0, 1])
+         maxfactors <- 0
+         for(i in 1:length(factors.in.model)) {
+            maxfactors <- max(maxfactors, length(unique(
+               predictors[, factors.in.model[i]])))
+         }
+         factor.matrix <- matrix(ncol = length(factors.in.model),
+            nrow = maxfactors + 2, data = NA)
+         for(i in 1:length(factors.in.model)) {
+            factor.matrix[1, i] <- factors.in.model[i]
+            factor.matrix[2, i] <- length(unique(predictors[
+               , factors.in.model[i]]))
+            for(j in 3:(length(unique(predictors[, 
+               factors.in.model[i]])) + 2)) {
+               factor.matrix[j, i] <- unique(
+                  predictors[, factors.in.model[
+                  i]])[j - 2]
+            }
+         }
+      }
+      else {
+         factor.matrix <- 0
+      }
+      if(nresponses == 1) {
+         SE <- round(sqrt((sum(residuals^2)/(ncases - z$
+            modelsize)) * z$coefficient.se.term[1:z$
+            modelsize]), 4)
+         model <- cbind(model, SE)
+         dimnames(model)[[2]][length(dimnames(model)[[2]])] <-
+            "SE"
+      }
+      else {
+         for(i in 1:nresponses) {
+            SE <- round(sqrt((sum(residuals[, i]^2)/(ncases -
+               z$modelsize)) * z$coefficient.se.term[
+               1:z$modelsize]), 4)
+            model <- cbind(model, SE)
+            dimnames(model)[[2]][length(dimnames(model)[[
+               2]])] <- paste("SE", i)
+         }
+      }
+      if(nresponses == 1) {
+         Rsquared <- 1 - (sum(residuals^2)/sum((responses - mean(
+            responses))^2))
+      }
+      else {
+         Rsquared <- NULL
+      }
+      result <- list(model = model, fitting = fitting, model.size = z$
+         modelsize, fitted = fitted, responses = nresponses,
+         residuals = residuals, ranges.and.medians = 
+         ranges.and.medians, call = call, conversion = 
+         conversion, factor.matrix = factor.matrix, Rsquared = 
+         Rsquared)
+      class(result) <- "polymars"
+      return(result)
+   }
 }
-
 
 ################################################################################################
 
@@ -2454,7 +2284,7 @@ predict.polymars<-function(object,x,classify=FALSE,intercept,...)
  if(!missing(x))x <- unstrip(x)
  # some error checking
                 if(class(object)!="polymars")
-			stop("object is not a polymars object")
+         stop("object is not a polymars object")
   pmars.model <- object
  # The x matrix number of columns can be of length equal to the number of 
  # predictors in the original model or shorten to the number of predictors in 
@@ -2463,7 +2293,7 @@ predict.polymars<-function(object,x,classify=FALSE,intercept,...)
   {
    if(length(unique(pmars.model$model[, "pred1"]))== 1 ||  ncol(pmars.model$ranges.and.medians)== 1  )
     {
-	x<-matrix(data=x,ncol=1)
+   x<-matrix(data=x,ncol=1)
     }
   }
  if((is.matrix(x) && ncol(x) 
@@ -2491,7 +2321,7 @@ predict.polymars<-function(object,x,classify=FALSE,intercept,...)
       {
        x[j,sort(unique(pmars.model$model[,"pred1"]))[i]]<-x[j]
       }
-    }	
+    }   
   }
  # If x is a vector put it into matrix form expanding it if it is of 
  # length equal to only the number of predictors in the model in `pmars.model'
@@ -2561,8 +2391,8 @@ predict.polymars<-function(object,x,classify=FALSE,intercept,...)
       {
        if(length(intercept) != 1)
         {
-       	 stop("Intercept arguement mispecified \n")
-       	 
+                stop("Intercept arguement mispecified \n")
+                
         }
        for(i in 1:responses)Y[,i] <- intercept
       }
@@ -2602,7 +2432,7 @@ predict.polymars<-function(object,x,classify=FALSE,intercept,...)
      #if(level2)
      #{
      #  if(!is.na(pmars.model$model[i, "level2"]))
-     #	{
+     #        {
      #   Y2<- (Y2 == pmars.model$model[i, "level2"])
      #  }
      #}
@@ -2644,7 +2474,7 @@ predict.polymars<-function(object,x,classify=FALSE,intercept,...)
 #
 #    }
 #  }
-	
+        
  return(Y)
 }
 ################################################################################################
@@ -2656,7 +2486,7 @@ print.polymars<-function(x,...)
 summary.polymars<-function(object,...)
 {
        if(class(object)!="polymars")
-	stop("object is not a polymars object")
+        stop("object is not a polymars object")
         pmars.model <- object
         cat("Call:\n")
         print(pmars.model$call)
@@ -2692,7 +2522,7 @@ plot.polymars<-function(x,predictor1,response,predictor2,xx,add=FALSE,n,xyz=FALS
  #                 be given a numerical value.
 
        if(class(x)!="polymars")
-	stop("x is not a polymars object")
+        stop("x is not a polymars object")
  pmars.model <- x
  if(missing(xx))xx<-pmars.model$ranges.and.medians[3,]
  if(length(xx) != ncol(pmars.model$ranges.and.medians))
@@ -2836,7 +2666,7 @@ plot.polymars<-function(x,predictor1,response,predictor2,xx,add=FALSE,n,xyz=FALS
 
    
    
-   mesh<-factors[!is.na(factors)]	
+   mesh<-factors[!is.na(factors)]        
    }
   else
    {
@@ -2868,11 +2698,11 @@ plot.polymars<-function(x,predictor1,response,predictor2,xx,add=FALSE,n,xyz=FALS
      if(pmars.model$responses == 1)
       {
        plot(mesh,Y,...,type="l",xlab=paste("Predictor ",predictor1),ylab="Response")
-	
+        
       }
      else
       {
-	
+        
        plot(mesh,
             Y[,response],
             type="l",
@@ -2883,7 +2713,7 @@ plot.polymars<-function(x,predictor1,response,predictor2,xx,add=FALSE,n,xyz=FALS
     }
   else
    {
-	
+        
     points(mesh,
            Y,
            type="l")
@@ -2892,7 +2722,7 @@ plot.polymars<-function(x,predictor1,response,predictor2,xx,add=FALSE,n,xyz=FALS
 
  if(isfactor == TRUE)
   {
-	 
+         
    if(add == FALSE)
     {
      if(pmars.model$responses == 1)
@@ -2921,7 +2751,7 @@ plot.polymars<-function(x,predictor1,response,predictor2,xx,add=FALSE,n,xyz=FALS
 
 
 
-	
+        
   invisible()
  }
 }
@@ -2931,7 +2761,7 @@ plot.polymars<-function(x,predictor1,response,predictor2,xx,add=FALSE,n,xyz=FALS
 persp.polymars<-function(x, predictor1, predictor2, response, n= 33,xlim,ylim,xx,contour.polymars,main,intercept,...)
 {
        if(class(x)!="polymars")
-	stop("x is not a polymars object")
+        stop("x is not a polymars object")
   pmars.model <- x
  # used by the plot.polymars function
  # not designed for stand alone use.
@@ -3203,7 +3033,7 @@ plot.logspline <-function(x, n = 100, what = "d", add = FALSE, xlim, xlab = "", 
                         u3 <- min(xlim[2], plim[2])
                 }
         }
-	else{
+        else{
         if(missing(xlim)) {
                 u1 <- qlogspline(0.01, fit)
                 u2 <- qlogspline(0.99, fit)
@@ -3992,10 +3822,6 @@ beta.polyclass <- function(fit, which, xsp = 0.4, cex)
          as.character(fit$classnames[j]))
    }
    invisible()
-}
-.First.lib <- function(lib, pkg)
-{
-   library.dynam("polspline", pkg, lib)
 }
 testhare <- c(4.974595958,0,1,2.456985,8,38,5.229125,1,3.422498434,0,0,2.177377,7,49,5.277500,0
 ,4.290693972,1,0,4.381446,20,54,5.485566,0,11.301950208,0,0,3.526174,10,65,4.621450,0
@@ -4998,3 +4824,7 @@ testhare <- c(4.974595958,0,1,2.456985,8,38,5.229125,1,3.422498434,0,0,2.177377,
 ,0.764759076,1,0,7.455564,11,44,4.311743,1,1.757825223,1,0,4.464654,20,69,4.319955,1
 ,7.459053005,1,0,3.732241,21,49,5.070667,0,5.689613634,0,0,3.397186,9,52,4.923659,0)
 testhare <- matrix(testhare,ncol=8,byrow=TRUE)
+.First.lib <- function(lib, pkg)
+{
+   library.dynam("polspline", pkg, lib)
+}

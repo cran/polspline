@@ -505,8 +505,8 @@ int nd;
       for(j=0;j<2;j++)(*spc).basis[i].c3[j]=0;
       (*spc).basis[i].c1=dsvector(MAXKNOTS+5);
       (*spc).basis[i].c2=dsmatrix(k,4);
+      for(j=0;j<5;j++)(*spc).basis[i].iks[j]=0;
    }
-   for(j=0;j<5;j++)(*spc).basis[i].iks[j]=0;
    (*spc).nip=k;
    return spc;
 }
