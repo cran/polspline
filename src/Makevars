@@ -1,1 +1,3 @@
 PKG_LIBS=$(BLAS_LIBS)
+cflags = -g
+fflags = -g

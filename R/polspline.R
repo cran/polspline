@@ -696,11 +696,11 @@ pheft <- function(q, fit)
    sq <- rank(q)
    q <- sort(q)
    z <- .C("heftpq",
-      as.double(fit$knots),
-      as.double(fit$shift),
-      as.double(fit$thetak),
-      as.double(fit$thetal),
-      as.double(fit$thetap),
+      as.double(c(fit$knots,rep(0,100))),
+      as.double(c(fit$shift,rep(0,100))),
+      as.double(c(fit$thetak,rep(0,100))),
+      as.double(c(fit$thetal,rep(0,100))),
+      as.double(c(fit$thetap,rep(0,100))),
       as.integer(1),
       pp = as.double(q),
       as.double(q),
@@ -719,11 +719,11 @@ qheft <- function(p, fit)
    sp <- rank(p)
    p <- sort(p)
    z <- .C("heftpq",
-      as.double(fit$knots),
-      as.double(fit$shift),
-      as.double(fit$thetak),
-      as.double(fit$thetal),
-      as.double(fit$thetap),
+      as.double(c(fit$knots,rep(0,100))),
+      as.double(c(fit$shift,rep(0,100))),
+      as.double(c(fit$thetak,rep(0,100))),
+      as.double(c(fit$thetal,rep(0,100))),
+      as.double(c(fit$thetap,rep(0,100))),
       as.integer(0),
       as.double(p),
       qq = as.double(p),
@@ -1238,8 +1238,8 @@ lspec <- function(data, period, penalty, minmass, knots, maxknots, atoms,
    z <- .C("tspsps",
       dims = as.integer(dims),
       as.double(period),
-      knots = as.double(knots),
-      atoms = as.integer(atoms),
+      knots = as.double(c(knots,rep(0,nx))),
+      atoms = as.integer(c(atoms,rep(0,nx))),
       as.double(penalty),
       logl = as.double(rep(0, lgth)),
       theta = as.double(rep(0, lgth)),
@@ -1628,7 +1628,7 @@ summary.lspec <- function(object,...)
 
 polymars <- function(responses, predictors, maxsize, gcv = 4., additive = FALSE, startmodel,
    weights, no.interact, knots, knot.space = 3, ts.resp, ts.pred, 
-   ts.weights, classify, factors, tolerance = 1e-05, verbose = FALSE)
+   ts.weights, classify, factors, tolerance = 1e-06, verbose = FALSE)
 {
    #responses  - a vector (or matrix) of responses. (Can be a a vector of characters for classification)
    #predictors - a matrix of predictors with same number of cases as response. Columns are predictors.
@@ -1991,34 +1991,34 @@ polymars <- function(responses, predictors, maxsize, gcv = 4., additive = FALSE,
    end.state <- 0
    step.count <- 0
    z <- .C("polymars",
-      as.integer(npredictors),
-      as.integer(nresponses),
-      as.integer(ncases),
+      as.integer(npredictors),    
+      as.integer(nresponses),    
+      as.integer(ncases),   
       as.double(datamatrix),
       as.integer(knots),
       as.double(mesh.vector),
       as.integer(mesh.specified),
-      as.integer(maxsize),
-      as.double(gcv),
-      as.integer(additive),
-      as.integer(startmodelsize),
+      as.integer(maxsize),             
+      as.double(gcv),                   
+      as.integer(additive),              
+      as.integer(startmodelsize),         
       start.model = as.integer(startmodel),
       start.knots = as.double(startknots),
       as.integer(weighted),
       as.double(weights),
-      as.integer(no.interact.size),
+      as.integer(no.interact.size),        
       as.integer(no.interact),
-      as.integer(no.remove.size),
+      as.integer(no.remove.size), 
       as.integer(no.remove),
-      as.integer(knot.space),
-      as.integer(testset),
+      as.integer(knot.space),      
+      as.integer(testset),          
       as.double(testsetmatrix),
       as.integer(testsetcases),
-      as.integer(testset.weighted),
+      as.integer(testset.weighted),  
       as.double(ts.weights),
-      as.integer(classify),
-      as.double(tolerance),
-      as.integer(verbose),
+      as.integer(classify),  
+      as.double(tolerance),   
+      as.integer(verbose),     
       best.model = as.integer(matrix(nrow = maxsize, ncol = 4, data
           = rep(0, maxsize * 4))),
       coefficients = as.double(matrix(nrow = maxsize, ncol = 
@@ -2193,26 +2193,6 @@ polymars <- function(responses, predictors, maxsize, gcv = 4., additive = FALSE,
             }
          }
       }
-      #calculates fitted values and residual of the data according to the
-      #model returned 
-      if(z$modelsize > 1) {
-         temp <- list(model = model, model.size = z$modelsize,
-            ranges.and.medians = ranges.and.medians, 
-            responses = nresponses)
-         class(temp) <- "polymars"
-         fitted <- matrix(ncol = nresponses, nrow = ncases,
-            data = rep(0, nresponses * ncases))
-         residuals <- matrix(ncol = nresponses, nrow = ncases,
-            data = rep(0, nresponses * ncases))
-         fitted <- predict.polymars(temp, x = predictors)
-         residuals <- responses - fitted
-      }
-      else {
-         fitted <- matrix(ncol = nresponses, nrow = ncases,
-            data = coefs[1, 1])
-         residuals <- matrix(ncol = nresponses, nrow = ncases,
-            data = responses - coefs[1, 1])
-      }
       # if their are factors present in the model the factors must be stored for use during plotting
       if(factor1 == TRUE) {
          model2 <- model[-1,  ]
@@ -2241,37 +2221,50 @@ polymars <- function(responses, predictors, maxsize, gcv = 4., additive = FALSE,
          factor.matrix <- 0
       }
       if(nresponses == 1) {
-         SE <- round(sqrt((sum(residuals^2)/(ncases - z$
-            modelsize)) * z$coefficient.se.term[1:z$
-            modelsize]), 4)
-         model <- cbind(model, SE)
+         model <- cbind(model, model[,1])
          dimnames(model)[[2]][length(dimnames(model)[[2]])] <-
             "SE"
       }
       else {
          for(i in 1:nresponses) {
-            SE <- round(sqrt((sum(residuals[, i]^2)/(ncases -
-               z$modelsize)) * z$coefficient.se.term[
-               1:z$modelsize]), 4)
-            model <- cbind(model, SE)
+            model <- cbind(model, model[,1])
             dimnames(model)[[2]][length(dimnames(model)[[
                2]])] <- paste("SE", i)
          }
       }
-      if(nresponses == 1) {
-         Rsquared <- 1 - (sum(residuals^2)/sum((responses - mean(
-            responses))^2))
+      result <- list(model = model, fitting = fitting, model.size = z$
+         modelsize,  responses = nresponses, ranges.and.medians = 
+         ranges.and.medians, call = call, conversion = 
+         conversion, factor.matrix = factor.matrix)
+      class(result) <- "polymars"
+      #refit the coefficients
+      dd <- design.polymars(result,predictors)
+      model2 <- result$model
+      rsquared2 <- rep(0,nresponses)
+      for(i in 1:nresponses){
+        if(z$modelsize>1) mm <- summary(lm(responses[, i] ~ dd[, -1]))
+        else mm <- summary(lm(responses[, i] ~ 1 ))
+        rsquared2[i] <- mm$r.squared
+        mm <- mm$coefficients
+        model2[,i+4] <- mm[,1]
+        model2[,i+4+nresponses] <- mm[,2]
+      }
+      result$model <- model2
+      result$Rsquared <- rsquared2
+      #calculates fitted values and residual of the data according to the
+      #model returned 
+      if(z$modelsize > 1) {
+         fitted <- predict.polymars(result, x = predictors)
+         residuals <- responses - fitted
       }
       else {
-         Rsquared <- NULL
+         fitted <- matrix(ncol = nresponses, nrow = ncases,
+            data = coefs[1, 1])
+         residuals <- matrix(ncol = nresponses, nrow = ncases,
+            data = responses - coefs[1, 1])
       }
-      result <- list(model = model, fitting = fitting, model.size = z$
-         modelsize, fitted = fitted, responses = nresponses,
-         residuals = residuals, ranges.and.medians = 
-         ranges.and.medians, call = call, conversion = 
-         conversion, factor.matrix = factor.matrix, Rsquared = 
-         Rsquared)
-      class(result) <- "polymars"
+      result$residuals = residuals
+      result$fitted = fitted
       return(result)
    }
 }
@@ -2289,7 +2282,7 @@ predict.polymars<-function(object,x,classify=FALSE,intercept,...)
  # classify    If the original call to polymars was for classification setting  classify=TRUE will 
  #             the new data otherwise it will return the multi-response fitted values.
  # intercept   By default TRUE. The full intercept is included; or when FALSE the intercept is left out.
- #             Can also be givebn a numerical value
+ #             Can also be given a numerical value
  
  if(missing(intercept))
   {
@@ -2858,6 +2851,143 @@ persp.polymars<-function(x, predictor1, predictor2, response, n= 33,xlim,ylim,xx
    
    }
  invisible()
+}
+################################################################################################
+design.polymars<-function(object,x)
+{
+ # Produces predicted values for a polymars object
+ # pmars.model  an object returned from a call to polymars
+ # x           a matrix with number of columns equal to number of columns of predictor matrix in 
+ #             original call to polymars and predictor values in the corresponding columns. Can 
+ #             also be a matrix with number of column equal to the number of predictors in the 
+ #             model, in the order of the original dataset.
+ 
+ if(!missing(x))x <- unstrip(x)
+ # some error checking
+                if(class(object)!="polymars")
+         stop("object is not a polymars object")
+  pmars.model <- object
+ # The x matrix number of columns can be of length equal to the number of 
+ # predictors in the original model or shorten to the number of predictors in 
+ # the model in `pmars.model'
+ if(!(is.matrix(x))) 
+  {
+   if(length(unique(pmars.model$model[, "pred1"]))== 1 ||  ncol(pmars.model$ranges.and.medians)== 1  )
+    {
+   x<-matrix(data=x,ncol=1)
+    }
+  }
+ if((is.matrix(x) && ncol(x) 
+    != length(unique(pmars.model$model[,"pred1"]))))
+  {
+   if(ncol(x) != ncol(pmars.model$ranges.and.medians))
+    {
+     
+     
+     stop("Input should be a matrix with number of columns equal to either number of original predictors or number of predictors in model\n")
+     
+    }
+  }
+ 
+ # If the number of columns of the matrix is not length equal to number of 
+ # predictors it is expanded to that size.
+ if(is.matrix(x) && ncol(x) == length(unique(pmars.model$model[, "pred1"])) && ncol(x) != ncol(pmars.model$ranges.and.medians))
+  {
+   tempmatrix<-x
+   
+   x<-matrix(nrow=nrow(tempmatrix),ncol=ncol(pmars.model$ranges.and.medians),data = 0)
+   for(i in 1:length(unique(pmars.model$model[, "pred1"]))) 
+    {
+     for(j in 1:nrow(tempmatrix))
+      {
+       x[j,sort(unique(pmars.model$model[,"pred1"]))[i]]<-x[j]
+      }
+    }   
+  }
+ # If x is a vector put it into matrix form expanding it if it is of 
+ # length equal to only the number of predictors in the model in `pmars.model'
+ if(!(is.matrix(x))) 
+  {
+   if(!(length(x) == ncol(pmars.model$ranges.and.medians) || length(x) == unique(pmars.model$model[, "pred1"]))) 
+    {
+     stop("The vector of values must be equal in length to either the number of original predictors or predictors in the model\n")
+    
+    }
+   if(length(x) == unique(pmars.model$model[, "pred1"]) && length(x) != ncol(pmars.model$ranges.and.medians)) 
+    {
+     x <- rep(0, ncol(pmars.model$ranges.and.medians))
+     for(i in 1:length(unique(pmars.model$model[, "pred1"]))) 
+      {
+       x[sort(unique(pmars.model$model[, "pred1"]))[i]]<-x[i]
+      }
+    }
+   x <- t(as.matrix(x))
+  }
+ 
+ # Checking to see if there are factor variables in the model
+ if(dimnames(pmars.model$model)[[2]][3] == "level1")
+  {
+   level1<-TRUE
+   pmars.model$model<-pmars.model$model[,c(1:(5+pmars.model$responses))]
+
+
+   #if(dimnames(pmars.model$model)[[2]][6] == "level2"){level2<-TRUE}else{level2<-FALSE}
+  }
+ else
+  {
+   level1<-FALSE
+   pmars.model$model<-pmars.model$model[,c(1:(4+pmars.model$responses))]
+   #if(dimnames(pmars.model$model)[[2]][5] == "level2")
+   # {level2<-TRUE}else{level2<-FALSE}
+  }
+ # Setting up the fitted responses matrix
+ responses<-pmars.model$responses
+ Y <- matrix(ncol = 1, nrow = nrow(x), data = rep(1, nrow(x)))
+ Y1 <- matrix(ncol = 1, nrow = nrow(x), data = rep(0, nrow(x)))
+ Y2 <- matrix(ncol = 1, nrow = nrow(x), data = rep(0, nrow(x)))
+ # Computing fitted values
+ if(pmars.model$model.size>1)
+  {
+   for(i in 2:pmars.model$model.size) 
+    {
+  
+     Y2[] <- 1
+   
+     Y1[] <- x[,pmars.model$model[i, "pred1"]]
+     if(!is.na(pmars.model$model[i, "knot1"])) 
+      {
+       Y1 <- Y1 - pmars.model$model[i,"knot1"]
+       Y1[Y1 < 0,] <- 0
+      }
+     if(level1)
+      {
+
+     if(!is.na(pmars.model$model[i, "level1"]))
+      {
+       Y1<- (Y1 == pmars.model$model[i, "level1"])
+      }
+    }
+   if(!is.na(pmars.model$model[i, "pred2"]) & pmars.model$model[i, "pred2"] != 0) 
+    {
+     Y2[] <- x[,pmars.model$model[i,"pred2"]]
+     if(!is.na(pmars.model$model[i,"knot2" ])) 
+      {
+       Y2 <- Y2 - pmars.model$model[i,"knot2"]
+       Y2[Y2 < 0,] <- 0
+      }
+     #if(level2)
+     #{
+     #  if(!is.na(pmars.model$model[i, "level2"]))
+     #        {
+     #   Y2<- (Y2 == pmars.model$model[i, "level2"])
+     #  }
+     #}
+    }
+   
+    Y<-cbind(Y,Y1 * Y2)
+   }
+  }
+ return(Y)
 }
 ################################################################################################
 
@@ -4844,6 +4974,7 @@ testhare <- c(4.974595958,0,1,2.456985,8,38,5.229125,1,3.422498434,0,0,2.177377,
 ,0.764759076,1,0,7.455564,11,44,4.311743,1,1.757825223,1,0,4.464654,20,69,4.319955,1
 ,7.459053005,1,0,3.732241,21,49,5.070667,0,5.689613634,0,0,3.397186,9,52,4.923659,0)
 testhare <- matrix(testhare,ncol=8,byrow=TRUE)
+################################################################################
 .First.lib <- function(lib, pkg)
 {
    library.dynam("polspline", pkg, lib)

@@ -819,8 +819,8 @@ int nx,*ll,*uu,mind,i;
       if((*uu)>nx-mind-1)(*uu)=nx-mind-1;
    }
    if(i==2){
-      if((*ll)>mind)(*ll)=mind;
       *ll=nx/2;
+      if((*ll)>mind)(*ll)=mind;
       *uu=nx-1-mind;
    }
    if((*ll)>(*uu))return -1;

@@ -26,6 +26,8 @@
 #include "x2c.h" 
 #define TRUE  1 
 #define FALSE 0
+#define DIM5 500
+
 
 
 
@@ -36,6 +38,7 @@
 static double tolerance;
 
 
+void F77_NAME(xdsico)(double[][DIM5], int *, int *, int *,  double *, double *);
 
 static int predictors;/*number of predictors in the dataset*/
 static int responses;/*number of responses in dataset*/
@@ -289,8 +292,7 @@ first*/
 static int invert_matrix(struct matrix1 *object_matrix);
 /* computes testset RSS if required*/
 static double testset_RSS(struct matrix2 *YtXXtX_expanded,int model_size);
-
-
+static double condition(struct matrix1 *);
 static logical lsame(char *, char *);
 static int xerbla(char *, int *);
 static int idamax(int *n, double *dx, int *incx);
@@ -482,262 +484,6 @@ void polymars(int *pred,
 
 
 
-/*==============================================================*/
-static double *compute_mesh()
-/*==============================================================*/
-{
-/*--------------------------------------------------------------
-Computes the mesh  of possible knots for the spline functions.
-The number of knots per predictor is an arguement to the main function
-and they are stored in `knots_per_pred' 
-
-Returns a pointer to the mesh which is a double array
---------------------------------------------------------------*/
-
-
-  int i,j,k,l,m;
-  double data_value;
-  double *mesh;
-  double *levels;
-  int mesh_size, knots, nstartknots;
-  int level_present;
-  double *matrix_ptr,*mesh_ptr, *mesh_ptr2;
-  
-  matrix_ptr = data_matrix->matrix;
-  mesh_size = 0;
-/*-----------------------------------
-Knots in the initial model are treated as extra and put
-in after the usual knots for each predictor
--------------------------------------*/
-  if(model_size >1)
-    {
-      for(i=0;i<2*(model_size-1);i++)
-	{
-	  if(startmodel[(i*2)+1] == 1 && knots_per_pred[startmodel[(i*2)]-1] >-1)
-	    {
-	      knots_per_pred[startmodel[(i*2)]-1]++;
-	    }
-	}
-    }
-/*------------------------------------------*/
-/*--counting the total number of knots--*/
-
-  for(i=0;i<predictors;i++)
-    {
-      if(knots_per_pred[i]>=0)
-	{
-
-	  mesh_size = mesh_size + knots_per_pred[i];
-	}
-    }
-  
-  
-/*---levels is an array to hold the different levels of the categorical 
-variables. The levels will be put into the mesh matrix as knots 
-are put in for continuous variables it is also used to sort predictor values
-into order statistics to calculate knots in continuous predictors-*/
-
-
-  levels = (double *)Salloc(cases,double);
-  
-  
-/*-the number of levels per pred are added to mesh size--*/    
-  for(i=0;i<predictors;i++)
-    {
-    
-      if(knots_per_pred[i]<0)/*---if it is categorical*/
-	{
-          
-	  /*point to the values of this predictor*/
-	  matrix_ptr = &data_matrix->matrix[(responses+i)*cases];
-	  k=0;
-	  for(j=0;j<cases;j++)
-/*--scan thru the values it takes*/
-	    {
-	      level_present=FALSE;
-/*-check if the current value is in the levels
-  array for this predictor--*/   
-	      for(l=0;l<k;l++)
-/*-check up to no. of levels found so far in `levels'-*/
-		{
-		  if(levels[l] == matrix_ptr[j])
-		    {
-		      level_present=TRUE;
-		    }
-		}
-	      if(level_present==FALSE)/*-add new level to levels matrix-*/
-		{
-                  
-		  levels[k] = matrix_ptr[j];
-		  k++;
-		}
-	    }
-          
-	  mesh_size=mesh_size+k;
-	  knots_per_pred[i]= - k;
-	  /*-this is where the fact that it is a categorical predictor is stored
-	    negative indictaes number of levels instead of number of knots */
-	}
-      
-    }
-  if(mesh_size != 0)
-    {
-      mesh = (double *)Salloc(mesh_size,double);
-      mesh_ptr = mesh;
-      for (i=0;i<predictors;i++)/*loop thru reponses part of data matrix*/
-	{
-         nstartknots=0;
-	  if(knots_per_pred[i]<0)/*if categorical*/
-	    {
-              mesh_ptr2 = mesh_ptr;
-	      matrix_ptr = &data_matrix->matrix[(responses+i)*cases];
-	      k=0;
-	      for(j=0;j<cases;j++)
-              /*-scan thru the values it takes*/
-	        {
-	         level_present=FALSE;
-                 /*-check if the current value is in the levels
-                  array for this predictor--*/   
-	          for(l=0;l<k;l++)
-                 /*-check up to no. of levels found so far in `levels'-*/
-		   {
-		     if(mesh_ptr2[l] == matrix_ptr[j])
-		      {
-		       level_present=TRUE;
-		      }
-		   }
-	          if(level_present==FALSE)/*-add new level to levels matrix-*/
-		   {
-                    
-		     *mesh_ptr = matrix_ptr[j];
-                     mesh_ptr++;
-		     k=k+1;
-		     for(l=0;l<(model_size-1)*2;l++)
-		       {
-			 if(startmodel[l*2]-1 == i && ((int)startknots[l]==(int)matrix_ptr[j]))
-			   {
-			     startmodel[(l*2)+1] = k;
-			   }
-
-		       }
-		   }
-		}
-	    }
-	  else
-/*--sort the values into order statistics for each continous variable*/
-	    {
-	      /*point to the values of this variable*/
-	      matrix_ptr = &data_matrix->matrix[(responses+i)*cases];
-              /*-add new level to levels matrix-*/
-	      for(j=0;j<cases;j++)
-		{
-		  levels[j] = matrix_ptr[j];
-		}
-	    
-	    
-	      for(j=1;j<cases;j++)
-		{
-		  data_value = levels[j];
-		  k=j-1;
-		  while (k>=0 && levels[k] >data_value)
-		    {
-		      levels[k+1]=levels[k];
-		      k--;
-		  }
-		  levels[k+1]=data_value;
-		}
-/*m counts the number of values that are the present more than once in a predictor*/
-	    m = 0; 
-	    for(j=0;j<cases-m;j++)
-	      {
-		if(levels[j] == levels[j+1])
-		  {
-		    k=2;
-		    while(levels[j] == levels[j+k] &&
-			  (j+k) < cases-m )
-		      {
-			k++;
-		      }
-		    for(l=j+1;l<cases-m;l++)
-		      {
-			levels[l]=levels[l+k-1];
-		      }
-		    m=m+k-1;
-		  }
-	      }
-	    
-	    /*take out levels that are in start model--*/
-	    for(j=0;j<cases-m;j++)
-	      {
-		for(k = 0;k<(model_size-1)*2;k++)
-		  {
-		    if(startmodel[k*2]-1 == i && 
-		       startknots[k] == levels[j]  && startmodel[(k*2)+1] != 0)
-		      {
-			
-			for(l=j;l<cases-1-m;l++)
-			  {
-			    levels[l]=levels[l+1];
-			  }
-			m++;
-                        nstartknots++;
-		      }
-		  }
-	      }
-            
-	      knots = knots_per_pred[i];
-	      if(model_size !=1)
-		{
-		  for(j=0;j<model_size-1;j++)
-		    {
-		      if(startmodel[j*4]-1 == i && startmodel[(j*4)+1]==1)
-                       /*the 1 indictes that a knot is present in the initial model*/
-			{
-			  
-			  knots --;
-                          /*calculating the number of knots minus the number  
-                         in the initial model*/		  
-			}
-		    }
-		}
-	      l = 0;
-	      
-	      for(k = 0;k<knots;k++)
-		{
-		  /*j is the index (for 1 to knots) of the unique sorted variable
-                  values, which is to be a knot candidate*/ 
-		  j = (int)((cases-m)/(knots+1))+k*floor(((cases-m)/(knots+1.0))+0.5);
-		  if((j-l>=knot_space) && (j <=cases-m-knot_space) )
-		    {
-		      *mesh_ptr = levels[j];
-		      mesh_ptr++;
-		      l = j;
-		    }
-		  else
-		    {
-		      if(knots_per_pred[i]>0)
-			{
-			  knots_per_pred[i]=knots_per_pred[i]-1;
-			}
-		    }
-		}
-	      knots = knots_per_pred[i];
-	      k=1;
-	      for(j=0;j<(model_size-1)*2;j++)
-		{
-		  if(startmodel[j*2]-1 == i && startmodel[(j*2)+1]==1)
-		    {
-		      *mesh_ptr =startknots[j];
-		      startmodel[(j*2)+1] = knots+k-nstartknots;
-		      k=k+1;
-		      mesh_ptr++;
-		    }
-		}
-	    }
-	 }
-    }
-  return mesh;
-}
 
 /*==============================================================*/
 static int fit_model(double *mesh)
@@ -1603,10 +1349,10 @@ static int find_best_candidate(struct matrix2 *YtXXtX_expanded,
 and computing the "residual sum of squares". the function returns
 an index to the best candidate it finds*/
   int number_of_candidates;
-  int i, j, k,l,m,index;
+  int i, j, k,l,m,index,ok;
   int nrow;
   double column_minder,row_minder;
-  double E, E_inv;
+  double E, E_inv,dok1,dok2,dok3;
   struct basis_function *model_function;
   struct link *YtXXtX_column;
   double Rao_D;
@@ -1616,7 +1362,7 @@ an index to the best candidate it finds*/
   int best_candidate;
   int candidate_found;
 
- 
+  ok=0;
   RSS_so_far = -1;
   gcv_so_far = -1;
   best_candidate =0;
@@ -1709,6 +1455,7 @@ an index to the best candidate it finds*/
 	    }
 	  index = (model_size*nrow) + model_size;
 	  XtX_newinverse->matrix[index]=Rao_E_inverse->matrix[0];
+          dok3 = condition(XtX_newinverse);
 	  	
 	  
 /*---computes YtY-YtX(XtX)^1XtY--and- sums the diagonal to get the RSS------*/
@@ -1773,7 +1520,11 @@ model and the candidate being considered*/
 		    }
 		}
 	    }     
-	  
+          if(dok3<tolerance){
+             rss_for_model = -1;
+             ok=1;
+          }
+
 	  if(rss_for_model > 0.0)
 	    {
               candidate_found =TRUE;
@@ -1905,6 +1656,10 @@ in any case the gcv for this case is saved in rssgcv */
    
     }
   /* returns whether a candidate was found or not*/
+  if(candidate_found == FALSE && ok==1 && Verbose==TRUE){
+     Rprintf("reducing size - ill conditioned system\n");
+     Rprintf("to see larger (but possibly less stable) models decrease tolerance\n");
+  }
   return(candidate_found);
 }
 
@@ -6538,3 +6293,274 @@ L80:
 
 
 
+/*==============================================================*/
+static double *compute_mesh()
+/*==============================================================*/
+{
+/*--------------------------------------------------------------
+Computes the mesh  of possible knots for the spline functions.
+The number of knots per predictor is an arguement to the main function
+and they are stored in `knots_per_pred' 
+
+Returns a pointer to the mesh which is a double array
+--------------------------------------------------------------*/
+
+
+  int i,j,k,l,m;
+  double data_value;
+  double *mesh;
+  double *levels;
+  int mesh_size, knots, nstartknots;
+  int level_present;
+  double *matrix_ptr,*mesh_ptr, *mesh_ptr2;
+
+/*---levels is an array to hold the different levels of the categorical 
+variables. The levels will be put into the mesh matrix as knots 
+are put in for continuous variables it is also used to sort predictor values
+into order statistics to calculate knots in continuous predictors-*/
+
+
+  levels = (double *)Salloc(2*cases+1,double);
+  for(i=0;i<2*cases+1;i++)levels[i]=0.;
+  
+  matrix_ptr = data_matrix->matrix;
+  mesh_size = 0;
+/*-----------------------------------
+Knots in the initial model are treated as extra and put
+in after the usual knots for each predictor
+-------------------------------------*/
+  if(model_size >1)
+    {
+      for(i=0;i<2*(model_size-1);i++)
+	{
+	  if(startmodel[(i*2)+1] == 1 && knots_per_pred[startmodel[(i*2)]-1] >-1)
+	    {
+	      knots_per_pred[startmodel[(i*2)]-1]++;
+	    }
+	}
+    }
+/*------------------------------------------*/
+/*--counting the total number of knots--*/
+
+  for(i=0;i<predictors;i++)
+    {
+      if(knots_per_pred[i]>=0)
+	{
+
+	  mesh_size = mesh_size + knots_per_pred[i];
+	}
+    }
+  
+  
+  
+/*-the number of levels per pred are added to mesh size--*/    
+  for(i=0;i<predictors;i++)
+    {
+    
+      if(knots_per_pred[i]<0)/*---if it is categorical*/
+	{
+          
+	  /*point to the values of this predictor*/
+	  matrix_ptr = &data_matrix->matrix[(responses+i)*cases];
+	  k=0;
+	  for(j=0;j<cases;j++)
+/*--scan thru the values it takes*/
+	    {
+	      level_present=FALSE;
+/*-check if the current value is in the levels
+  array for this predictor--*/   
+	      for(l=0;l<k;l++)
+/*-check up to no. of levels found so far in `levels'-*/
+		{
+		  if(levels[l] == matrix_ptr[j])
+		    {
+		      level_present=TRUE;
+		    }
+		}
+	      if(level_present==FALSE)/*-add new level to levels matrix-*/
+		{
+                  
+		  levels[k] = matrix_ptr[j];
+		  k++;
+		}
+	    }
+          
+	  mesh_size=mesh_size+k;
+	  knots_per_pred[i]= - k;
+	  /*-this is where the fact that it is a categorical predictor is stored
+	    negative indictaes number of levels instead of number of knots */
+	}
+      
+    }
+  if(mesh_size != 0)
+    {
+      mesh = (double *)Salloc(mesh_size,double);
+      mesh_ptr = mesh;
+      for (i=0;i<predictors;i++)/*loop thru reponses part of data matrix*/
+	{
+         nstartknots=0;
+	  if(knots_per_pred[i]<0)/*if categorical*/
+	    {
+              mesh_ptr2 = mesh_ptr;
+	      matrix_ptr = &data_matrix->matrix[(responses+i)*cases];
+	      k=0;
+	      for(j=0;j<cases;j++)
+              /*-scan thru the values it takes*/
+	        {
+	         level_present=FALSE;
+                 /*-check if the current value is in the levels
+                  array for this predictor--*/   
+	          for(l=0;l<k;l++)
+                 /*-check up to no. of levels found so far in `levels'-*/
+		   {
+		     if(mesh_ptr2[l] == matrix_ptr[j])
+		      {
+		       level_present=TRUE;
+		      }
+		   }
+	          if(level_present==FALSE)/*-add new level to levels matrix-*/
+		   {
+                    
+		     *mesh_ptr = matrix_ptr[j];
+                     mesh_ptr++;
+		     k=k+1;
+		     for(l=0;l<(model_size-1)*2;l++)
+		       {
+			 if(startmodel[l*2]-1 == i && ((int)startknots[l]==(int)matrix_ptr[j]))
+			   {
+			     startmodel[(l*2)+1] = k;
+			   }
+
+		       }
+		   }
+		}
+	    }
+	  else
+/*--sort the values into order statistics for each continous variable*/
+	    {
+	      /*point to the values of this variable*/
+	      matrix_ptr = &data_matrix->matrix[(responses+i)*cases];
+              /*-add new level to levels matrix-*/
+	      for(j=0;j<cases;j++)
+		{
+		  levels[j] = matrix_ptr[j];
+		}
+	    
+	    
+	      for(j=1;j<cases;j++)
+		{
+		  data_value = levels[j];
+		  k=j-1;
+		  while (k>=0 && levels[k] >data_value)
+		    {
+		      levels[k+1]=levels[k];
+		      k--;
+		  }
+		  levels[k+1]=data_value;
+		}
+/*m counts the number of values that are the present more than once in a predictor*/
+	    m = 0; 
+	    for(j=0;j<cases-m;j++)
+	      {
+		if(j<cases-1 && levels[j]==levels[j+1])
+		  {
+		    k=2;
+		    while(levels[j] == levels[j+k] &&
+			  (j+k) < cases-m )
+		      {
+			k++;
+		      }
+		    for(l=j+1;l<cases-m;l++)
+		      {
+			levels[l]=levels[l+k-1];
+		      }
+		    m=m+k-1;
+		  }
+	      }
+	    
+	    /*take out levels that are in start model--*/
+	    for(j=0;j<cases-m;j++)
+	      {
+		for(k = 0;k<(model_size-1)*2;k++)
+		  {
+		    if(startmodel[k*2]-1 == i && 
+		       startknots[k] == levels[j]  && startmodel[(k*2)+1] != 0)
+		      {
+			
+			for(l=j;l<cases-1-m;l++)
+			  {
+			    levels[l]=levels[l+1];
+			  }
+			m++;
+                        nstartknots++;
+		      }
+		  }
+	      }
+            
+	      knots = knots_per_pred[i];
+	      if(model_size !=1)
+		{
+		  for(j=0;j<model_size-1;j++)
+		    {
+		      if(startmodel[j*4]-1 == i && startmodel[(j*4)+1]==1)
+                       /*the 1 indictes that a knot is present in the initial model*/
+			{
+			  
+			  knots --;
+                          /*calculating the number of knots minus the number  
+                         in the initial model*/		  
+			}
+		    }
+		}
+	      l = 0;
+	      
+	      for(k = 0;k<knots;k++)
+		{
+		  /*j is the index (for 1 to knots) of the unique sorted variable
+                  values, which is to be a knot candidate*/ 
+		  j = (int)((cases-m)/(knots+1))+k*floor(((cases-m)/(knots+1.0))+0.5);
+		  if((j-l>=knot_space) && (j <=cases-m-knot_space) )
+		    {
+		      *mesh_ptr = levels[j];
+		      mesh_ptr++;
+		      l = j;
+		    }
+		  else
+		    {
+		      if(knots_per_pred[i]>0)
+			{
+			  knots_per_pred[i]=knots_per_pred[i]-1;
+			}
+		    }
+		}
+	      knots = knots_per_pred[i];
+	      k=1;
+	      for(j=0;j<(model_size-1)*2;j++)
+		{
+		  if(startmodel[j*2]-1 == i && startmodel[(j*2)+1]==1)
+		    {
+		      *mesh_ptr =startknots[j];
+		      startmodel[(j*2)+1] = knots+k-nstartknots;
+		      k=k+1;
+		      mesh_ptr++;
+		    }
+		}
+	    }
+	 }
+    }
+  return mesh;
+}
+
+
+static double condition(a)
+struct matrix1 *a;
+{
+   double aa[DIM5][DIM5],bb[DIM5],rcond;
+   int kpvt[DIM5];
+   int i,j,n;
+   n = a->nrow; 
+   for(i=0;i<n;i++) for(j=0;j<n;j++) aa[i][j]=a->matrix[j+i*n]; 
+   i=DIM5;
+   F77_CALL(xdsico)(aa,&i,&n,kpvt,&rcond,bb);
+   return rcond;
+}

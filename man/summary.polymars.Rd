@@ -45,6 +45,8 @@ linear modeling (with discussion) (1997).  \emph{Annals of Statistics},
 \author{Martin O'Connor.}
 \seealso{
 \code{\link{polymars}},
+\code{\link{design.polymars}},
+\code{\link{persp.polymars}},
 \code{\link{plot.polymars}},
 \code{\link{predict.polymars}}.}
 \examples{
