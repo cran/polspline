@@ -107,7 +107,7 @@ static struct datas *makedata();
 /* this routine looks ugly - and is ugly. It only relates the S-variables to
    the C-variables - almost all should be self explanatory                    */
 void sheftx(nx)
-long *nx;
+int *nx;
 {
    *nx=HLENGTH;
    return;

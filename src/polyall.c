@@ -157,7 +157,7 @@ static int dlink();
 static void getinfox();
 static double pylog();
 static double pcomp2();
-static void prembas();
+static int prembas();
 static void premdim();
 static void puuu();
 static void poly();
@@ -914,7 +914,7 @@ int i0,j0;
 
 /* the S-I/O routine */
 void spolyx(intpars)
-long *intpars;
+int *intpars;
 {
    intpars[1]=MAXSPACE;
    intpars[0]=MAXKNOTS;
@@ -1115,7 +1115,7 @@ float *xxx,*t1cov,*t2cov;
 /* is this the final cv-run ? */
          if(cvx==cv){
 /* find the optimal cv-value */
-            (*penalty)=aiccv(ranges,losses,numbers,cv,xxx);
+            (*penalty)=aiccv(ranges,losses,numbers,cv,xxx,il);
             if(silent!=1){ 
                (void)Rprintf("CV-Penalty range is %5.2f",xxx[0]);
                if(xxx[1]<0)(void)Rprintf(" - Inf");
@@ -1405,7 +1405,7 @@ int j;
 
 static struct datastruct *pdefinedata(ndata,ncov,nclass,xndata,cls,wgt,icov)
 int ncov,ndata,nclass,xndata,icov;
-long *cls;
+int *cls;
 double *wgt;
 {
    struct datastruct *newdata;
@@ -1566,8 +1566,8 @@ int r,c;
    return m;
 }
 /******************************************************************************/
-static double aiccv(ranges,losses,numbers,k,xio)
-int k,*numbers;
+static double aiccv(ranges,losses,numbers,k,xio,il)
+int k,*numbers,il;
 double **ranges,**losses;
 float *xio;
 {
@@ -1592,7 +1592,8 @@ float *xio;
          nowu=ranges[i][where[i]+1];
       }
       nowx=0.;
-      for(i=0;i<k;i++)nowx+=losses[i][where[i]];
+      if(il!=0)for(i=0;i<k;i++)nowx+=losses[i][where[i]];
+      else for(i=0;i<k;i++)nowx-=losses[i][where[i]];
       if(m<997){
          xio[m]=nowl;
          xio[m+1]=nowu;
@@ -1610,6 +1611,7 @@ float *xio;
    xio[0]=bestl;
    xio[1]=bestu;
    xio[2]=bestx;
+   if(il==0)xio[2]= -bestx;
    xio[4]=m;
    if(bestu>maxu){
       bestu=maxu;
@@ -2549,7 +2551,7 @@ struct datastruct *data;
 
 /* this routine pearches all dimensions for a basis function to remove */
 
-static void prembas(spc,data,silent)
+static int prembas(spc,data,silent)
 struct space *spc;
 struct datastruct *data;
 int silent;
@@ -2590,6 +2592,7 @@ int silent;
 
 /* initialization */
    criterion=pow((double)10.,(double)100.);
+   bbi = -1;
    tinfo=w1;
    for(i=0;i<(*spc).ndim;i++){
       for(j=0;j<(*spc).ndim;j++){
@@ -2647,12 +2650,13 @@ int silent;
          for(j=0;j<(*data).nclass;j++) wald+=(*spc).basis[i].beta[j]*v1[j];
          wald=fabs(wald);
 /* did we improve ? */
-         if(wald<criterion){
+         if(plumbertester(wald)!=2 && wald<criterion){
             bbi=i;
             criterion=wald;
          }
       }
    }
+   if(bbi!= -1){
               
 /* get the beta shift */
    j2=bbi*(*data).nclass;
@@ -2751,7 +2755,8 @@ int silent;
          (*spc).basis[j].link2[k]=l;
       }
    }
-   return;
+   }
+   return bbi;
 }
 /******************************************************************************/
 
@@ -3113,7 +3118,7 @@ int ndmax,mind,**exclude,strt,silent,*ad,*lins,it,naction,il,xsingle;
    aics        - all the losses */
 {
    double dwald;
-   int add=1,i,ndm2,iwald;
+   int add=1,i,ndm2,iwald,okd;
 
 /* getcrit       - computes the criterion (AIC or loss)
    pnewton     - fits a model using NR
@@ -3213,8 +3218,9 @@ int ndmax,mind,**exclude,strt,silent,*ad,*lins,it,naction,il,xsingle;
          }while(iwald< 10 && dwald<2.5 && (*current).ndim>25);
       }
       else{
-         prembas(current,data,silent);
+         okd = prembas(current,data,silent);
       }
+      if(okd!=-1){
       if(silent==0)(void)fflush(stdout);
       (*current).aic=pnewton(current,data);
       if((*current).aic > 190.)add=17;
@@ -3232,10 +3238,11 @@ int ndmax,mind,**exclude,strt,silent,*ad,*lins,it,naction,il,xsingle;
          if(silent==0)(void)Rprintf("\n");
          if(silent==0)(void)fflush(stdout);
       }
+      }
 /* does further deleting make sense */
-   }while(
+   }while(okd!=-1 && (
     ((*current).aic-(*best).aic< -pen*((*current).ndim-(*data).nclass)&&it==0)||
-     ((*current).ndim>(*data).nclass && it!=0 && add!=17));
+     ((*current).ndim>(*data).nclass && it!=0 && add!=17)));
 }
 
 /******************************************************************************/

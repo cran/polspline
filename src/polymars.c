@@ -23,9 +23,10 @@
 #include <math.h>
 #include "R.h"
 #define Salloc(n, t)  (t *)R_alloc((long)(n), (int)sizeof(t))
-#include "x2c.h"
+#include "x2c.h" 
 #define TRUE  1 
 #define FALSE 0
+
 
 
 

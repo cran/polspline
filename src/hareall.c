@@ -2348,7 +2348,7 @@ int b1,b2,t1,t2,ncov,ii;
 /* the S-I/O routine */
 
 void sharex(ncov,ndata)
-long *ncov,*ndata;
+int *ncov,*ndata;
 {
    *ndata=MAXSPACE;
    *ncov=MAXKNOTS;
