@@ -28,7 +28,7 @@
 /* we want to be able to use those everywhere */
 
 #define MAXSPACE 53
-#define MAXKNOTS 1
+#define MAXKNOTS 20
 #define DIM5 MAXSPACE+5
 
 /* MAXSPACE - maximum dimensionality of the model

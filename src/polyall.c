@@ -26,7 +26,7 @@
 /* we want to be able to use those everywhere */
 
 #define MAXSPACE 250
-#define MAXKNOTS 6
+#define MAXKNOTS 10
 #define DIM5 MAXSPACE+5
 
 void F77_NAME(xdsifa)(double[][DIM5], int *, int *, int *, int *);

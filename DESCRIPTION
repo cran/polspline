@@ -1,6 +1,6 @@
 Package: polspline
-Version: 1.0.8
-Date: 2004-12.13
+Version: 1.0.9
+Date: 2004-03-10
 Title: Polynomial spline routines
 Author: Charles Kooperberg <clk@fhcrc.org>
 Maintainer: Charles Kooperberg <clk@fhcrc.org>
