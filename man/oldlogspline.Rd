@@ -7,8 +7,8 @@ the 1992 knot deletion algorithm (\code{\link{oldlogspline}}).
 The 1997 algorithm using knot
 deletion and addition is available using the \code{\link{logspline}} function.
 }
-\usage{oldlogspline(uncensored, right, left, interval, lbound = -Inf,
-ubound = Inf, nknots, knots, penalty, delete = TRUE) }
+\usage{oldlogspline(uncensored, right, left, interval, lbound,
+ubound, nknots, knots, penalty, delete = TRUE) }
 \arguments{
 \item{uncensored}{
 vector of uncensored observations from the distribution whose density is 
@@ -36,7 +36,9 @@ lower/upper bound for the support of the density. For example, if there
 is a priori knowledge that the density equals zero to the left of 0, 
 and has a discontinuity at 0, 
 the user could specify \code{lbound = 0}. However, if the density is  
-essentially zero near 0, one does not need to specify \code{lbound}. 
+essentially zero near 0, one does not need to specify \code{lbound}. The
+default for \code{lbound} is \code{-inf} and the default for
+ \code{ubound} is \code{inf}.
 }
 \item{nknots}{
 forces the method to start with nknots knots (\code{delete = TRUE}) or to fit a 

@@ -4,8 +4,8 @@
 \description{Produces two and three dimensional plots of the 
 fitted values from a \code{polymars} object. 
 }
-\usage{plot.polymars(x, predictor1, response = 1, predictor2, xx, add = FALSE, n,
-xyz = FALSE, contour.polymars = FALSE, xlim, ylim, intercept = TRUE, ...) }
+\usage{plot.polymars(x, predictor1, response, predictor2, xx, add = FALSE, n,
+xyz = FALSE, contour.polymars = FALSE, xlim, ylim, intercept, ...) }
 \arguments{
 \item{x}{\code{polymars} object, typically the result of \code{\link{polymars}}. }
 \item{predictor1}{the index of a predictor that was used when the \code{polymars} model was fit. 
@@ -49,7 +49,7 @@ function \link{contour} is being made.
 \item{intercept}{
  Setting intercept equal to \code{FALSE} evaluates the object without intercept. The  
 intercept may also be given any numerical value which overrides the fitted  
-coefficient from the object.
+coefficient from the object. The default is \code{TRUE}.
 }
 \item{xlim,ylim}{Plotting limits. The function tries to choose intelligent limits itself}
 \item{...}{

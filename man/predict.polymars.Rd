@@ -2,7 +2,7 @@
 \alias{predict.polymars}
 \title{Polymars: multivariate adaptive polynomial spline regression}
 \description{Produces fitted values for a model of class \code{polymars}.}
-\usage{predict.polymars(object, x, classify = FALSE, intercept = TRUE, ...) }
+\usage{predict.polymars(object, x, classify = FALSE, intercept, ...) }
 \arguments{
 \item{object}{
 object of the class \code{polymars}, typically the result of \code{\link{polymars}}.}
@@ -24,7 +24,7 @@ row is its class for the case when \code{classify = TRUE}).  }
 \item{intercept}{
  Setting intercept equal to \code{FALSE} evaluates the object without intercept. The  
 intercept may also be given any numerical value which overrides the fitted  
-coefficient from the object.
+coefficient from the object. The defualt is  \code{TRUE}.
 }
 \item{...}{other arguments are ignored.}
 }

@@ -6,7 +6,7 @@ the baseline hazard, covariates, and interactions. Fitted models
 can be, but do not need to be, proportional hazards models.
 }
 \usage{hare(data, delta, cov, penalty, maxdim, exclude, include, prophaz = FALSE,
-additive = FALSE, linear = FALSE, fit, silent = TRUE) 
+additive = FALSE, linear, fit, silent = TRUE) 
 }
 \arguments{
 \item{data}{
@@ -48,7 +48,7 @@ as \code{exclude}. Only one of \code{exclude} and \code{include} can be specifie
 \item{linear}{
 vector indicating for which of the variables no knots should 
 be entered. For example, if \code{linear = c(2, 3)} no knots for either covariate 
-2 or 3 are entered. 0 represents time. 
+2 or 3 are entered. 0 represents time. The default is none.
 }
 \item{fit}{
 \code{\link{hare}} object. If  \code{fit} is specified, \code{\link{hare}} adds 

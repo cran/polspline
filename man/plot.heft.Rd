@@ -4,8 +4,8 @@
 \description{Plots a density, distribution function, hazard
 function or survival function for
 a \code{heft} object.}
-\usage{plot.heft(x, n = 100, what = "d", add = FALSE, xlim, xlab = "", ylab = "",
-type = "l", ...) }
+\usage{plot.heft(x, n = 100, what = "d", add = FALSE, xlim, xlab, ylab,
+type, ...) }
 \arguments{
 \item{x}{\code{heft} object, typically the result of \code{\link{heft}}.  }
 \item{n}{the number of equally spaced points at which to plot the function.  }
@@ -17,8 +17,8 @@ function) or \code{"h"} (hazard function).  }
 and 10\% before the 1st percentile
 to  the minimmum of
 10\% further than the 99th percentile and the largest observation.}
-\item{xlab,ylab}{labels for the axes.}
-\item{type}{plotting type.}
+\item{xlab,ylab}{labels for the axes. The default is no labels.}
+\item{type}{plotting type. The default is lines.}
 \item{...}{all other plotting options are passed on.  }
 }
 \details{This function produces a plot of a \code{\link{heft}} fit at \code{n} equally

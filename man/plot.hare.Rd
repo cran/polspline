@@ -6,7 +6,7 @@ function or survival function for
 a \code{hare} object.}
 }
 \usage{plot.hare(x, cov, n = 100, which = 0, what = "d", time, add = FALSE, xlim,
-xlab = "", ylab = "", type = "l", ...) }
+xlab, ylab, type, ...) }
 \arguments{
 \item{x}{\code{hare} object, typically the result of \code{\link{hare}}.  }
 \item{cov}{a vector of length \code{fit\$ncov}, indicating for which combination of  
@@ -25,8 +25,8 @@ function) or \code{"h"} (hazard function).  }
 and 10\% before the 1st percentile
 to  the minimmum of
 10\% further than the 99th percentile and the largest observation.}
-\item{xlab,ylab}{labels for the axes.}
-\item{type}{plotting type.}
+\item{xlab,ylab}{labels for the axes. Per default no labels are printed.}
+\item{type}{plotting type. The default is lines.}
 \item{...}{all other plotting options are passed on.  }
 }
 \details{This function produces a plot of a \code{\link{hare}} fit at \code{n} equally 

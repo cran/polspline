@@ -5,8 +5,8 @@
 approximate the log-hazard function and special functions to allow
 non-polynomial shapes in both tails. 
 }
-\usage{heft(data, delta, penalty, knots, leftlin = FALSE, shift, leftlog,
-rightlog, maxknots, mindist = 5, silent = TRUE) }
+\usage{heft(data, delta, penalty, knots, leftlin, shift, leftlog,
+rightlog, maxknots, mindist, silent = TRUE) }
 \arguments{
 \item{data}{
 vector of observations. Observations may or may not be right censored. All
@@ -32,7 +32,8 @@ If \code{knots} is not specified, a default knot-placement rule is employed.
 \item{leftlin}{
 if \code{leftlin} is \code{TRUE} an extra basis-function, which is linear to the left 
 of the first knot, is included in the basis. 
-If any of \code{data} is exactly 0, the default of \code{leftlin} is \code{TRUE}. 
+If any of \code{data} is exactly 0, the default of \code{leftlin} is \code{TRUE},
+otherwise it is \code{FALSE}.
 }
 \item{shift}{
 parameter for the log terms. Default is \code{quantile(data[delta == 1], .75)}. 
@@ -59,7 +60,8 @@ maximum number of knots allowed in the model (default is
 \eqn{4*n^{0.2})}{\code{4 * n^0.2}}, where \eqn{n} is the length of
 \code{data}.
 }
-\item{mindist}{ minimum distance in order statistics between knots.  }
+\item{mindist}{ minimum distance in order statistics between knots. The
+default is 5.  }
 \item{silent}{
 suppresses the printing of diagnostic output about knots added or deleted, 
 Rao-statistics, Wald-statistics and log-likelihoods. 
