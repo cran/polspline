@@ -73,7 +73,7 @@ The use of polynomial splines and their tensor products in extended
 linear modeling (with discussion) (1997).  \emph{Annals of Statistics},
 \bold{25}, 1371--1470.}
 \author{Martin O'Connor.}
-seealso{
+\seealso{
 \code{\link{polymars}},
 \code{\link{predict.polymars}},
 \code{\link{summary.polymars}}.}

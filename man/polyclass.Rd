@@ -179,7 +179,6 @@ Only provided if \code{method = 2}.}
 \item{seed}{the random seed that was used to determine the order 
 of the cases for cross-validation. 
 Only provided if \code{method = 2}.}
-}
 \item{delete}{
 were complete basis functions deleted at once (2), were 
 only individual dimensions deleted (1) or was only the addition 
