@@ -3125,16 +3125,16 @@ polyclass <- function(data, cov, weight, penalty, maxdim, exclude, include,
    if(it==2){
       if(!missing(seed)){
          if(sum(seed)!=0){
-            if(length(seed)>11).Random.seed <- seed[1:12]
+            if(length(seed)>11) assign(".Random.seed",  seed[1:12], envir=.GlobalEnv)
             else set.seed(seed[1])
-            seed <- .Random.seed
+            seed <- get(".Random.seed", envir=.GlobalEnv, inherits = FALSE)
          }
       }
       else{
          if(!missing(fit)){
-            if(fit$method==2) .Random.seed <- fit$seed
+            if(fit$method==2) assign(".Random.seed",  fit$seef, envir=.GlobalEnv)
          }
-         seed <- .Random.seed
+         seed <- get(".Random.seed", envir=.GlobalEnv, inherits = FALSE)
       }
    }
    z <- .C("spolyx", mk = as.integer(rep(-3,13)))
@@ -3172,10 +3172,10 @@ polyclass <- function(data, cov, weight, penalty, maxdim, exclude, include,
    }
    nclass <- length(clss)
    ndata <- length(data)   
-   nu <-  exists(".Random.seed")
-   if(nu)xx <- .Random.seed 
+   nu <-  exists(".Random.seed", envir=.GlobalEnv, inherits = FALSE)
+   if(nu) xx <- get(".Random.seed", envir=.GlobalEnv, inherits = FALSE)
    yy <- sample(ndata)
-   if(nu).Random.seed <- xx
+   if(nu)assign(".Random.seed",  xx, envir=.GlobalEnv)
    if(missing(weight)) weight <- rep(1,ndata)
    if(it==2){
       if(sum(abs(seed))==0) myord <- 1:ndata
