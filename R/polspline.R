@@ -31,7 +31,8 @@ hare <- function(data, delta, cov, penalty, maxdim, exclude,
    MAXSPACE <- -3
    z <- .C("sharex",
       mk = as.integer(MAXKNOTS),
-      ms = as.integer(MAXSPACE))
+      ms = as.integer(MAXSPACE),
+      PACKAGE = "polspline")
    MAXKNOTS <- z$mk
    MAXSPACE <- z$ms   # 
 # a few elementary data checks
@@ -177,7 +178,8 @@ hare <- function(data, delta, cov, penalty, maxdim, exclude,
       logl = as.double(rep(0, MAXSPACE)),
       as.integer(fitter),
       ad = as.integer(rep(0, MAXSPACE)),
-      as.integer(0))   # 
+      as.integer(0),   # 
+      PACKAGE = "polspline")
 # organize bbtt and cckk
    maxdim <- abs(maxdim)
    z$bbtt <- matrix(z$bbtt, nrow = maxdim, ncol = 6, byrow = TRUE)[1:z$ndim,  
@@ -329,7 +331,8 @@ summary.hare <- function(object,...)
       as.double(s2),
       as.double(s1),
       as.integer(fit$ndim),
-      as.integer(fit$ncov))
+      as.integer(fit$ncov),
+      PACKAGE = "polspline")
    invisible()
 }
 dhare <- function(q,cov,fit)
@@ -412,7 +415,8 @@ xhare <- function(arg1,arg2,arg3,arg4)
       as.integer(iwhat),
       q = as.double(q),
       as.double(fit$knots),
-      as.double(fit$fcts))
+      as.double(fit$fcts),
+      PACKAGE = "polspline")
    z$q
 }
 heft <- function(data, delta, penalty, knots, leftlin, shift,
@@ -426,7 +430,8 @@ heft <- function(data, delta, penalty, knots, leftlin, shift,
    leftlin<-leftlin*1
    nx <- -1
    z <- .C("sheftx",
-      z = as.integer(nx))
+      z = as.integer(nx),
+      PACKAGE = "polspline")
    lgth <- z$z
    lgth <- 40
    if(missing(mindist))
@@ -527,7 +532,8 @@ heft <- function(data, delta, penalty, knots, leftlin, shift,
       as.double(shift),
       as.integer(maxknots),
       ad = as.integer(rep(0, lgth)),
-      as.integer(mindist))
+      as.integer(mindist),
+      PACKAGE = "polspline")
    error <- z$error
    z$logl[abs(z$logl) < 1e-100] <- 0
    z$logl[z$ad == 2] <- 0
@@ -699,7 +705,8 @@ pheft <- function(q, fit)
       pp = as.double(q),
       as.double(q),
       as.integer(length(fit$knots)),
-      as.integer(length(q)))
+      as.integer(length(q)),
+      PACKAGE = "polspline")
    zz <- z$pp[sq]
    zz[q < 0] <- 0
    zz
@@ -721,7 +728,8 @@ qheft <- function(p, fit)
       as.double(p),
       qq = as.double(p),
       as.integer(length(fit$knots)),
-      as.integer(length(p)))
+      as.integer(length(p)),
+      PACKAGE = "polspline")
    zz <- z$qq[sp]
    zz[p < 0] <- NA
    zz[p == 0] <- 0
@@ -751,7 +759,8 @@ poldlogspline <- function(q, fit)
         pp = as.double(q),
         as.double(q),
         as.integer(length(fit$knots)),
-        as.integer(length(q)))
+        as.integer(length(q)),
+      PACKAGE = "polspline")
     zz <- z$pp[sq]
     if(fit$bound[1] > 0)
         zz[q<fit$bound[2]] <- 0
@@ -775,7 +784,8 @@ qoldlogspline <- function(p, fit)
         as.double(p),
         qq = as.double(p),
         as.integer(length(fit$knots)),
-        as.integer(length(p)))
+        as.integer(length(p)),
+      PACKAGE = "polspline")
     zz <- z$qq[sp]
     zz[p<0] <- NA
     zz[p>1] <- NA
@@ -1042,7 +1052,8 @@ oldlogspline <- function(uncensored, right, left, interval, lbound, ubound,
                 as.double(penalty),
                 as.double(sample),
                 as.double(sample),
-                logl = as.double(rep(0, n1 + 1)))
+                logl = as.double(rep(0, n1 + 1)),
+      PACKAGE = "polspline")
         bound <- c(z$bd[2], z$bd[3], z$bd[4], z$bd[5])
         SorC <- z$SorC  # error messages
         if(abs(SorC[1]) > 2) {
@@ -1138,7 +1149,8 @@ lspec <- function(data, period, penalty, minmass, knots, maxknots, atoms,
    if(length(period) < 10)
       stop("too few observations")
    z <- .C("tspspsx",
-      z = as.integer(rep(-1, 12)))
+      z = as.integer(rep(-1, 12)),
+      PACKAGE = "polspline")
    lgth <- z$z[1]
    nx <- length(period)
    if(missing(penalty))
@@ -1232,7 +1244,8 @@ lspec <- function(data, period, penalty, minmass, knots, maxknots, atoms,
       logl = as.double(rep(0, lgth)),
       theta = as.double(rep(0, lgth)),
       ad = as.integer(rep(0, lgth)),
-      minmass = as.double(minmass))
+      minmass = as.double(minmass),
+      PACKAGE = "polspline")
    dims <- z$dims
    minmass <- minmass /( ny /(2*pi))
    if(dims[12] == 1)
@@ -2021,7 +2034,8 @@ polymars <- function(responses, predictors, maxsize, gcv = 4., additive = FALSE,
          rep(0., maxsize * 2))),
       coefficient.se.term = as.double(rep(0., maxsize)),
       end.state = as.integer(end.state),
-      step.count = as.integer(step.count))
+      step.count = as.integer(step.count),
+      PACKAGE = "polspline")
    #The C function returns information about how it ended
    if(z$end.state != 0 && z$end.state != 5) {
       switch(z$end.state,
@@ -2879,7 +2893,8 @@ logspline <- function(x, lbound, ubound, maxknots=0, knots, nknots=0,
 
    # get the maximal dimension
    intpars <- c(-100, rep(0, 9))
-   z <- .C("nlogcensorx", z = as.integer(intpars))
+   z <- .C("nlogcensorx", z = as.integer(intpars),
+      PACKAGE = "polspline")
    maxp <- z$z[1]
 
    # organize knots
@@ -2912,7 +2927,8 @@ logspline <- function(x, lbound, ubound, maxknots=0, knots, nknots=0,
       dp = as.double(dpars),
       logl = as.double(rep(0, maxp)),
       ad = as.integer(rep(0, maxp)),
-      kts = as.double(kts))
+      kts = as.double(kts),
+      PACKAGE = "polspline")
 
    # error messages
    if(z$ip[1] != 0 && z$ip[1]<100) {
@@ -2972,7 +2988,8 @@ plogspline <- function(q, fit)
         as.integer(1),
         pp = as.double(q),
         as.integer(length(fit$knots)),
-        as.integer(length(q)))
+        as.integer(length(q)),
+      PACKAGE = "polspline")
     zz <- z$pp[sq]
     if(fit$bound[1] > 0) zz[q<fit$bound[2]] <- 0
     if(fit$bound[3] > 0) zz[q>fit$bound[4]] <- 1
@@ -2992,7 +3009,8 @@ qlogspline <- function(p, fit)
         as.integer(0),
         qq = as.double(p),
         as.integer(length(fit$knots)),
-        as.integer(length(p)))
+        as.integer(length(p)),
+      PACKAGE = "polspline")
     zz <- z$qq[sp]
     zz[p<0] <- NA
     zz[p>1] <- NA
@@ -3137,7 +3155,8 @@ polyclass <- function(data, cov, weight, penalty, maxdim, exclude, include,
          seed <- get(".Random.seed", envir=.GlobalEnv, inherits = FALSE)
       }
    }
-   z <- .C("spolyx", mk = as.integer(rep(-3,13)))
+   z <- .C("spolyx", mk = as.integer(rep(-3,13)),
+      PACKAGE = "polspline")
    MAXKNOTS <- z$mk[1]
    MAXSPACE <- z$mk[2]    
    if(missing(data)) stop("there has to be data")
@@ -3335,7 +3354,8 @@ polyclass <- function(data, cov, weight, penalty, maxdim, exclude, include,
       as.single(t(tcov)),
       as.double(tweight),
       bbb = as.double(rep(0, MAXSPACE*nclass)),
-      aicx=as.single(aicx))
+      aicx=as.single(aicx),
+      PACKAGE = "polspline")
    ndim <- z$intpars[1]
    aicx <- z$aicx[1:4]
    aicy <- 0
