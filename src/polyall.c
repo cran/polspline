@@ -3200,7 +3200,6 @@ int ndmax,mind,**exclude,strt,silent,*ad,*lins,it,naction,il,xsingle;
 
 /* keep on adding? */
    }while(add==1);
-   return;
 
 /* start deleting */
    if(xsingle!=0)do{
