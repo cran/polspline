@@ -1311,7 +1311,7 @@ static void tsrerror(error_text)
 char error_text[];
 {
    void exit();
-   error("%s\n this is serious.....\n");
+   error("%s\n this is serious.....\n",error_text);
    exit(1);
 }
 

@@ -37,7 +37,6 @@
 void F77_NAME(xdsifa)(double[][DIM5], int *, int *, int *, int *);
 void F77_NAME(xdsisl)(double[][DIM5], int *, int *, int *, double *);
 void F77_NAME(xdsidi)(double[][DIM5], int *, int *, int *, double *, int *, double *, int *);
-void F77_NAME(xssort)(double *, double *, int *, int *);
 void F77_NAME(xdsico)(double[][DIM5], int *, int *, int *,  double *, double *);
 
 
@@ -136,7 +135,7 @@ static double newton(),adders(),search(),eint(),xeint();
 static struct space *definegspace(),*hdefinegspace();
 static int gadddim(),gindl(),gindr(),gindx(),gindm(),gindyl(),gindyr();
 static void constant(),swapgspace(),gremdim(),gluinverse(),getse();
-static void soutgspace(),houtgspace(),poutgspace(),uuu(),sort(),dsort();
+static void soutgspace(),houtgspace(),poutgspace(),uuu(),sort(),hsort(),xhsort();
 static double critswap();
 static void addbasis(),tswapout(),upbasis(),veint(),upbasis2();
 static int tswapin();
@@ -200,37 +199,47 @@ int ndmax,mind,**exclude,strt,silent,*ad,*lins;
 
 /* specifies constant model or linear, plus starting values */
    if(strt>=0)constant(current,data,strt);
+   swapgspace(trynew,current,(*data).ndata,(*data).ncov);
+   
 
 /* we start in adding mode */
    do{
 
 /* fits the model */
       (*current).aic=newton(current,data,0,silent,&oops);
+      if(oops!=17){
 
 /* compute aic */
-      logs[(*current).ndim-1]=(*current).aic;
-      ad[(*current).ndim-1]=1;
-      (*current).aic=(*current).ndim*alpha-2*(*current).aic;
-      if((*current).ndim==ndmax)add=0;
-
+         logs[(*current).ndim-1]=(*current).aic;
+         ad[(*current).ndim-1]=1;
+         (*current).aic=(*current).ndim*alpha-2*(*current).aic;
+         if((*current).ndim==ndmax)add=0;
+   
 /* did we improve */
-      if((*current).aic<(*best).aic){
-         getse(current);
-         swapgspace(best,current,(*data).ndata,(*data).ncov);
-      }
+         if((*current).aic<(*best).aic){
+            getse(current);
+            swapgspace(best,current,(*data).ndata,(*data).ncov);
+         }
 
 /* adds dimensions, computes new starting values */
-      if(add==1 && ndm2<0){
-         for(i=2;i<(*current).ndim-2;i++){
-            if(logs[(*current).ndim-1]-logs[i-1]<((*current).ndim-i)/2.-0.5){
-               add=0;
-               ndmax=(*current).ndim;
+         if(add==1 && ndm2<0){
+            for(i=2;i<(*current).ndim-2;i++){
+               if(logs[(*current).ndim-1]-logs[i-1]<((*current).ndim-i)/2.-0.5){
+                  add=0;
+                  ndmax=(*current).ndim;
+               }
             }
          }
+         if(add==1){
+            add=gadddim(current,new,trynew,data,mind,exclude,silent,lins);
+            if(add!=1) ndmax=(*current).ndim;
+         }
       }
-      if(add==1){
-         add=gadddim(current,new,trynew,data,mind,exclude,silent,lins);
-         if(add!=1) ndmax=(*current).ndim;
+      else{
+         Rprintf("Convergence problems.... stopping addition\n");
+         swapgspace(current,trynew,(*data).ndata,(*data).ncov);
+         ndmax=(*current).ndim;
+         add=0;
       }
 
 /* keep on adding? */
@@ -483,6 +492,7 @@ int mind,**exclude,silent,*lins;
 
 /* copy the result success */
    if(criterion>0.){
+      swapgspace(newt,current,(*data).ndata,(*data).ncov);
       swapgspace(current,new,(*data).ndata,(*data).ncov);
       i=(*current).ndim-1;
       if(silent!=1)uuu(current,(*current).basis[i].b1,(*current).basis[i].b2,
@@ -864,7 +874,7 @@ int ncov;
 
 /* i,j      - counter
    position - position of the new knot 
-   dsort    - sort a double array */
+   hsort    - sort a double array */
 
 /* if there is only 1 knot, don't bother */
    if((*spc).nknots==0) return -1;
@@ -902,7 +912,7 @@ int ncov;
    }
 
 /* finally, reorder the knots, just use sort */
-   dsort((*spc).knots,(*spc).nknots+1);
+   hsort((*spc).knots,(*spc).nknots+1);
 
    return position;
 }
@@ -1556,6 +1566,10 @@ struct space *spc;
             (*oops)=1;
             return 0.;
          }
+         if(precision==0){
+            (*oops)=17;
+            return 0.;
+         }
          nrerror("instable system during NR iterations");
       }
       ihalf=1; 
@@ -1574,6 +1588,10 @@ struct space *spc;
             if(ihalf>2048 || (ihalf >256 && precision==1)){
                if(precision==1){
                   (*oops)=1;
+                  return 0.;
+               }
+               if(precision==0){
+                  (*oops)=17;
                   return 0.;
                }
                nrerror("too much step-halving");
@@ -1602,6 +1620,10 @@ struct space *spc;
 
 /* did we finish because we converged? */
    if(iter<maxiter+500){
+      if(precision==0){
+         (*oops)=17;
+         return 0.;
+      }
       nrerror("no convergence");
    }
 
@@ -2876,7 +2898,7 @@ char error_text[];
 {
    void exit();
 
-   (void)error("%s\n this is serious!");
+   (void)error("%s\n this is serious!",error_text);
    exit(1);
 }
 /******************************************************************************/
@@ -2911,7 +2933,9 @@ double **a,*b;
    }
    i=DIM5;
    F77_CALL(xdsifa)(aa,&i,&n,kpvt,&info);
-   if(info!=0)nrerror("info in glusolve is not 0");
+   if(info!=0){
+   nrerror("info in glusolve is not 0");
+   }
    F77_CALL(xdsisl)(aa,&i,&n,kpvt,bb);
    for(i=0;i<n;i++)b[i]=bb[i];
 }
@@ -2955,31 +2979,56 @@ double **a;
    }
 }
 /******************************************************************************/
-static void dsort(ra,n)
-int n;
-double *ra;
-{
-   double w[20000],w2[20000];
-   int i;
-   if(n>20000)nrerror("increase dim(w) in dsort");
-   for(i=0;i<n;i++)w[i]=ra[i];
-   i=1;
-   F77_CALL(xssort)(w,w2,&n,&i);
-   for(i=0;i<n;i++)ra[i]=w[i];
-} 
-/******************************************************************************/
 static void sort(ra,rb,n)
 int n;
 double *ra,*rb;
 {
-   double w[20000],w2[20000];
    int i;
-   if(n>20000)nrerror("increase dim(w) in dsort");
-   for(i=0;i<n;i++)w[i]=rb[i];
-   i=1;
-   F77_CALL(xssort)(w,w2,&n,&i);
-   for(i=0;i<n;i++)ra[i]=w[i];
+   for(i=0;i<n;i++)ra[i]=rb[i];
+   hsort(ra,n);
 } 
+/* sort */
+/******************************************************************************/
+/* sort, put result in rb */
+static void hsort(ra,n)
+int n;
+double *ra;
+{
+   xhsort(ra-1,n);
+}
+/******************************************************************************/
+static void xhsort(ra,n)
+int n;
+double *ra;
+{
+   int l,j,ir,i;
+   double rra;
+                                                                                                                                               
+   l=(n >> 1)+1;
+   ir=n;
+   for (;;) {
+      if (l > 1) rra=ra[--l];
+      else {
+          rra=ra[ir];
+         ra[ir]=ra[1];
+         if (--ir == 1) {
+            ra[1]=rra;
+            return;
+         }
+      }
+      i=l;
+      j=l << 1;
+      while (j <= ir) {
+         if (j < ir && ra[j] < ra[j+1]) ++j;
+         if (rra < ra[j]) {
+            ra[i]=ra[j];
+            j += (i=j);
+         }
+         else j=ir+1;
+      }
+      ra[i]=rra;
+   }
+}
 /******************************************************************************/
 static double condition(a,n)
 int n;
@@ -3637,7 +3686,10 @@ int ncov,ndata;
 
 /* basic allocation */
    newspace=(struct space *)Salloc(1,struct space); 
-   if(!newspace) nrerror("allocation error in definegspace");
+   if(!newspace) {
+      nrerror("allocation error in definegspace");
+   }
+    
 
 /* the simple elements */
    (*newspace).knots=dgvector(MAXKNOTS);

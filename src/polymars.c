@@ -26,7 +26,7 @@
 #include "x2c.h" 
 #define TRUE  1 
 #define FALSE 0
-#define DIM5 500
+#define DIM5 255
 
 
 
@@ -292,7 +292,8 @@ first*/
 static int invert_matrix(struct matrix1 *object_matrix);
 /* computes testset RSS if required*/
 static double testset_RSS(struct matrix2 *YtXXtX_expanded,int model_size);
-static double condition(struct matrix1 *);
+/* static double condition(struct matrix1 *); */
+static double condition();
 static logical lsame(char *, char *);
 static int xerbla(char *, int *);
 static int idamax(int *n, double *dx, int *incx);
@@ -1455,7 +1456,8 @@ an index to the best candidate it finds*/
 	    }
 	  index = (model_size*nrow) + model_size;
 	  XtX_newinverse->matrix[index]=Rao_E_inverse->matrix[0];
-          dok3 = condition(XtX_newinverse);
+/*        dok3 = condition(XtX_newinverse); */
+          dok3 = condition();
 	  	
 	  
 /*---computes YtY-YtX(XtX)^1XtY--and- sums the diagonal to get the RSS------*/
@@ -6552,15 +6554,25 @@ in after the usual knots for each predictor
 }
 
 
-static double condition(a)
-struct matrix1 *a;
+/* static double condition(a)
+struct matrix1 *a; */
+static double condition()
 {
-   double aa[DIM5][DIM5],bb[DIM5],rcond;
+   double aa[DIM5][DIM5],bb[DIM5],rcond,tt;
    int kpvt[DIM5];
-   int i,j,n;
-   n = a->nrow; 
-   for(i=0;i<n;i++) for(j=0;j<n;j++) aa[i][j]=a->matrix[j+i*n]; 
-   i=DIM5;
-   F77_CALL(xdsico)(aa,&i,&n,kpvt,&rcond,bb);
+   int i,j,n,na;
+   n = XtX_newinverse->nrow; 
+   if(n<DIM5){
+   for(i=0;i<n;i++) for(j=0;j<n;j++) 
+      aa[i][j]=XtX_newinverse->matrix[j+i*n]; 
+   }
+   else{
+   na=n-DIM5;
+   n=DIM5;
+   for(i=0;i<n;i++) for(j=0;j<n;j++) 
+      aa[i][j]=XtX_newinverse->matrix[j+na+(i+na)*(n+na)]; 
+   }
+   i=DIM5; 
+   F77_CALL(xdsico)(aa,&i,&n,kpvt,&rcond,bb); 
    return rcond;
 }
