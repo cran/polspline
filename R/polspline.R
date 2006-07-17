@@ -3327,7 +3327,7 @@ polyclass <- function(data, cov, weight, penalty, maxdim, exclude, include,
    if(nu)assign(".Random.seed",  xx, envir=.GlobalEnv)
    if(missing(weight)) weight <- rep(1,ndata)
    if(it==2){
-      if(sum(abs(seed))==0) myord <- 1:ndata
+      if(sum(abs(seed[1]))==0) myord <- 1:ndata
       else myord <- sample(ndata)
       data <- data[myord]
       weight <- weight[myord]
