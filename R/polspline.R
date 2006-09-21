@@ -2246,8 +2246,8 @@ polymars <- function(responses, predictors, maxsize, gcv = 4., additive = FALSE,
         else mm <- summary(lm(responses[, i] ~ 1 ))
         rsquared2[i] <- mm$r.squared
         mm <- mm$coefficients
-        model2[,i+4] <- mm[,1]
-        model2[,i+4+nresponses] <- mm[,2]
+        model2[,i+factor1+4] <- mm[,1]
+        model2[,i+factor1+4+nresponses] <- mm[,2]
       }
       result$model <- model2
       result$Rsquared <- rsquared2
@@ -3502,6 +3502,7 @@ polyclass <- function(data, cov, weight, penalty, maxdim, exclude, include,
    z$bbtt <- z$bbtt[1:nbas,  ]
    z$cckk <- matrix(z$cckk, nrow = ncov+1, ncol = MAXKNOTS + 1, byrow = TRUE)
    z$cckk <- z$cckk[1:ncov,]
+   z$cckk <- matrix(z$cckk, nrow = ncov)
    z$cckk <- z$cckk[, 1:(1 + max(z$cckk[, 1]))]
    z$cckk <- matrix(z$cckk, nrow = ncov)
    l1 <- max(z$cckk[, 1])
