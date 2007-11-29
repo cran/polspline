@@ -179,7 +179,11 @@ during stepwise deletion the same hierarchy is maintained;
 categorical outcomes it can be used for multiple classification; and
 
 \code{\link{polyclass}} uses the same modeling strategy as \code{polymars},
-but uses a logistic (polychotomous) likelihood.}
+but uses a logistic (polychotomous) likelihood.
+
+MARS is a registered trademark of Jeril, Inc and is used here
+with permission. Commercial licenses and versions of PolyMARS may be
+obtained from Salford Systems at http://www.salford-systems.com}
 
 \references{Charles Kooperberg, Smarajit Bose, and  Charles J. Stone (1997).
 Polychotomous regression. \emph{Journal of the American Statistical

@@ -14,6 +14,11 @@
 *  The text of the GNU General Public License, version 2, is available
 *  as http://www.gnu.org/copyleft or by writing to the Free Software
 *  Foundation, 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+*
+* MARS is a registered trademark of Jeril, Inc and is used here with
+* permission. Commercial licenses and versions of PolyMARS may be obtained
+* from Salford Systems at http://www.salford-systems.com
+*
 */
 /* This file contains the main body of the program to be loaded into Splus.  */
 /* The only other file needed is ``f2c.h''                                   */
