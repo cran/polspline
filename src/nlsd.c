@@ -355,7 +355,7 @@ int ndmax,mind,strt,silent,*ad;
    ad    - fit during addition (1), deletion (2), not at all (0) */
 {
    struct space *current,*trynew;
-   int add=1,i,oops=0,ndm2,oops2=0,oops3=0,j;
+   int add=1,i,oops=0,ndm2,oops2=0,oops3=0,j,coco=0;
    double xxa=0;
 
 /* current - present space
@@ -397,8 +397,10 @@ int ndmax,mind,strt,silent,*ad;
             for(i= -1;i> -4; i--){
 /* begin opnieuw */
                xxa=0.;
+               coco=coco+1;
                j=startspace(current,data,i,silent);
                if(j==0)return 39;
+               if(coco==10)return 39;
                oops=iter(current,data,silent,&xxa);
                oops2++;
                if(oops==0)i= -10;

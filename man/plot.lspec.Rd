@@ -3,7 +3,7 @@
 \title{Lspec: logspline estimation of a spectral distribution}
 \description{Plots a spectral density function,
 line spectrum, or spectral distribution from a model fitted with \code{\link{lspec}} }
-\usage{plot.lspec(x, what = "b", n, add = FALSE, xlim, ylim, xlab = "", ylab = "",
+\usage{\method{plot}{lspec}(x, what = "b", n, add = FALSE, xlim, ylim, xlab = "", ylab = "",
 type, ...) }
 \arguments{
 \item{x}{\code{lspec} object, typically the result of \code{\link{lspec}}.}

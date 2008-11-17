@@ -5,8 +5,8 @@
 \description{This function summarizes both the stepwise selection process of the
 model fitting by \code{\link{polyclass}}, as well as the final model
 that was selected}
-\usage{summary.polyclass(object, ...) 
-print.polyclass(x, ...) }
+\usage{\method{summary}{polyclass}(object, ...) 
+\method{print}{polyclass}(x, ...) }
 \arguments{
 \item{object,x}{  \code{polyclass} object, typically the result of \code{\link{polyclass}}.  }
 \item{...}{other arguments are ignored.}

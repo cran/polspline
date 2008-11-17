@@ -4,8 +4,7 @@
 \description{Plots a density, distribution function, hazard 
 function or survival function for
 a \code{hare} object.}
-}
-\usage{plot.hare(x, cov, n = 100, which = 0, what = "d", time, add = FALSE, xlim,
+\usage{\method{plot}{hare}(x, cov, n = 100, which = 0, what = "d", time, add = FALSE, xlim,
 xlab, ylab, type, ...) }
 \arguments{
 \item{x}{\code{hare} object, typically the result of \code{\link{hare}}.  }

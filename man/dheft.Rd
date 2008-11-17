@@ -22,11 +22,9 @@ sample size. If \code{length(n)} is larger than 1, then
 \item{fit}{
  \code{heft} object, typically obtained from \code{\link{heft}}.  }
 }
-}
 \value{Densities (\code{dheft}), hazard rates (\code{hheft}),
 probabilities (\code{pheft}), quantiles (\code{qheft}),
 or a random sample (\code{rheft}) from a \code{\link{heft}} object.}
-}
 \details{
 Elements of \code{q} or \code{p} that are missing will cause the
 corresponding elements of the result to be missing.

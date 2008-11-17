@@ -4,7 +4,7 @@
 \description{Produces two and three dimensional plots of the 
 fitted values from a \code{polymars} object. 
 }
-\usage{plot.polymars(x, predictor1, response, predictor2, xx, add = FALSE, n,
+\usage{\method{plot}{polymars}(x, predictor1, response, predictor2, xx, add = FALSE, n,
 xyz = FALSE, contour.polymars = FALSE, xlim, ylim, intercept, ...) }
 \arguments{
 \item{x}{\code{polymars} object, typically the result of \code{\link{polymars}}. }

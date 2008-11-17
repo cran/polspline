@@ -3,7 +3,7 @@
 \title{Polymars: multivariate adaptive polynomial spline regression}
 \description{This function is not intended for direct use. It is called
 by \code{\link{plot.polymars}}.}
-\usage{persp.polymars(x, predictor1, predictor2, response, n = 33,
+\usage{\method{persp}{polymars}(x, predictor1, predictor2, response, n = 33,
 xlim, ylim, xx, contour.polymars, main, intercept, ...) }
 \arguments{
 \item{x, predictor1, predictor2} {this function is not intended to be called directly.}

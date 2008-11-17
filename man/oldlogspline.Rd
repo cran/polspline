@@ -68,6 +68,8 @@ should stepwise knot deletion be employed?
 \code{\link{poldlogspline}} (probabilities),\cr
 \code{\link{qoldlogspline}} (quantiles),
 \code{\link{roldlogspline}} (random numbers from the fitted distribution).
+The function \code{\link{oldlogspline.to.logspline}} can translate an object of the class
+\code{oldlogspline} to an object of the class \code{logspline}.
 
 The object has the following members: 
 
@@ -121,7 +123,8 @@ linear modeling (with discussion) (1997).  \emph{Annals of Statistics},
 \code{\link{doldlogspline}},
 \code{\link{poldlogspline}},
 \code{\link{qoldlogspline}},
-\code{\link{roldlogspline}}.}
+\code{\link{roldlogspline}},
+\code{\link{oldlogspline.to.logspline}}.}
 \examples{
 # A simple example
 y <- rnorm(100)

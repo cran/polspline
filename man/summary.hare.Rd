@@ -5,8 +5,8 @@
 \description{This function summarizes both the stepwise selection process of the
 model fitting by \code{\link{hare}}, as well as the final model
 that was selected using AIC/BIC.}
-\usage{summary.hare(object, ...) 
-print.hare(x, ...) }
+\usage{\method{summary}{hare}(object, ...) 
+\method{print}{hare}(x, ...) }
 \arguments{
 \item{object,x}{ \code{hare} object, typically the result of \code{\link{hare}}.  }
 \item{...}{other arguments are ignored.}

@@ -7,7 +7,7 @@ the 1997 knot addition and deletion algorithm (\code{\link{logspline}}).
 The 1992 algorithm is available using the \code{\link{oldlogspline}} function.
 }
 \usage{logspline(x, lbound, ubound, maxknots = 0, knots, nknots = 0, penalty,
-silent = TRUE, mind = -1) }
+silent = TRUE, mind = -1, error.action = 2) }
 \arguments{
 \item{x}{ data vector. The data needs to be uncensored. \code{\link{oldlogspline}}
 can deal with right- left- and interval-censored data.  }
@@ -49,6 +49,19 @@ should diagnostic output be printed?
 \item{mind}{
 minimum distance, in order statistics, between knots. 
 }
+\item{error.action}{how should \code{logspline} deal with non-convergence problems? Very-very rarely
+in some extreme situations
+\code{logspline} has convergence problems. The only two situations that I am aware of are when
+there is effectively a sharp bound, but this bound was not specified, or when the data is severly
+rounded. \code{logspline} can deal with this in three ways. If \code{error.action} is 2, the same
+data is rerun with the slightly more stable, but less flexible \code{oldlogspline}. The object is translated
+in a \code{logspline} object using \code{oldlogspline.to.logspline}, so this is almost
+invisible to the user. It is particularly useful when you run simulation studies, as he code can
+seemlessly continue. Only the \code{lbound} and \code{ubound} options are passed on to
+\code{oldlogspline}, other options revert to the default. If \code{error.action} is 1, a warning is printed,
+and \code{logspline} returns nothing (but does not crash). This is useful if you run a
+simulation, but do not like to revert to \code{oldlogspline}. If \code{error.action} is 0, the
+code crashes using the \code{stop} function.}
 }
 \value{Object of the class \code{logspline}, that is intended as input for
 \code{\link{plot.logspline}} (summary plots), 
@@ -103,14 +116,30 @@ linear modeling (with discussion) (1997).  \emph{Annals of Statistics},
 \code{\link{plogspline}},
 \code{\link{qlogspline}}, \cr
 \code{\link{rlogspline}},
-\code{\link{oldlogspline}}.}
+\code{\link{oldlogspline},}
+\code{\link{oldlogspline.to.logspline}}.}
 \examples{
 y <- rnorm(100)
 fit <- logspline(y)       
 plot(fit)
+#
 # as (4 == length(-2, -1, 0, 1, 2) -1), this forces these initial knots,
 # and does no knot selection
 fit <- logspline(y, knots = c(-2, -1, 0, 1, 2), maxknots = 4, penalty = 0)  
+#
+# the following example give one of the rare examples where logspline
+# crashes, and this shows the use of error.action = 2.
+#
+set.seed(118)
+zz <- rnorm(300)
+zz[151:300] <- zz[151:300]+5
+zz <- round(zz)
+fit <- logspline(zz)
+#
+# you could rerun this with 
+# fit <- logspline(zz, error.action=0)
+# or
+# fit <- logspline(zz, error.action=1)
 }
 \keyword{distribution}
 \keyword{smooth}

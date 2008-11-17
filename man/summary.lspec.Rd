@@ -3,8 +3,8 @@
 \alias{print.lspec}
 \title{Lspec: logspline estimation of a spectral distribution}
 \description{Summary of a model fitted with \code{\link{lspec}} }
-\usage{summary.lspec(object, ...) 
- print.lspec(x, ...) }
+\usage{\method{summary}{lspec}(object, ...) 
+\method{print}{lspec}(x, ...) }
 \arguments{ \item{object,x}{ \code{lspec} object, typically the result of \code{\link{lspec}}.}
 \item{...}{other options are ignored.}}
 \details{These function produce an identical printed summary of an \code{lspec} object.}

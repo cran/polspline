@@ -19,7 +19,6 @@ linear modeling (with discussion) (1997).  \emph{Annals of Statistics},
 \bold{25}, 1371--1470.}
 \author{ Charles Kooperberg \email{clk@fhcrc.org}.}
 \seealso{ \code{\link{hare}}, \code{\link{heft}}.}
-}
 \examples{
 harefit <- hare(testhare[,1], testhare[,2], testhare[,3:8]) 
 heftfit <- heft(testhare[,1], testhare[,2])

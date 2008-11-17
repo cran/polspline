@@ -4,7 +4,7 @@
 \description{Plots a density, distribution function, hazard
 function or survival function for
 a \code{heft} object.}
-\usage{plot.heft(x, n = 100, what = "d", add = FALSE, xlim, xlab, ylab,
+\usage{\method{plot}{heft}(x, n = 100, what = "d", add = FALSE, xlim, xlab, ylab,
 type, ...) }
 \arguments{
 \item{x}{\code{heft} object, typically the result of \code{\link{heft}}.  }

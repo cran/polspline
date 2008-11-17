@@ -5,8 +5,8 @@
 \description{This function summarizes both the stepwise selection process of the
 model fitting by \code{\link{heft}}, as well as the final model
 that was selected using AIC/BIC.}
-\usage{summary.heft(object, ...) 
-print.heft(x, ...) }
+\usage{\method{summary}{heft}(object, ...) 
+\method{print}{heft}(x, ...) }
 \arguments{
 \item{object,x}{ \code{heft} object, typically the result of \code{\link{heft}}.  }
 \item{...}{other arguments are ignored.}

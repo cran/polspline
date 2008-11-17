@@ -36,7 +36,6 @@ generated.
 \value{Densities (\code{dhare}), hazard rates (\code{hhare}), 
 probabilities (\code{phare}), quantiles (\code{qhare}), 
 or a random sample (\code{rhare}) from a \code{\link{hare}} object.}
-}
 \details{
 Elements of \code{q} or \code{p} that are missing will cause the 
 corresponding elements of the result to be missing. 

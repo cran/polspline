@@ -744,6 +744,32 @@ rheft <- function(n, fit)
    pp <- runif(n)
    qheft(pp, fit)
 }
+oldlogspline.to.logspline <- function(obj,data)
+{
+   nobj <- list()
+   nobj$call <- obj$call
+   if(is.null(obj$call))nobj$call <- "translated from oldlogspline"
+   nobj$knots <- sum(obj$coef[-(1:2)]!=0)
+   nobj$coef.pol <- obj$coef[1:2]
+   nobj$coef.kts <- obj$coef[-(1:2)]
+   nobj$coef.kts <- nobj$coef.kts[nobj$coef.kts!=0]
+   nobj$knots <- obj$knots[obj$coef[-(1:2)]!=0]
+   nobj$maxknots <- length(obj$coef)-2
+   nobj$penalty <- obj$penalty
+   nobj$bound <- obj$bound
+   nobj$samples <- obj$samples
+   nobj$logl <- obj$logl[obj$logl!=0]
+   lx <- length(nobj$logl)
+   nobj$logl <- cbind(nobj$maxknots+1-(lx:1),c(rep(2,lx-1),1),nobj$logl)
+   if(!missing(data))nobj$range <- obj$range
+   else {
+      lx <- 1/(nobj$samples+1)
+      nobj$range <- qoldlogspline(c(lx,1-lx),obj)
+   }
+   nobj$mind
+   class(nobj) <- "logspline"
+   nobj
+}
 poldlogspline <- function(q, fit)
 {
     if(class(fit)!="oldlogspline")
@@ -2992,11 +3018,14 @@ design.polymars<-function(object,x)
 ################################################################################################
 
 logspline <- function(x, lbound, ubound, maxknots=0, knots, nknots=0,
-   penalty= -1, silent = TRUE,mind= -1)
+   penalty= -1, silent = TRUE,mind= -1, error.action=2)
 {
    call <- match.call()
    if(!missing(x))x <- unstrip(x)
    data <- x
+   ilx <- 0; iux <- 0
+   if(!missing(lbound)){ilx <- 1;jlx <- lbound}
+   if(!missing(ubound)){iux <- 1;jux <- ubound}
 
 
    u2 <- length(data)
@@ -3062,31 +3091,47 @@ logspline <- function(x, lbound, ubound, maxknots=0, knots, nknots=0,
 
    # error messages
    if(z$ip[1] != 0 && z$ip[1]<100) {
-      if(z$ip[1] == 17) stop("too many knots beyond data")
-      if(z$ip[1] == 18) stop("too many knots before data")
-      if(z$ip[1] == 39) stop("too much data close together")
-      if(z$ip[1] == 40) stop("no model could be fitted")
-      if(z$ip[1] == 2) stop("error while solving system")
-      if(z$ip[1] == 8) stop("too much step-halving")
-      if(z$ip[1] == 5) stop("too much step-halving")
+      if(z$ip[1] == 17) warning("too many knots beyond data")
+      if(z$ip[1] == 18) warning("too many knots before data")
+      if(z$ip[1] == 39) warning("too much data close together")
+      if(z$ip[1] == 40) warning("no model could be fitted")
+      if(z$ip[1] == 2) warning("error while solving system")
+      if(z$ip[1] == 8) warning("too much step-halving")
+      if(z$ip[1] == 5) warning("too much step-halving")
       if(z$ip[1] == 7) 
-         stop("numerical problems, likely tail related. Try lbound/ubound")
-      if(z$ip[1] == 1) stop("no convergence")
+         warning("numerical problems, likely tail related. Try lbound/ubound")
+      if(z$ip[1] == 1) warning("no convergence")
       i <- 0
       if(missing(knots))i<- 1     
       if(z$ip[1] == 3 && i==1) 
-        stop("right tail extremely heavy, try running with ubound")
+        warning("right tail extremely heavy, try running with ubound")
       if(z$ip[1] == 4 && i==1) 
-        stop("left tail extremely heavy, try running with lbound")
+        warning("left tail extremely heavy, try running with lbound")
       if(z$ip[1] == 6 && i==1) 
-        stop("both tails extremely heavy, try running with lbound and ubound")
+        warning("both tails extremely heavy, try running with lbound and ubound")
       if(z$ip[1] == 3 && i==0) 
-        stop("right tail too heavy or not enough knots in right tail")
+        warning("right tail too heavy or not enough knots in right tail")
       if(z$ip[1] == 4 && i==0) 
-        stop("left tail too heavy or not enough knots in left tail")
+        warning("left tail too heavy or not enough knots in left tail")
       if(z$ip[1] == 6 && i==0) 
-        stop("both tails too heavy or not enough knots in both tail")
+        warning("both tails too heavy or not enough knots in both tail")
+      if(error.action==0) stop("fatal error")
+      if(error.action==1) {
+         print("no object returned")
+         invisible()
+      }
+      if(error.action==2) {
+          if(ilx==0 && iux==0)z <- oldlogspline(x)
+          if(ilx==0 && iux==1)z <- oldlogspline(x,ubound=jux)
+          if(ilx==1 && iux==0)z <- oldlogspline(x,lbound=jlx)
+          if(ilx==1 && iux==1)z <- oldlogspline(x,lbound=jlx,ubound=jux)
+          z <- oldlogspline.to.logspline(z,x)
+          z$call <- call
+          warning("re-ran with oldlogspline")
+          z
+      }
    }
+   else{
    if(z$ip[1]>100) {
       warning(" Not all models could be fitted")
    }
@@ -3102,7 +3147,7 @@ logspline <- function(x, lbound, ubound, maxknots=0, knots, nknots=0,
       penalty = z$dp[1], bound = c(ilow, low, iupp, upp), samples = nsample,
       logl = logl, range = mm, mind = z$ip[7])
    class(fit) <- "logspline"
-   fit
+   fit}
 }
 plogspline <- function(q, fit)
 {

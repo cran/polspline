@@ -9,7 +9,7 @@ the 1992 knot deletion algorithm.
 The 1997 algorithm using knot
 deletion and addition is available using the \code{\link{logspline}} function.
 }
-\usage{plot.oldlogspline(x, n = 100, what = "d", xlim, xlab = "", ylab = "",
+\usage{\method{plot}{oldlogspline}(x, n = 100, what = "d", xlim, xlab = "", ylab = "",
 type = "l", ...) }
 \arguments{
 \item{x}{\code{logspline} object, typically the result of \code{\link{logspline}}.}

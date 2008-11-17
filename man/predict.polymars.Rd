@@ -2,7 +2,7 @@
 \alias{predict.polymars}
 \title{Polymars: multivariate adaptive polynomial spline regression}
 \description{Produces fitted values for a model of class \code{polymars}.}
-\usage{predict.polymars(object, x, classify = FALSE, intercept, ...) }
+\usage{\method{predict}{polymars}(object, x, classify = FALSE, intercept, ...) }
 \arguments{
 \item{object}{
 object of the class \code{polymars}, typically the result of \code{\link{polymars}}.}

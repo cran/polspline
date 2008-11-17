@@ -8,7 +8,7 @@ a logspline density that was fitted using
 the 1997 knot addition and deletion algorithm (\code{\link{logspline}}). 
 The 1992 algorithm is available using the \code{\link{oldlogspline}} function.
 }
-\usage{plot.logspline(x, n = 100, what = "d", add = FALSE, xlim, xlab = "",
+\usage{\method{plot}{logspline}(x, n = 100, what = "d", add = FALSE, xlim, xlab = "",
 ylab = "", type = "l", ...) 
 }
 \arguments{

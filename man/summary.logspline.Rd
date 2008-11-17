@@ -7,8 +7,8 @@ model fitting by \code{\link{logspline}}, as well as the final model
 that was selected using AIC/BIC. A
  \code{logspline} object was fit using the 1997 knot addition and deletion algorithm.
 The 1992 algorithm is available using the \code{\link{oldlogspline}} function.  }
-\usage{summary.logspline(object, ...) 
-print.logspline(x, ...) }
+\usage{\method{summary}{logspline}(object, ...) 
+\method{print}{logspline}(x, ...) }
 \arguments{
 \item{object,x}{\code{logspline} object, typically the result of \code{\link{logspline}}}
 \item{...}{ other arguments are ignored.}

@@ -3,12 +3,11 @@
 \alias{print.polymars}
 \title{Polymars: multivariate adaptive polynomial spline regression}
 \description{ Gives details of a \code{polymars} object.}
-\usage{summary.polymars(object, ...) 
-print.polymars(x, ...) }
+\usage{\method{summary}{polymars}(object, ...) 
+\method{print}{polymars}(x, ...) }
 \arguments{
 \item{object,x}{ object of the class \code{polymars}, typically the result of \code{\link{polymars}}.}
 \item{...}{other arguments are ignored.}
-}
 }
 \details{
 These two functions provide identical printed information.

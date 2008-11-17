@@ -10,8 +10,8 @@ the 1992 knot deletion algorithm (\code{\link{oldlogspline}}).
 The 1997 algorithm using knot
 deletion and addition is available using the \code{\link{logspline}} function.
 }
-\usage{summary.oldlogspline(object, ...) 
-print.oldlogspline(x, ...)}
+\usage{\method{summary}{oldlogspline}(object, ...) 
+\method{print}{oldlogspline}(x, ...)}
 \arguments{
 \item{object,x}{
 code{oldlogspline} object, typically the result of \code{\link{oldlogspline}}

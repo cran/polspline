@@ -2,7 +2,7 @@
 \alias{plot.polyclass}
 \title{Polyclass: polychotomous regression and multiple classification}
 \description{Probability or classification plots for a  \code{\link{polyclass}} model.  }
-\usage{plot.polyclass(x, cov, which, lims, what, data, n, xlab="", ylab="",
+\usage{\method{plot}{polyclass}(x, cov, which, lims, what, data, n, xlab="", ylab="",
 zlab="", ...) }
 \arguments{
 \item{x}{\code{polyclass} object, typically the result of \code{\link{polyclass}}. }
