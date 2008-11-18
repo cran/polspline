@@ -6,7 +6,7 @@
 as it allows the routine to use \code{oldlogspline} for some situations
 where \code{logspline} crashes. The other use is when you have censored data,
 and thus have to use \code{oldlogspline} to fit, but wish to use the
-auxilirary routines from \code{logspline}.}
+auxiliary routines from \code{logspline}.}
 \usage{oldlogspline.to.logspline(obj, data) }
 \arguments{
 \item{obj}{

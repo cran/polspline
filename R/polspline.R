@@ -757,7 +757,7 @@ oldlogspline.to.logspline <- function(obj,data)
    nobj$maxknots <- length(obj$coef)-2
    nobj$penalty <- obj$penalty
    nobj$bound <- obj$bound
-   nobj$samples <- obj$samples
+   nobj$samples <- obj$sample
    nobj$logl <- obj$logl[obj$logl!=0]
    lx <- length(nobj$logl)
    nobj$logl <- cbind(nobj$maxknots+1-(lx:1),c(rep(2,lx-1),1),nobj$logl)
