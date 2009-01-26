@@ -6,10 +6,10 @@ by \code{\link{plot.polymars}}.}
 \usage{\method{persp}{polymars}(x, predictor1, predictor2, response, n = 33,
 xlim, ylim, xx, contour.polymars, main, intercept, ...) }
 \arguments{
-\item{x, predictor1, predictor2} {this function is not intended to be called directly.}
-\item{response, n, xlim, ylim} {this function is not intended to be called directly.}
-\item{xx, contour.polymars} {this function is not intended to be called directly.}
-\item{main, intercept, ...} {this function is not intended to be called directly.}
+\item{x, predictor1, predictor2}{this function is not intended to be called directly.}
+\item{response, n, xlim, ylim}{this function is not intended to be called directly.}
+\item{xx, contour.polymars}{this function is not intended to be called directly.}
+\item{main, intercept, ...}{this function is not intended to be called directly.}
 }
 \details{
 This function produces a 3-d contour or perspective plot. It is intended

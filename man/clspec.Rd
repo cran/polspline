@@ -29,8 +29,8 @@ harmonic terms rather than a true Gaussian time series.  }
 }
 \value{Autocovariances or autocorrelations (\code{clspec}); 
 values of the spectral distribution at the requested frequencies. (\code{plspec}); 
-random time series of length \code{n} (code{rlspec}); 
-or a  list with three components  (code{dlspec}):
+random time series of length \code{n} (\code{rlspec}); 
+or a  list with three components  (\code{dlspec}):
 \item{d}{the  spectral density evaluated at the vector of frequencies,}
 \item{modfreq}{modified frequencies of the form \eqn{\frac{2\pi j}{T}}{(2pi*j/T)} that are close to the 
 frequencies that were requested,}

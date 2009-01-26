@@ -93,8 +93,7 @@ element: \code{lbound}, if specified; third element: 0 - \code{ubound} was \eqn{
 1 it was something else; fourth element: \code{ubound}, if specified. 
 }
 \item{samples}{the sample size.}
-\item{logl}
-{matrix with 3 columns. Column one: number of knots; column two:
+\item{logl}{matrix with 3 columns. Column one: number of knots; column two:
 model fitted during addition (1) or deletion (2); column 3: log-likelihood.}
 \item{range}{range of the input data.}
 \item{mind}{minimum distance in order statistics between knots required during fitting

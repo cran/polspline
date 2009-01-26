@@ -14,7 +14,7 @@ deletion and addition is available using the \code{\link{logspline}} function.
 \method{print}{oldlogspline}(x, ...)}
 \arguments{
 \item{object,x}{
-code{oldlogspline} object, typically the result of \code{\link{oldlogspline}}
+\code{oldlogspline} object, typically the result of \code{\link{oldlogspline}}
 }
 \item{...}{ other arguments are ignored.}
 }
