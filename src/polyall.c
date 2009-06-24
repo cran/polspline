@@ -166,7 +166,7 @@ static void pswapspace();
 static void computeloss();
 static double getcrit();
 static int plumbertester();
-static void psort();
+static void Ppsort();
 static void xpsort();
 static int lusolinv();
 
@@ -411,7 +411,7 @@ int i0,mind;
    uu      - candidate for uloc 
    nx      - (*data).ndata 
    l       - emergency break
-   psort   - sorting routine 
+   Ppsort  - sorting routine 
    pind..  - pind location for new knot under various circumstances */
    
 /* initialization */
@@ -425,7 +425,7 @@ int i0,mind;
    for(i=0;i<lgth;i++) kts[i]=(*newt).sub[i0][(*data).ncov].ktsc[i];
    nx = (*data).ndata;
    for(i=0;i<nx;i++) sorted[i]=trcov[i0+(*data).icov[i]-1];
-   psort(sorted,nx);
+   Ppsort(sorted,nx);
 
 /* find the interval */
    for(i= -2; i<=lgth;i++){
@@ -3507,7 +3507,7 @@ double aa;
 }
 /******************************************************************************/
 /* sort, put result in rb */
-static void psort(ra,n)
+static void Ppsort(ra,n)
 int n;
 double *ra;
 {
