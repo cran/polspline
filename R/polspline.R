@@ -897,7 +897,7 @@ summary.oldlogspline <- function(object,...)
     ll <- ll[ll != 0]
     error<-FALSE
     rr <- ll[1:(length(ll)-1)]-ll[2:length(ll)]
-    if(max(rr)>0)error<-TRUE
+    if(length(ll)>1 && max(rr)>0)error<-TRUE
     bb <- -2 * ll + ul * kk
     cc1 <- bb
     cc2 <- bb
