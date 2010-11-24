@@ -2868,12 +2868,12 @@ persp.polymars<-function(x, predictor1, predictor2, response, n= 33,xlim,ylim,xx
   }
  if(!contour.polymars)
   {
-   persp(X, y, Z, xlab = xtitle, ylab= ytitle, zlab = ztitle)
+   persp(X, y, Z, xlab = xtitle, ylab= ytitle, zlab = ztitle, ...)
   }
  else
   {
    
-     contour(X, y, Z, xlab = xtitle, ylab = ytitle , main = ztitle)
+     contour(X, y, Z, xlab = xtitle, ylab = ytitle , main = ztitle, ...)
    
    }
  invisible()
