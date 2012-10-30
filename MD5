@@ -1,7 +1,7 @@
-2e28c13cb2e1251342b41d1db3df55f7 *DESCRIPTION
+bccf5ca74ff411cfc85818589619b5fa *DESCRIPTION
 abc97a84aa35dd68bebba5dcd2c8b000 *INDEX
-9fdfeb11f7ddba6f3aab9aaa6b1ac5dd *NAMESPACE
-11d11797a197f65697a44ed8dcd7242c *R/polspline.R
+70f8bbd9779201f6bb8b8a22a876885e *NAMESPACE
+c738811bc9514d4d6b40740ed1a72341 *R/polspline.R
 f52a874a5196d585939d096ea7f287be *man/beta.polyclass.Rd
 d0bc667085b13b5876e04c5eef42b60c *man/clspec.Rd
 d2a1e68f45c67db47d7e60a89ffe0deb *man/cpolyclass.Rd
@@ -39,11 +39,11 @@ ef1556363b7867b93ac8318da926c9ef *man/summary.polymars.Rd
 db1242d9e636943a0f3a98d18bb513cb *man/xhare.Rd
 8290d2e9740414e315237f0d5d4024bb *src/Makevars
 e8a2af3d0b6922aa469332bb6b3e705e *src/allpack.f
-dd6b61824028a0debb71539580d9999a *src/hareall.c
-deda8423274766919bb664c3fd791963 *src/heftall.c
+5403f138c63a37528bd1c44afff2262a *src/hareall.c
+0eb62b5e5e484394ab21c9f79064487e *src/heftall.c
 ca342bde8e12145160c58ba68cccc1d9 *src/lsdall.c
-805b6537644074779c65de34289c4e43 *src/lspecall.c
-d4ec2245c2ad1c529fd2fc87c0e53c36 *src/nlsd.c
-f9cbd3e3c586b2677bba77461b991f05 *src/polyall.c
+7c15d2cd6ad40194fa22578baa99cba4 *src/lspecall.c
+f46981d77b5d265b1c23df7935341184 *src/nlsd.c
+2dab209885ee5080312b52abf09bee89 *src/polyall.c
 1a6fea64c449ee0e32ac056d091b8442 *src/polymars.c
 782c6ba6b56e9842d5854775ce3653e3 *src/x2c.h

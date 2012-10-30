@@ -36,8 +36,7 @@ static double hmylog();
 /* MAXKNOTS is the maximum number of knots in a model
    HLENGTH   is the generic vector length */
 
-void exit();
-static void hrerror(),hlusolve(),hluinverse(),hlusolve2();
+static void hlusolve(),hluinverse(),hlusolve2();
 static int *ihvector(),**ihmatrix();
 static double *dhvector(),**dhmatrix(),***dstriparray();
 static double *wkddd,*wkvec1,*wkvec2,**wkmat1,*wkphi,**wkmat,*wkphi2,*wkxx,*wkcand;
@@ -144,6 +143,7 @@ double *data,*alpha,*theta,*cc,*logl,*knots,*tails;
 
 /* do it */
    heft(dat,*nkstart,*alpha,mod1,*iauto,zerror,*nkmax,*mindist);
+   if((*nkstart)< -900)return;
 
 /* out */
    *nkmax=(*mod1).nk1;
@@ -197,7 +197,7 @@ int i;
 {
    struct datas *d1;
    d1=(struct datas *)Salloc(1,struct datas);
-   if(!d1) hrerror("allocation error in makedata()");
+   /* if(!d1) hrerror("allocation error in makedata()"); */
    (*d1).nd=i;
    (*d1).cc=0.;
    (*d1).delta=ihvector(i);
@@ -350,6 +350,7 @@ double alpha;
 
 /* place the knots */
       hknotplace(&nkstart,mod1);
+      if(nkstart< -900)return;
       if(nkmax==nkstart)addi=0;
 /* positioned */
       else addi=1;
@@ -380,7 +381,11 @@ double alpha;
          (*mod1).knots[1]=(1-r)*ddd[i]+r*ddd[i+1];
          if((*mod1).knots[1]==(*mod1).knots[0]){
             i=hlocation(1,ddd,ndd,(*mod1).knots[0]);
-            if(i==ndd-1)hrerror("too few distinct data: 1st quart=max");
+            if(i==ndd-1){
+               (void)Rprintf("too few distinct data: 1st quart=max\n");
+               nkstart=-998;
+               return;
+            }
             (*mod1).knots[1]=ddd[i+1];
          }
       }
@@ -398,12 +403,20 @@ double alpha;
          nkstart=3;
          if((*mod1).knots[1]==(*mod1).knots[0]){
             i=hlocation(0,ddd,ndd,(*mod1).knots[0]);
-            if(i==0)hrerror("too few distinct data: median=min data");
+            if(i==0){
+               (void)Rprintf("too few distinct data: median=min data\n");
+               nkstart=-998;
+               return;
+            }
             (*mod1).knots[0]=ddd[i-1];
          }
          if((*mod1).knots[1]==(*mod1).knots[2]){
             i=hlocation(1,ddd,ndd,(*mod1).knots[1]);
-            if(i==ndd-1)hrerror("too few distinct data: median=max data");
+            if(i==ndd-1){
+               (void)Rprintf("too few distinct data: median=max data\n");
+               nkstart=-998;
+               return;
+            }
             (*mod1).knots[2]=ddd[i+1];
          }
       }
@@ -413,7 +426,6 @@ double alpha;
       (void)Rprintf("starting knots at ");
       for(i=0;i<nkstart;i++)(void)Rprintf("%.2f ",(*mod1).knots[i]);
       (void)Rprintf("\n");
-      (void)fflush(stdout);
    }
 
 /* the knot addition loop starts here */
@@ -439,15 +451,15 @@ double alpha;
 /* if zerror[1]>0 there were problems */
          if(zerror[1]>0 && (*mod1).nk<6){
             (void)Rprintf("sorry - can't recover with so few knots (%d)\n",(*mod1).nk);
-            (void)fflush(stdout);
-            if(zerror[0]==0) exit(1);
-            else  return;
+         /* if(zerror[0]==0) exit(1);
+            else  return; */
+            return;
          }
 /* if zerror[1]=2 we might be helped by starting to remove */
          if(zerror[1]==2){
             nkstart=(*mod1).nk-1;
             dubmodel(mod1,modold);
-            (void)Rprintf("trying to start removing knots.....\n"); (void)fflush(stdout);
+            (void)Rprintf("trying to start removing knots.....\n"); 
             addi=2;
          }
 
@@ -517,9 +529,8 @@ double alpha;
          hiter(mod1,dat,zerror,nint,1);
          if(zerror[1]>0){
             (void)Rprintf("sorry - cannot recover during removal fase..\n");
-            (void)fflush(stdout);
-            if(zerror[0]==0) exit(1);
-            else  return;
+         /* if(zerror[0]==0) exit(1);
+            else  return; */
          }
       }
 
@@ -548,7 +559,7 @@ struct model *mod1;
    mod1    - model */
 
 {
-   int i,i1;
+   int i,i1,jj;
    double r;
 
 /* i    - counter
@@ -557,41 +568,49 @@ struct model *mod1;
 
 /* check for negative knots */
    i1=0;
-   if((*mod1).knots[0]<=0.) hrerror("*** first knot <= 0 ***");
+   jj=1;
+   if((*mod1).knots[0]<=0.){
+      (void)Rprintf("*** first knot <= 0 ***\n");
+      jj=-999;
+   }
 
 /* check for knots out of sequence and double knots */
-   for(i=1;i<*nkstart;i++){
+   if(jj>0)for(i=1;i<*nkstart;i++){
       if((*mod1).knots[i]>(*mod1).knots[i1]){
          i1++;
          (*mod1).knots[i1]=(*mod1).knots[i];
       }
       else{
          if((*mod1).knots[i]<(*mod1).knots[i1]){
-            hrerror("** knots not in sequence **");
+            (void)Rprintf("** knots not in sequence **\n");
+            jj = -999;
          }
          if((*mod1).knots[i]==(*mod1).knots[i1]){
             (void)Rprintf("*** warning, knot %d is double: removed ***\n",i);
-            (void)fflush(stdout);
          }
       }
    }
 
 /* how many knots are left */
-   *nkstart = i1+1;
+   if(jj>0){
+      *nkstart = i1+1;
 
 /* copy the knots in yknots */
-   for(i=0;i<*nkstart;i++)(*mod1).yknots[i]=(*mod1).knots[i];
-   r=1.;
-   for(i=1;i<*nkstart;i++){
-      if((*mod1).knots[i]/(*mod1).knots[i-1]>r){
-         r=(*mod1).knots[i]/(*mod1).knots[i-1];
+      for(i=0;i<*nkstart;i++)(*mod1).yknots[i]=(*mod1).knots[i];
+      r=1.;
+      for(i=1;i<*nkstart;i++){
+         if((*mod1).knots[i]/(*mod1).knots[i-1]>r){
+            r=(*mod1).knots[i]/(*mod1).knots[i-1];
+         }
       }
+      if(r>4000.){
+         (void)Rprintf( "*** warning: max knot-ratio is %e - answers inaccurate ***\n",r);
+      }
+      (*mod1).nk=*nkstart;
    }
-   if(r>4000.){
-      (void)Rprintf( "*** warning: max knot-ratio is %e - answers inaccurate ***\n",r);
-      (void)fflush(stdout);
+   else{
+      *nkstart= -999;
    }
-   (*mod1).nk=*nkstart;
 }
 /******************************************************************************/
 /* This function computes the coefficients of the basis functions from the
@@ -1206,7 +1225,6 @@ int *zerror,nint,what;
    double ldif;
    int i,j,ctr,itails[3],status;
 
-   (void)fflush(stdout);
 
 /* ldif   - lnew - lold
    i,j,k  - counter
@@ -1293,7 +1311,6 @@ int *zerror,nint,what;
    if(ctr<1000){
       zerror[1]=2;
       (void)Rprintf("*** zerror: no convergence ***\n");
-      (void)fflush(stdout);
       return;
    }
 
@@ -1316,7 +1333,6 @@ int *zerror,nint,what;
    if(zerror[6]==37 || zerror[0]==0){
       (void)Rprintf("logl= %.2f ",ldif);
       (void)Rprintf("(nk = %d)\n",(*mod1).nk);
-      (void)fflush(stdout);
    }
      
    (*mod1).ll=ldif;
@@ -1502,7 +1518,6 @@ double **basmat,*mult,*theta,**basdata,**hessian,*score,*ldif;
    hlusolve(hessian,nk+1,score,&i);
    if(i==-1){
       if(what==1)(void)Rprintf("*** oops, an unstable system ***\n");
-      (void)fflush(stdout);
       return 1;
    }
 
@@ -1517,7 +1532,6 @@ double **basmat,*mult,*theta,**basdata,**hessian,*score,*ldif;
          if(r<0.0001 && itails[0]>=0){
             if(zerror[0]==0){
                if(what==1)(void)Rprintf("*** warning: too much step halving ***\n");
-               (void)fflush(stdout);
             }
             return 2.;
          }
@@ -1537,7 +1551,6 @@ double **basmat,*mult,*theta,**basdata,**hessian,*score,*ldif;
       }
       if(r<0.000000001){
          if(what==1)(void)Rprintf("*** warning: too much step halving ***\n");
-         (void)fflush(stdout);
          return 3;
       }
       lnew=summer2(score,hessian,0,nk,nx,nint,cand,basdata,basmat,delta,mult);
@@ -2401,13 +2414,6 @@ double k,*x;
       if(x[i]>=k && x[i-1]<k)return i;
    }
    return nx;
-}
-/******************************************************************************/
-static void hrerror(error_text)
-char error_text[];
-{
-   error("%s \n this is serious..... bye!\n",error_text);
-   exit(0);
 }
 /******************************************************************************/
 static void dubmodel(m2,m1)

@@ -346,7 +346,6 @@ double *data,*knots,alpha,*logs,*xx,*zz,*theta,mass;
          logl=tsnew(data,nx,beta,&er,score,info,nk,zz,bb,coef2,xx,kts,cumul,
             nd,spk,basis,ns,nothere,mass,fl);
          if(silent==1)(void)Rprintf("==> %.2f (%d)\n",logl,nd);
-         fflush(stdout);
          if(er<0){
             ns--;
             nd--;
@@ -547,7 +546,6 @@ int n,*nk,*ns,mind,nd,*spk,cank,cans,*nothere;
       if(bestloc<n)kts[(*nk)]=xx[bestloc];
       else kts[(*nk)]=PIL;
      if(silent==1)(void)Rprintf("add knot at %.3f (%.3f)  ",kts[(*nk)],bestraoc);
-         fflush(stdout);
       for(i=(*nk);i>0;i--)if(kts[i]<kts[i-1]){
          bestraoc=kts[i-1];
          kts[i-1]=kts[i];
@@ -563,7 +561,6 @@ int n,*nk,*ns,mind,nd,*spk,cank,cans,*nothere;
    else{
       spk[(*ns)]=bestlod;
      if(silent==1)(void)Rprintf("add atom at %.3d (%.3f)  ",spk[(*ns)],bestraod);
-         fflush(stdout);
       for(i=(*ns);i>0;i--)if(spk[i]<spk[i-1]){
          bestlod=spk[i-1];
          spk[i-1]=spk[i];
@@ -862,7 +859,6 @@ int *nk,*ns,*spk,nd;
 /* remove the loser  - if it is a knot */
    if(irmax<(*nk)){
       if(silent==1)(void)Rprintf("del knot at %.3f (",kts[irmax]);
-         fflush(stdout);
       for(j=irmax;j<((*nk)-1);j++)kts[j]=kts[j+1];
       (*nk)-=1;
    }
@@ -871,12 +867,10 @@ int *nk,*ns,*spk,nd;
    else{
       irmax-=(*nk);
       if(silent==1)(void)Rprintf("del atom at %.3d (",spk[irmax]);
-         fflush(stdout);
       for(j=irmax;j<((*ns)-1);j++)spk[j]=spk[j+1];
       (*ns)-=1;
    }
    if(silent==1)Rprintf("%.3f)  ",1./ratmax);
-         fflush(stdout);
    return nd-1;
 }
 
@@ -1307,14 +1301,14 @@ double **coef,*kk;
 /******************************************************************************/
 /* rest is adapted numerical recipes and cmlib stuff */
 /******************************************************************************/
-static void tsrerror(error_text)
-char error_text[];
-{
-   void exit();
-   error("%s\n this is serious.....\n",error_text);
-   exit(1);
-}
-
+/* static void tsrerror(error_text)                                           */
+/* char error_text[];                                                         */
+/* {                                                                          */
+/*    void exit();                                                            */
+/*    error("%s\n this is serious.....\n",error_text);                        */
+/*    exit(1);                                                                */
+/* }                                                                          */
+/*                                                                            */
 /******************************************************************************/
 /* i-vector */
 /******************************************************************************/
@@ -1413,7 +1407,7 @@ double **a,*b;
    }
    i=DIM5;
    F77_CALL(xdsifa)(aa,&i,&n,kpvt,&info);
-   if(info|=0)tsrerror("oops in lusolve");
+/* if(info|=0)tsrerror("oops in lusolve"); */
    F77_CALL(xdsisl)(aa,&i,&n,kpvt,bb);
    for(i=0;i<n;i++)b[i]=bb[i];
 }
@@ -1432,7 +1426,7 @@ double **a;
    i=DIM5;
    j=1;
    F77_CALL(xdsifa)(aa,&i,&n,kpvt,&info);
-   if(info|=0)tsrerror("oops in luinverse");
+/* if(info|=0)tsrerror("oops in luinverse"); */
    F77_CALL(xdsidi)(aa,&i,&n,kpvt,det,inert,bb,&j);
    for(i=0;i<n;i++){
       for(j=0;j<i;j++)a[i][j]=aa[i][j];

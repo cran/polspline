@@ -1100,7 +1100,6 @@ float *xxx,*t1cov,*t2cov;
       if(cv!=0 && silent!=1){
          if(cv==cvx)(void)Rprintf("Final run starts now.\n");
          else (void)Rprintf("CV-run %d starts now.\n",cvx+1);
-         (void)fflush(stdout);
       }
 /* get ad ready */
       if(cvx!=0){
@@ -1122,7 +1121,6 @@ float *xxx,*t1cov,*t2cov;
                else (void)Rprintf("- %5.2f",xxx[1]);
                (void)Rprintf(" with loss %.2f.\n",xxx[2]);
                (void)Rprintf("Penalty value to be used is %5.2f\n",xxx[3]);
-               (void)fflush(stdout);
             }
             data=zdata;
             it=0;
@@ -2166,7 +2164,7 @@ struct space *spc;
             if(ihalf>8192 && mm==2)mm=7;
             if(ihalf>8192 && mm!=7){
                mm=3;
-               (void)Rprintf("step half ouch...\n");(void)fflush(stdout);
+               (void)Rprintf("step half ouch...\n");
             }
 
 /* the actual halving */
@@ -3168,7 +3166,7 @@ int ndmax,mind,**exclude,strt,silent,*ad,*lins,it,naction,il,xsingle;
          add=(int)pnewton(current,data);
          ndmax=(*current).nbas;
          add=0;
-         Rprintf("warning - model size was reduced\n");fflush(stdout);
+         Rprintf("warning - model size was reduced\n");
       }
       else{
 
@@ -3183,7 +3181,6 @@ int ndmax,mind,**exclude,strt,silent,*ad,*lins,it,naction,il,xsingle;
             if(silent==0)(void)Rprintf(" best up to now!");
          }
          if(silent==0)(void)Rprintf("\n");
-         if(silent==0)(void)fflush(stdout);
 
 /* adds dimensions, computes new starting values */
          if(add==1 && ndm2<0){
@@ -3200,7 +3197,6 @@ int ndmax,mind,**exclude,strt,silent,*ad,*lins,it,naction,il,xsingle;
             add=padddim(current,new,trynew,data,mind,exclude,silent,lins);
             if(add!=1) ndmax=(*current).nbas;
          }
-         if(silent==0)(void)fflush(stdout);
      }
 
 /* keep on adding? */
@@ -3221,7 +3217,6 @@ int ndmax,mind,**exclude,strt,silent,*ad,*lins,it,naction,il,xsingle;
          okd = prembas(current,data,silent);
       }
       if(okd!=-1){
-      if(silent==0)(void)fflush(stdout);
       (*current).aic=pnewton(current,data);
       if((*current).aic > 190.)add=17;
       else{
@@ -3236,7 +3231,6 @@ int ndmax,mind,**exclude,strt,silent,*ad,*lins,it,naction,il,xsingle;
             if(silent==0)(void)Rprintf(" best up to now!");
          }
          if(silent==0)(void)Rprintf("\n");
-         if(silent==0)(void)fflush(stdout);
       }
       }
 /* does further deleting make sense */

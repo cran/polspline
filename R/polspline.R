@@ -535,6 +535,7 @@ heft <- function(data, delta, penalty, knots, leftlin, shift,
       as.integer(mindist),
       PACKAGE = "polspline")
    error <- z$error
+   if(z$nk < -100) error[2] <- 1
    z$logl[abs(z$logl) < 1e-100] <- 0
    z$logl[z$ad == 2] <- 0
    if(error[2] == 0){

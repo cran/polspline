@@ -1146,7 +1146,6 @@ struct datastruct *data;
    (*spc).aic=logl;
    if(silent==1){
       (void)Rprintf("|| logl= %.2f (nd=%d)\n",logl,(*spc).ndim);
-      (void)fflush(stdout);
    }
    (*spc).cth=ctheta;
    return 0;
@@ -1852,7 +1851,6 @@ struct datastruct *data;
       if(silent==1)(void)Rprintf("Starting knots at %.2f, %.2f and %.2f ",
                (*spc).knots[0],(*spc).knots[1],(*spc).knots[2]);
       (*spc).ndim=2;
-      if(silent==1)(void)fflush(stdout);
    }
    if(strt<0){
       if(strt== -1){
@@ -1900,7 +1898,6 @@ struct datastruct *data;
       if(silent==1){
          (void)Rprintf("\nRestart: knots at ");
          for(i=0;i<l;i++)(void)Rprintf("%.2f ",(*spc).knots[i]);
-         (void)fflush(stdout);
       }
    }
    if((*spc).ilow==1) (*spc).low=(*data).data[0];

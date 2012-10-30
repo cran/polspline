@@ -122,7 +122,7 @@ struct subdim {
 /* allocation stuff used a lot */
 
 static int glusolve2(),humbertester();
-static void nrerror(),glusolve();
+static void glusolve();
 static int *newtonwhere;
 static double *searchsorted,*searchkts,*searchsorted2,*remdimy,*raoss;
 static double *raoscorecopy,*newtonscp,*compallss,*complogbasis0,*complogbasis1;
@@ -1566,11 +1566,8 @@ struct space *spc;
             (*oops)=1;
             return 0.;
          }
-         if(precision==0){
             (*oops)=17;
             return 0.;
-         }
-         nrerror("instable system during NR iterations");
       }
       ihalf=1; 
       do{
@@ -1590,11 +1587,8 @@ struct space *spc;
                   (*oops)=1;
                   return 0.;
                }
-               if(precision==0){
                   (*oops)=17;
                   return 0.;
-               }
-               nrerror("too much step-halving");
             }
 
 /* the actual halving */
@@ -1620,16 +1614,12 @@ struct space *spc;
 
 /* did we finish because we converged? */
    if(iter<maxiter+500){
-      if(precision==0){
          (*oops)=17;
          return 0.;
-      }
-      nrerror("no convergence");
    }
 
 /* get a fresh copy of score */
    if(silent!=1)Rprintf("|| logl= %.2f (nd=%d)\n",lnew,(*spc).ndim);
-   (void)fflush(stdout);
    lnew=compall(spc,(*data).times,(*data).delta,(*data).ndata,iter,
                                                             where,(*data).same);
 
@@ -2893,15 +2883,6 @@ int r,c;
    return m;
 }
 /******************************************************************************/
-static void nrerror(error_text)
-char error_text[];
-{
-   void exit();
-
-   (void)error("%s\n this is serious!",error_text);
-   exit(1);
-}
-/******************************************************************************/
 static int humbertester(aa)
 double aa;
 /* if aa = -Inf: 0
@@ -2933,9 +2914,9 @@ double **a,*b;
    }
    i=DIM5;
    F77_CALL(xdsifa)(aa,&i,&n,kpvt,&info);
-   if(info!=0){
+   /* if(info!=0){
    nrerror("info in glusolve is not 0");
-   }
+   } */
    F77_CALL(xdsisl)(aa,&i,&n,kpvt,bb);
    for(i=0;i<n;i++)b[i]=bb[i];
 }
@@ -3686,9 +3667,9 @@ int ncov,ndata;
 
 /* basic allocation */
    newspace=(struct space *)Salloc(1,struct space); 
-   if(!newspace) {
+   /* if(!newspace) {
       nrerror("allocation error in definegspace");
-   }
+   } */
     
 
 /* the simple elements */
