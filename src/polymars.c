@@ -1567,10 +1567,14 @@ of the function if it is better than the best global model gets saved,
 in any case the gcv for this case is saved in rssgcv */  
 	      if(testset == FALSE)
 		{
-		  gcv_for_model = 
-		    (rss_for_model /weight_sum)/
-		    ((1.0 - (GCVconstant*(model_size+1)/cases))
-		     *(1.0 - (GCVconstant*(model_size+1)/cases)));
+                  gcv_for_model = (1.0 - (GCVconstant*(model_size+1)/cases));
+                  if(gcv_for_model>0){
+		     gcv_for_model = 
+		       (rss_for_model /weight_sum)/(gcv_for_model*gcv_for_model);
+                  }
+                  else {
+                     gcv_for_model = gcv_so_far +100;
+                  }
 		}
 	      else
 		{
@@ -2332,10 +2336,14 @@ specifications
 	    }
 	  if(testset == FALSE)
 	    {
-	      gcv_for_model = 
-		( rss_for_model/weight_sum)/
-		((1.0 - (GCVconstant*(model_size-1)/cases))*
-		 (1.0 - (GCVconstant*(model_size-1)/cases)));
+               gcv_for_model = (1.0 - (GCVconstant*(model_size+1)/cases));
+                if(gcv_for_model>0){
+		     gcv_for_model = 
+		       (rss_for_model /weight_sum)/(gcv_for_model*gcv_for_model);
+                  }
+                  else {
+                     gcv_for_model = gcv_so_far +100;
+                  }
 	    }
 	  else
 	    {

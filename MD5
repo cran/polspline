@@ -1,7 +1,6 @@
-bccf5ca74ff411cfc85818589619b5fa *DESCRIPTION
-abc97a84aa35dd68bebba5dcd2c8b000 *INDEX
-70f8bbd9779201f6bb8b8a22a876885e *NAMESPACE
-c738811bc9514d4d6b40740ed1a72341 *R/polspline.R
+4e6c3fb09e595c231bb588dd68ef77b6 *DESCRIPTION
+f809e6083699e0a6008d5b3e8e1bd214 *NAMESPACE
+5030d532dface6f6148d89f166469363 *R/polspline.R
 f52a874a5196d585939d096ea7f287be *man/beta.polyclass.Rd
 d0bc667085b13b5876e04c5eef42b60c *man/clspec.Rd
 d2a1e68f45c67db47d7e60a89ffe0deb *man/cpolyclass.Rd
@@ -25,7 +24,7 @@ ebf1ce3371a5e19826cdb86c7a380a19 *man/plot.heft.Rd
 bcc95de47990e50313e9ce3e959add1c *man/plot.polyclass.Rd
 a325ce87131dda00e831081f981431df *man/plot.polymars.Rd
 24289d881b814d03915e74a024572cc0 *man/polyclass.Rd
-c519b8dc72a6c830b66190867ecf90de *man/polymars.Rd
+858d39d82eed796bcba323c639b2f833 *man/polymars.Rd
 cb116983cf029cf6897368c15011796b *man/predict.polymars.Rd
 0161fc892b9f5a261211cdb5b7044d7d *man/summary.hare.Rd
 cbd5c3a7ddbea6a2ec5fb22290d47711 *man/summary.heft.Rd
@@ -45,5 +44,5 @@ ca342bde8e12145160c58ba68cccc1d9 *src/lsdall.c
 7c15d2cd6ad40194fa22578baa99cba4 *src/lspecall.c
 f46981d77b5d265b1c23df7935341184 *src/nlsd.c
 2dab209885ee5080312b52abf09bee89 *src/polyall.c
-1a6fea64c449ee0e32ac056d091b8442 *src/polymars.c
+83b88b5d2b4d68a2062c6d20b0538686 *src/polymars.c
 782c6ba6b56e9842d5854775ce3653e3 *src/x2c.h

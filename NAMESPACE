@@ -1,6 +1,13 @@
-# Remove the previous line if you edit this file
 
 useDynLib(polspline)
 
-# Export all names
-exportPattern(".")
+export(unstrip, hare, plot.hare, print.hare, summary.hare, dhare, hhare, phare,
+qhare, rhare, xhare, heft, plot.heft, print.heft, summary.heft, dheft, hheft,
+pheft, qheft, rheft, oldlogspline.to.logspline, poldlogspline, qoldlogspline,
+roldlogspline, doldlogspline, plot.oldlogspline, print.oldlogspline,
+summary.oldlogspline, oldlogspline, lspec, clspec, dlspec, plspec, rlspec,
+plot.lspec, print.lspec, summary.lspec, polymars, predict.polymars, testhare,
+print.polymars, summary.polymars, plot.polymars, persp.polymars, design.polymars,
+logspline, plogspline, qlogspline, rlogspline, dlogspline, plot.logspline,
+print.logspline, summary.logspline, polyclass, cpolyclass, ppolyclass,
+plot.polyclass, rpolyclass, print.polyclass, summary.polyclass, beta.polyclass)

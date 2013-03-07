@@ -25,6 +25,8 @@ the stepwise addition procedure. Default is
 The residual sum of squares of a model is penalized by dividing by the square of   
 \code{1-(gcv x model size)/cases}.   
 A larger gcv value would tend to produce a smaller model.
+Models for which \code{1-(gcv x model size)/cases} is smaller or equal than 0 are
+never selected.
 }
 \item{additive}{Should the fitted model be additive in the predictors? 
 }
