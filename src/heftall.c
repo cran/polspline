@@ -298,7 +298,7 @@ double alpha;
 
    struct model *modmin,*modold,*makemodel();
 
-   int nint1=20,nint2=50,nint,nintx1=2,nintx2=6,nintx,i,j,addi,nkmax2,ndd;
+   int nint1=20,nint2=50,nint,nintx1=2,nintx2=6,nintx=0,i,j,addi=0,nkmax2,ndd;
    double r,newk,lold[HLENGTH],*ddd;
 
 /* modmin - model with minimum aic
@@ -1222,7 +1222,7 @@ int *zerror,nint,what;
             values, 1 else */
 
 {
-   double ldif;
+   double ldif=0.;
    int i,j,ctr,itails[3],status;
 
 
@@ -1857,8 +1857,8 @@ int nint,*zerror,mind;
    mind   - minimum distance between knots */
 
 {
-   int i,j,ipowdat[3],ipowvec[3],besti=-1,ll,uu,nowloc2,bestloc=-1,nx;
-   int loloc,uploc,nowloc1;
+   int i,j,ipowdat[3],ipowvec[3],besti=-1,ll=0,uu=0,nowloc2,bestloc=-1,nx;
+   int loloc=0,uploc=0,nowloc1=0;
    double bestrao=-1.,nowrao1,nowrao2,**powdat,**powvec,*sorted;
 
 /* bestrao - bestrao statistic up to now

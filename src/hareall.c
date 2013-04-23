@@ -526,7 +526,7 @@ double criterion;
 
 {
    int i,j;
-   double  crit1;
+   double  crit1=0.;
 
 /* swapspace- copies one space into another
    i,j      - counter
@@ -642,8 +642,9 @@ int i0,mind;
    mind  - minimum distance (in order statistics) between knots */
 
 {
+   int lloc=0,uloc=0;
+   int i,lgth,iloc=0,bloc,iloc2,ll,uu,nx;
    double *sorted,*sorted2,critnew,crit,crit2,*kts;
-   int i,lgth,iloc,lloc,bloc,uloc,iloc2,ll,uu,nx;
 
 /* sorted  - sorted data or covariate
    sorted2 - uncensored data
@@ -666,6 +667,8 @@ int i0,mind;
    find..  - find location for new knot under various circumstances */
    
 /* initialization */
+   lloc=0;
+   uloc=0;
    bloc=-1;
    crit=-pow((double)10.,(double)20.);
    sorted=searchsorted;
@@ -1643,7 +1646,7 @@ double *data;
    where - in which interval is the datapoint */
 
 {
-   double r[3],l0,logl,*ss,**hhh,lala,rr[5];
+   double r[3],l0,logl,*ss,**hhh,lala=0,rr[5];
    int i,j,k,l,naaap,whereold=0;
 
 /* r      - intgrals
@@ -1863,7 +1866,7 @@ double *data;
    same  - for which observations are the covariates the same as for previous */
 
 {
-   double basis2,*basis0,*basis1,l0,logl,rall;
+   double basis2,*basis0,*basis1,l0,logl,rall=0.;
    int i,j,where,ik1,ik2,naaap,whereold=0;
 
 /* basis2 - lambda in a datapoint 
@@ -2113,8 +2116,8 @@ int ncov,ndata,silent;
    silent- should diagnostic output be printed?  */
 
 {
-   int i,j,k,n,bb1,bt1,nb1,nb2,nt1,nt2,bb2,is,bw;
-   double criterion,wald,**x,*y,**xtx,*xty;
+   int i,j,k,n,bb1=0,bt1=0,nb1,nb2,nt1,nt2,bb2=0,is,bw=0;
+   double criterion,wald=0.,**x,*y,**xtx,*xty;
 
 /* i,j,k  - counter
    n      - can this basisfunction be removed? 1=yes, 0=no

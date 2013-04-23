@@ -694,7 +694,7 @@ static int ludcmp(a,n,indx,d)
 int n,*indx;
 double **a,*d;
 {
-   int i,imax,j,k;
+   int i,imax=0,j,k;
    double big,dum,sum,temp,*vv;
    vv=luw;
    for(i=0;i<=n+1;i++)vv[i]=0.;
@@ -746,7 +746,7 @@ struct space *spc,*spc2;
 struct datastruct *data;
 int mind,silent;
 {
-   int i,nx,uu,ll,nowloc1,loloc,uploc,bestloc= -1;
+   int i,nx,uu=0,ll=0,nowloc1=0,loloc=0,uploc=0,bestloc= -1;
    int besti= -1,nowloc2;
    double *sorted,nowrao1,bestrao= -1.,nowrao2;
    sorted=betaaddsorted;
@@ -1156,7 +1156,7 @@ int what,*xp;
 struct space *spc;
 struct datastruct *data;
 {
-   double *ips,f,logl;
+   double *ips,f=0.,logl;
    double *cy,**cyy,**coef;
    int i,j,k,nip=(*spc).nip,ndim=(*spc).ndim;
    cy=pompalcy;
@@ -1836,7 +1836,7 @@ int silent,strt;
 struct space *spc;
 struct datastruct *data;
 {
-   int i,k,l,ok;
+   int i,k,l=0,ok;
    double r,s;
 /* place the knots */
    k=(*data).ndata;

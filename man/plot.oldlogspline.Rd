@@ -10,7 +10,7 @@ The 1997 algorithm using knot
 deletion and addition is available using the \code{\link{logspline}} function.
 }
 \usage{\method{plot}{oldlogspline}(x, n = 100, what = "d", xlim, xlab = "", ylab = "",
-type = "l", ...) }
+type = "l", add = FALSE, ...) }
 \arguments{
 \item{x}{\code{logspline} object, typically the result of \code{\link{logspline}}.}
 \item{n}{the number of equally spaced points at which to plot the density.  }
@@ -22,6 +22,7 @@ range of data on which to plot. Default is from the 1th to the 99th percentile o
 the density, extended by 10\% on each end.}
 \item{xlab,ylab}{labels plotted on the axes.  }
 \item{type}{type of plot.}
+\item{add}{should the plot be added to an existing plot.}
 \item{...}{other plotting options, as desired}
 }
 \details{This function produces a plot of a \code{\link{oldlogspline}} fit at \code{n} equally

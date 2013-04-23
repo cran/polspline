@@ -392,7 +392,7 @@ int i0,mind;
 
 {
    double *sorted,critnew,crit,crit2,*kts;
-   int i,lgth,iloc,lloc,bloc,uloc,iloc2,ll,uu,nx,l;
+   int i,lgth,iloc=0,lloc=0,bloc,uloc=0,iloc2,ll,uu,nx,l;
 
 /* sorted  - sorted data or covariate
    critnew - new criterion
@@ -984,6 +984,11 @@ float *xxx,*t1cov,*t2cov;
 /* intpars 0 = ndata/1 = nclass/2 = ncov/3 = mindis/4 = ndmax/5 = silent/
    /6 = fitter/7 = cv/8 = it/9 = ndata (testset)/10 = naction/11 = il */
 
+/* bogus to prevent warnings */
+   loss=dpmatrix(2,2);
+   ranges=dpmatrix(2,2);
+   numbers=ispvector(2);
+
 /* if intpars[0]<0 we only want the parameters */
    trcov=t1cov;
    tecov=t2cov;
@@ -1028,6 +1033,8 @@ float *xxx,*t1cov,*t2cov;
 
 /* arrange the data  the test data and the loss matrix */
    data=pdefinedata(intpars[0],intpars[2],intpars[1],intpars[0],cls,wgt,1);
+   zdata=data;
+   tdata=data;
    if(it==1){
 /* a test set and a loss matrix */
       tdata=pdefinedata(intpars[9],intpars[2],intpars[1],intpars[9],
@@ -1789,7 +1796,7 @@ struct datastruct *data;
 double *bbb,*anova;
 {
    double x0,x1,x2,x3,x4,vaa,vbb;
-   int i,j,k,k0,k1,k2,k3,k4,k5,k6,ncov=(*data).ncov,nbas=(*spc).nbas;
+   int i,j,k=0,k0=0,k1=0,k2=0,k3=0,k4=0,k5=0,k6=0,ncov=(*data).ncov,nbas=(*spc).nbas;
    int nclass=(*data).nclass;
    for(i=0;i<nbas;i++) for(j=0;j<nbas;j++)w1[i][j]=0.;
    w1[0][0]=1.;
@@ -2772,8 +2779,8 @@ double *dwald;
 
 {
    int nclass=(*data).nclass,ncov=(*data).ncov;
-   int nb1,nt1,nb2,nt2,aj,ak,sj,sk,j,k,j2,n,eligible,i,bbi,bbj,bbk,l;
-   int nbas=(*spc).nbas,bb1,bb2,bt1,ii,baj,bak,bsj,bsk,**tlink;
+   int nb1,nt1,nb2,nt2,aj=0,ak=0,sj=0,sk=9,j,k,j2,n,eligible,i,bbi=0,bbj=0,bbk=0,l;
+   int nbas=(*spc).nbas,bb1,bb2,bt1,ii,baj=0,bak=0,bsj=0,bsk=0,**tlink;
    int k1,k2,k3,k4,i1,j1;
    double criterion,wald,xx,**tinfo;
 /* nclass,ncov,ndata,nbas - save typing
@@ -3116,7 +3123,7 @@ int ndmax,mind,**exclude,strt,silent,*ad,*lins,it,naction,il,xsingle;
    aics        - all the losses */
 {
    double dwald;
-   int add=1,i,ndm2,iwald,okd;
+   int add=1,i,ndm2,iwald,okd=0;
 
 /* getcrit       - computes the criterion (AIC or loss)
    pnewton     - fits a model using NR

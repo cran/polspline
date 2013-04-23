@@ -48,11 +48,11 @@ double bound[],sample[],yknots[],wk[],wk2[],ycoef[],*alpha,logl[];
 /* these quantities are defined in the file where they originated and lhead.h */
 
 {
-   int itrouble,accuracy=0,xnknots;
+   int itrouble,accuracy=0,xnknots=0.;
    double qt[2];
 /* functions - see the functions themselves */
 
-double info[NC][NC],loglikelihood,sufficient[NC][2],coef2[NC][NC],xczheta;
+double info[NC][NC],loglikelihood,sufficient[NC][2],coef2[NC][NC],xczheta=0.;
 /* stuf used in iter
    info - the information matrix
    loglikelihood                                  
@@ -366,8 +366,8 @@ int SorC[],accuracy,nsample[],*itrouble;
 
 {
    int counter=0,infol,i1,i2,i3,kpvt[NC],jaja1,i4,iii[4],ithere,i7,nrc=0,nrc2=0;
-   double zerror,oldlikelihood,cbound[7],shift[NC],dd[2];
-   double candidate[NC],newlikelihood,work[NC][NC];
+   double zerror=0.,oldlikelihood,cbound[7],shift[NC],dd[2];
+   double candidate[NC],newlikelihood=0.,work[NC][NC];
    double one,rvr[100],zerrorx;
 
 /* local
@@ -1887,12 +1887,12 @@ double rknots[],sample[],bound[],smp2[],smp3[],qt[];
 /* these quantities are defined in lhead.h and the files where they originate */
 
 {
-   int i,j,j2,k,kk,ll,ia,il;
+   int i,j=0,j2,k,kk,ll,ia=0,il;
 /* local integers
    i k     - counters
    j j2    - is there an odd or an even number of knots?                      */
 
-   double s,eps,eps1,eps2,v,w,five=4,u1,u2,u3,u4;
+   double s,eps,eps1,eps2,v,w,five=4,u1,u2,u3=0.,u4=0.;
 /* local   - double precision
    five    - parameter for knot rule
    s       - this parameter has to become (nsample[0]+1)/2
@@ -2792,7 +2792,7 @@ int nknots,what;
 
 {
    double a[6],cth;
-   int i,j,version;
+   int i,j=0,version;
 /* local:
    a,version:    for expin
    i,j      :    counters                                                     */

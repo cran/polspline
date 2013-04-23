@@ -847,7 +847,7 @@ doldlogspline <- function(q, fit)
     y
 }
 
-plot.oldlogspline <- function(x, n = 100, what = "d", xlim, xlab = "", ylab = "", type = "l", ...)
+plot.oldlogspline <- function(x, n = 100, what = "d", xlim, xlab = "", ylab = "", type = "l", add = FALSE, ...)
 {
     fit <- x
     if(class(fit)!="oldlogspline")
@@ -877,7 +877,8 @@ plot.oldlogspline <- function(x, n = 100, what = "d", xlim, xlab = "", ylab = ""
                 ylab <- ""
         if(missing(type))
                 type <- "l"
-        plot(xx, yy, xlab = xlab, ylab = ylab, type = type, ...)
+        if(add==FALSE)plot(xx, yy, xlab = xlab, ylab = ylab, type = type, ...)
+        else lines(xx,yy, type = type, ...)
 }
 print.oldlogspline <- function(x,...)
 {

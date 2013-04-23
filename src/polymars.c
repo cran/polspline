@@ -358,7 +358,8 @@ void polymars(int *pred,
   double *mesh,*mesh_ptr;/*mesh is the matrix of possible knot values*/
   int i,j,k;
   
-  
+/* bogus to prevent warning */  
+   mesh=gcvvalue;
 
 /*Matching up the S variables with global variables in this file  */
   startmodel = start_model;
@@ -1043,7 +1044,7 @@ responses and all is stored in the YtXXtX matrix*/
   int i,j;
   double *current_predictor1,*current_predictor2;
   int mesh_index;
-  double knot1_value,knot2_value;
+  double knot1_value=0,knot2_value=0;
   double entry;
   struct link *new_column;/*----index of last row of matrix-----*/
   double *function_value,SD,mean;
@@ -1687,7 +1688,7 @@ static void update_model(struct matrix2 *YtXXtX_expanded,
 /* candidate is an index corresponding to the candidates column (after the
    model columns) in the YtXXtX_expanded matrix, starts from 0*/
   int i,j,predictor1,knot1_index,predictor2,knot2_index,mesh_index,k,index,nrow;
-  double *current_predictor_values1,*current_predictor_values2, knot1_value,knot2_value;
+  double *current_predictor_values1,*current_predictor_values2, knot1_value=0.,knot2_value=0.;
 
   struct basis_function_matrix* current_candidate_predictor;
   struct basis_function *current_candidate_function;
@@ -2185,6 +2186,7 @@ stay in the model*/
   new_X_matrix->nrow=cases;
   new_X_matrix->ncol =model_size-1;
   current_predictor_col = YtXXtX_expanded->column_list;
+  trailing_column = YtXXtX_expanded->column_list;
  
   candidate_to_remove = FALSE;
   for(i=1;i<model_size;i++)
@@ -2591,7 +2593,7 @@ static int initial_model(struct basis_function_matrix *model,
 /* Set up the initial model, by default it is a model containing only
 the intercept*/
   int i,j,l,m,predictor_1,predictor_2,ok,knot_1_index,knot_2_index,mesh_index;
-  double *X_ptr , knot_1_value,knot_2_value;
+  double *X_ptr , knot_1_value=0,knot_2_value=0;
   double rss_for_model;
   struct link *YtXXtX_column;
   int column_minder;
@@ -2605,6 +2607,10 @@ the intercept*/
     {
       means= (double *)Salloc (model_size-1,double);
       SDs= (double *)Salloc (model_size-1,double);
+    }
+ else{
+      means= (double *)Salloc (1,double);
+      SDs= (double *)Salloc (1,double);
     }
  
 /*create matrix to hold YtX and XtX for model and candidates */
@@ -3930,12 +3936,12 @@ r
  or   
           upper case 'Z'. */
 
-	if (inta >= 129 && inta <= 137 || inta >= 145 && inta <= 153 || inta 
-		>= 162 && inta <= 169) {
+	if ((inta >= 129 && inta <= 137)||(inta >= 145 && inta <= 153)||(inta 
+		>= 162 && inta <= 169)) {
 	    inta += 64;
 	}
-	if (intb >= 129 && intb <= 137 || intb >= 145 && intb <= 153 || intb 
-		>= 162 && intb <= 169) {
+	if ((intb >= 129 && intb <= 137)||(intb >= 145 && intb <= 153)||(intb 
+		>= 162 && intb <= 169)) {
 	    intb += 64;
 	}
 
@@ -4968,7 +4974,7 @@ static int dspmv(char *uplo, int *n, double *alpha,
 
 /*     Quick return if possible. */
 
-    if (*n == 0 || *alpha == 0. && *beta == 1.) {
+    if (*n == 0 ||(*alpha == 0. && *beta == 1.)) {
 	return 0;
     }
 
