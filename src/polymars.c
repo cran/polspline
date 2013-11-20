@@ -3009,7 +3009,8 @@ Finds the mean and standard deviation of a list of numbers and
 returns the array standard normalised, with mean and standard 
 deviatioN
 ------------------------------------------------------------------*/
-  int i,mina,maxi;
+  int i;
+  double mina,maxi;
   
 
   *mean = 0;

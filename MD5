@@ -1,7 +1,6 @@
-46655bef7250375b2bd2fffd0b80ff29 *DESCRIPTION
-abc97a84aa35dd68bebba5dcd2c8b000 *INDEX
+a91cbaee4fc2c558f9586849a2d18cea *DESCRIPTION
 f809e6083699e0a6008d5b3e8e1bd214 *NAMESPACE
-abc16132eb51df87e37355381d1226c2 *R/polspline.R
+3e3512953a2c14e4079fb01babd0c977 *R/polspline.R
 f52a874a5196d585939d096ea7f287be *man/beta.polyclass.Rd
 d0bc667085b13b5876e04c5eef42b60c *man/clspec.Rd
 d2a1e68f45c67db47d7e60a89ffe0deb *man/cpolyclass.Rd
@@ -45,5 +44,5 @@ d807de63585ff9ecec8e58b9388fffb6 *src/lsdall.c
 7c15d2cd6ad40194fa22578baa99cba4 *src/lspecall.c
 a6870f62358ae7bb7c8453ab97891b1b *src/nlsd.c
 03a777cc3ed1e34315e36fe3e7ed396f *src/polyall.c
-09e7b0627241e8ecd9b034ff2f2183b3 *src/polymars.c
+85e06f08f98c43dc89dade55a2fd11c9 *src/polymars.c
 782c6ba6b56e9842d5854775ce3653e3 *src/x2c.h

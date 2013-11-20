@@ -903,7 +903,7 @@ summary.oldlogspline <- function(object,...)
     bb <- -2 * ll + ul * kk
     cc1 <- bb
     cc2 <- bb
-    cc2[1] <- 5/0
+    cc2[1] <- Inf
     cc1[length(bb)] <- 0
     if(length(bb) > 1) {
         for(i in 1:(length(bb) - 1)) {
