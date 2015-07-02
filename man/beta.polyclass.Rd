@@ -28,7 +28,7 @@ Charles J. Stone, Mark Hansen, Charles Kooperberg, and Young K. Truong.
 The use of polynomial splines and their tensor products in extended
 linear modeling (with discussion) (1997).  \emph{Annals of Statistics},
 \bold{25}, 1371--1470.}
-\author{ Charles Kooperberg \email{clk@fhcrc.org}.}
+\author{ Charles Kooperberg \email{clk@fredhutch.org}.}
 \seealso{ 
 \code{\link{polyclass}},
 \code{\link{plot.polyclass}}, 

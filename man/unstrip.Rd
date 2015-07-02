@@ -12,7 +12,7 @@ without names, if \code{x} is one-dimensional  a numerical vector}
 \code{\link{hare}}, \code{\link{heft}}, and \code{\link{polymars}} were written in the ``before data.frame'' era;
 \code{unstrip} attempts to keep all these functions useful with more advanced input objects.
 In particular, many of these functions call \code{unstrip} before doing anything else.}
-\author{ Charles Kooperberg \email{clk@fhcrc.org}.}
+\author{ Charles Kooperberg \email{clk@fredhutch.org}.}
 \examples{
 data(co2)
 unstrip(co2)

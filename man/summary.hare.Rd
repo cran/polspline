@@ -60,7 +60,7 @@ linear modeling (with discussion) (1997).  \emph{Annals of Statistics},
 \code{\link{phare}},
 \code{\link{qhare}},
 \code{\link{rhare}}.}
-\author{ Charles Kooperberg \email{clk@fhcrc.org}.}
+\author{ Charles Kooperberg \email{clk@fredhutch.org}.}
 \examples{
 fit <- hare(testhare[,1], testhare[,2], testhare[,3:8]) 
 summary(fit) 
