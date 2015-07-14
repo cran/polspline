@@ -1,7 +1,6 @@
-b53d7b7470c3715283756a2f063d2e09 *DESCRIPTION
-abc97a84aa35dd68bebba5dcd2c8b000 *INDEX
+4d684dc20720fb15612fa6d0741fd754 *DESCRIPTION
 89430193959ad9cc8fa25cbddf64d2c9 *NAMESPACE
-3e3512953a2c14e4079fb01babd0c977 *R/polspline.R
+3a5ffddfd057664859a14ab6a72ba7bd *R/polspline.R
 37193963f1c0ceaa6d1ff5d9ab59ad70 *man/beta.polyclass.Rd
 e5b94deaff45e6d11fbb2f171f2e22b9 *man/clspec.Rd
 4355593c10b2dd4baa7b48d09f0f47d3 *man/cpolyclass.Rd

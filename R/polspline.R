@@ -3703,6 +3703,7 @@ ppolyclass <- function(data, cov, fit)
             ppp[, i] <- ppp[, i] + uuu * fit$fcts[j, (4 + i
               )]
       }
+   ppp <- ppp-apply(ppp,1,max)
    ppp <- exp(ppp)
    zzz <- ppp[, nclass]
    for(i in 1:(nclass - 1))
