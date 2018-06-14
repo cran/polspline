@@ -671,8 +671,10 @@ C ALTER ARRAY X TO GET DECREASING ORDER IF NEEDED
 C
    15 IF (KFLAG.GE.1) GO TO 30
       DO 20 I=1,NN
-   20 X(I) = -X(I)
-   30 GO TO (100,200),KK
+      X(I) = -X(I)
+   20 END DO
+C  30 GO TO (100,200),KK
+   30 IF (KK.EQ.2) GO TO 200
 C
 C SORT X ONLY
 C
@@ -682,14 +684,15 @@ C
       J=NN
       R=.375
   110 IF (I .EQ. J) GO TO 155
-  115 IF (R .GT. .5898437) GO TO 120
+      IF (R .GT. .5898437) GO TO 120
       R=R+3.90625E-2
       GO TO 125
   120 R=R-.21875
   125 K=I
 C                                  SELECT A CENTRAL ELEMENT OF THE
 C                                  ARRAY AND SAVE IT IN LOCATION T
-      IJ = I +  (DFLOAT (J-I) * R)
+C     IJ = I +  (DFLOAT (J-I) * R)
+      IJ = I +  INT(DFLOAT (J-I) * R)
       T=X(IJ)
 C                                  IF FIRST ELEMENT OF ARRAY IS GREATER
 C                                  THAN T, INTERCHANGE WITH T
@@ -765,14 +768,15 @@ C
       J=NN
       R=.375
   210 IF (I .EQ. J) GO TO 255
-  215 IF (R .GT. .5898437) GO TO 220
+      IF (R .GT. .5898437) GO TO 220
       R=R+3.90625E-2
       GO TO 225
   220 R=R-.21875
   225 K=I
 C                                  SELECT A CENTRAL ELEMENT OF THE
 C                                  ARRAY AND SAVE IT IN LOCATION T
-      IJ = I + (DFLOAT (J-I) *R)
+C     IJ = I + (DFLOAT (J-I) *R)
+      IJ = I +  INT(DFLOAT (J-I) * R)
       T=X(IJ)
       TY= Y(IJ)
 C                                  IF FIRST ELEMENT OF ARRAY IS GREATER
@@ -860,7 +864,8 @@ C CLEAN UP
 C
   300 IF (KFLAG.GE.1) RETURN
       DO 310 I=1,NN
-  310 X(I) = -X(I)
+      X(I) = -X(I)
+  310 END DO
       RETURN
       END
 

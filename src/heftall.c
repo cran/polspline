@@ -1,5 +1,5 @@
 /*
-*  Copyright (C) 1993--2002  Charles Kooperberg
+*  Copyright (C) 1993--2018  Charles Kooperberg
 *
 *  This program is free software; you can redistribute it and/or modify
 *  it under the terms of the GNU General Public License as published by
@@ -712,8 +712,8 @@ int nk,**icoef;
 /* The rest is a bit tricking with the correct indices */
       for(i=0;i<nk-2;i++){
          for(j=i;j<i+4;j++){
-            if(j>0 && j<nk+1 && (i!=0 || j!=3)){
-               for(k=i+1;k<j+2;k++){
+            for(k=i+1;k<j+2;k++){
+               if(j>0 && j<nk+1 && (i!=0 || j!=3)){
                   if(k != 1){
                      coef3[i][0][j] += -coef2[i][k]*pow(knots[k-2],3.);
                      coef3[i][1][j] += 3.*coef2[i][k]*pow(knots[k-2],2.);
@@ -1385,9 +1385,6 @@ int what,nk,ndata,nint,*delta;
 
 /* the integral part, anything related to basisfunction 1 goes different */
    for(i=0;i<nint;i++){
-if(10*(i/10)==i){
-i=i;
-}
       lam = exp(lambda(nk,basint,theta,i));
       lm0 = lam*mult[i];
       logl += lm0;

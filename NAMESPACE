@@ -1,5 +1,5 @@
 
-useDynLib(polspline)
+useDynLib(polspline,.registration = TRUE)
 
 export(unstrip, hare, plot.hare, print.hare, summary.hare, dhare, hhare, phare,
 qhare, rhare, xhare, heft, plot.heft, print.heft, summary.heft, dheft, hheft,

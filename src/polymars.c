@@ -1,5 +1,5 @@
 /*
-*  Copyright (C) 1997--2002  Charles Kooperberg and Martin O'Connor
+*  Copyright (C) 1997--2018  Charles Kooperberg and Martin O'Connor
 *
 *  This program is free software; you can redistribute it and/or modify
 *  it under the terms of the GNU General Public License as published by
@@ -315,7 +315,7 @@ static int dsptri(char *uplo, int *n, double *ap, int * ipiv, double *work, int 
 /*----------------------------------------------------------------*/
 /* This function is called from Splus function polymars*/
 /*==============================================================*/
-void polymars(int *pred,
+void polymarsF(int *pred,
 	  int *resp, 
 	  int *ncases, 
 	  double *datamatrix, 
@@ -511,7 +511,6 @@ design matrix for basis function.
   int col_minder;
   struct matrix2 *YtXXtX_expanded;
   double standardise_const;
-  double intercept_sd;
 
   if(Verbose == TRUE)
     {
@@ -1359,7 +1358,7 @@ an index to the best candidate it finds*/
   int i, j, k,l,m,index,ok;
   int nrow;
   double column_minder,row_minder;
-  double E, E_inv,dok1,dok2,dok3;
+  double E, E_inv,dok3;
   struct basis_function *model_function;
   struct link *YtXXtX_column;
   double Rao_D;
@@ -1839,6 +1838,7 @@ static void update_model(struct matrix2 *YtXXtX_expanded,
   current_predictor_values1 = 
     &data_matrix->matrix[((predictor1-1)+responses)*cases];
   
+  current_predictor_values2 = current_predictor_values1;
   if(predictor2!=0)
     {
       current_predictor_values2 = 
@@ -2592,7 +2592,7 @@ static int initial_model(struct basis_function_matrix *model,
 {
 /* Set up the initial model, by default it is a model containing only
 the intercept*/
-  int i,j,l,m,predictor_1,predictor_2,ok,knot_1_index,knot_2_index,mesh_index;
+  int i,j,l,m,predictor_1,predictor_2,ok,knot_1_index,knot_2_index;
   double *X_ptr , knot_1_value=0,knot_2_value=0;
   double rss_for_model;
   struct link *YtXXtX_column;
@@ -4023,7 +4023,7 @@ static int idamax(int *n, double *dx, int *incx)
 
 
     /* System generated locals */
-    int ret_val, i__1;
+    int ret_val;
     double d__1;
 
     /* Local variables */
@@ -4060,7 +4060,6 @@ static int idamax(int *n, double *dx, int *incx)
     ix = 1;
     dmax__ = abs(DX(1));
     ix += *incx;
-    i__1 = *n;
     for (i = 2; i <= *n; ++i) {
 	if ((d__1 = DX(ix), abs(d__1)) <= dmax__) {
 	    goto L5;
@@ -4077,7 +4076,6 @@ L5:
 
 L20:
     dmax__ = abs(DX(1));
-    i__1 = *n;
     for (i = 2; i <= *n; ++i) {
 	if ((d__1 = DX(i), abs(d__1)) <= dmax__) {
 	    goto L30;
@@ -4105,7 +4103,6 @@ static int dswap(int *n, double *dx, int *incx,
 
 
     /* System generated locals */
-    int i__1;
 
     /* Local variables */
     static int i, m;
@@ -4144,7 +4141,6 @@ static int dswap(int *n, double *dx, int *incx,
     if (*incy < 0) {
 	iy = (-(*n) + 1) * *incy + 1;
     }
-    i__1 = *n;
     for (i = 1; i <= *n; ++i) {
 	dtemp = DX(ix);
 	DX(ix) = DY(iy);
@@ -4165,7 +4161,6 @@ L20:
     if (m == 0) {
 	goto L40;
     }
-    i__1 = m;
     for (i = 1; i <= m; ++i) {
 	dtemp = DX(i);
 	DX(i) = DY(i);
@@ -4177,7 +4172,6 @@ L20:
     }
 L40:
     mp1 = m + 1;
-    i__1 = *n;
     for (i = mp1; i <= *n; i += 3) {
 	dtemp = DX(i);
 	DX(i) = DY(i);
@@ -4209,7 +4203,6 @@ static int dspr(char *uplo, int *n, double *alpha,
 
 
     /* System generated locals */
-    int i__1, i__2;
 
     /* Local variables */
     static int info;
@@ -4338,12 +4331,10 @@ static int dspr(char *uplo, int *n, double *alpha,
 /*        Form  A  when upper triangle is stored in AP. */
 
 	if (*incx == 1) {
-	    i__1 = *n;
 	    for (j = 1; j <= *n; ++j) {
 		if (X(j) != 0.) {
 		    temp = *alpha * X(j);
 		    k = kk;
-		    i__2 = j;
 		    for (i = 1; i <= j; ++i) {
 			AP(k) += X(i) * temp;
 			++k;
@@ -4355,12 +4346,10 @@ static int dspr(char *uplo, int *n, double *alpha,
 	    }
 	} else {
 	    jx = kx;
-	    i__1 = *n;
 	    for (j = 1; j <= *n; ++j) {
 		if (X(jx) != 0.) {
 		    temp = *alpha * X(jx);
 		    ix = kx;
-		    i__2 = kk + j - 1;
 		    for (k = kk; k <= kk+j-1; ++k) {
 			AP(k) += X(ix) * temp;
 			ix += *incx;
@@ -4377,12 +4366,10 @@ static int dspr(char *uplo, int *n, double *alpha,
 /*        Form  A  when lower triangle is stored in AP. */
 
 	if (*incx == 1) {
-	    i__1 = *n;
 	    for (j = 1; j <= *n; ++j) {
 		if (X(j) != 0.) {
 		    temp = *alpha * X(j);
 		    k = kk;
-		    i__2 = *n;
 		    for (i = j; i <= *n; ++i) {
 			AP(k) += X(i) * temp;
 			++k;
@@ -4394,12 +4381,10 @@ static int dspr(char *uplo, int *n, double *alpha,
 	    }
 	} else {
 	    jx = kx;
-	    i__1 = *n;
 	    for (j = 1; j <= *n; ++j) {
 		if (X(jx) != 0.) {
 		    temp = *alpha * X(jx);
 		    ix = jx;
-		    i__2 = kk + *n - j;
 		    for (k = kk; k <= kk+*n-j; ++k) {
 			AP(k) += X(ix) * temp;
 			ix += *incx;
@@ -4432,7 +4417,6 @@ static int dscal(int *n, double *da, double *dx, int *incx)
 
 
     /* System generated locals */
-    int i__1, i__2;
 
     /* Local variables */
     static int i, m, nincx, mp1;
@@ -4461,8 +4445,6 @@ static int dscal(int *n, double *da, double *dx, int *incx)
 /*        code for increment not equal to 1 */
 
     nincx = *n * *incx;
-    i__1 = nincx;
-    i__2 = *incx;
     for (i = 1; *incx < 0 ? i >= nincx : i <= nincx; i += *incx) {
 	DX(i) = *da * DX(i);
 /* L10: */
@@ -4479,7 +4461,6 @@ L20:
     if (m == 0) {
 	goto L40;
     }
-    i__2 = m;
     for (i = 1; i <= m; ++i) {
 	DX(i) = *da * DX(i);
 /* L30: */
@@ -4489,7 +4470,6 @@ L20:
     }
 L40:
     mp1 = m + 1;
-    i__2 = *n;
     for (i = mp1; i <= *n; i += 5) {
 	DX(i) = *da * DX(i);
 	DX(i + 1) = *da * DX(i + 1);
@@ -4683,7 +4663,6 @@ static int drot(int *n, double *dx, int *incx, double *dy, int *incy, double *c,
 
 
     /* System generated locals */
-    int i__1;
 
     /* Local variables */
     static int i;
@@ -4720,7 +4699,6 @@ static int drot(int *n, double *dx, int *incx, double *dy, int *incy, double *c,
     if (*incy < 0) {
 	iy = (-(*n) + 1) * *incy + 1;
     }
-    i__1 = *n;
     for (i = 1; i <= *n; ++i) {
 	dtemp = *c * DX(ix) + *s * DY(iy);
 	DY(iy) = *c * DY(iy) - *s * DX(ix);
@@ -4734,7 +4712,6 @@ static int drot(int *n, double *dx, int *incx, double *dy, int *incy, double *c,
 /*       code for both increments equal to 1 */
 
 L20:
-    i__1 = *n;
     for (i = 1; i <= *n; ++i) {
 	dtemp = *c * DX(i) + *s * DY(i);
 	DY(i) = *c * DY(i) - *s * DX(i);
@@ -4758,7 +4735,6 @@ static int dcopy(int *n, double *dx, int *incx, double *dy, int *incy)
 
 
     /* System generated locals */
-    int i__1;
 
     /* Local variables */
     static int i, m, ix, iy, mp1;
@@ -4794,7 +4770,6 @@ static int dcopy(int *n, double *dx, int *incx, double *dy, int *incy)
     if (*incy < 0) {
 	iy = (-(*n) + 1) * *incy + 1;
     }
-    i__1 = *n;
     for (i = 1; i <= *n; ++i) {
 	DY(iy) = DX(ix);
 	ix += *incx;
@@ -4813,7 +4788,6 @@ L20:
     if (m == 0) {
 	goto L40;
     }
-    i__1 = m;
     for (i = 1; i <= m; ++i) {
 	DY(i) = DX(i);
 /* L30: */
@@ -4823,7 +4797,6 @@ L20:
     }
 L40:
     mp1 = m + 1;
-    i__1 = *n;
     for (i = mp1; i <= *n; i += 7) {
 	DY(i) = DX(i);
 	DY(i + 1) = DX(i + 1);
@@ -4851,9 +4824,6 @@ static int dspmv(char *uplo, int *n, double *alpha,
 	double *y, int *incy)
 {
 
-
-    /* System generated locals */
-    int i__1, i__2;
 
     /* Local variables */
     static int info;
@@ -5001,13 +4971,11 @@ static int dspmv(char *uplo, int *n, double *alpha,
     if (*beta != 1.) {
 	if (*incy == 1) {
 	    if (*beta == 0.) {
-		i__1 = *n;
 		for (i = 1; i <= *n; ++i) {
 		    Y(i) = 0.;
 /* L10: */
 		}
 	    } else {
-		i__1 = *n;
 		for (i = 1; i <= *n; ++i) {
 		    Y(i) = *beta * Y(i);
 /* L20: */
@@ -5016,14 +4984,12 @@ static int dspmv(char *uplo, int *n, double *alpha,
 	} else {
 	    iy = ky;
 	    if (*beta == 0.) {
-		i__1 = *n;
 		for (i = 1; i <= *n; ++i) {
 		    Y(iy) = 0.;
 		    iy += *incy;
 /* L30: */
 		}
 	    } else {
-		i__1 = *n;
 		for (i = 1; i <= *n; ++i) {
 		    Y(iy) = *beta * Y(iy);
 		    iy += *incy;
@@ -5041,12 +5007,10 @@ static int dspmv(char *uplo, int *n, double *alpha,
 /*        Form  y  when AP contains the upper triangle. */
 
 	if (*incx == 1 && *incy == 1) {
-	    i__1 = *n;
 	    for (j = 1; j <= *n; ++j) {
 		temp1 = *alpha * X(j);
 		temp2 = 0.;
 		k = kk;
-		i__2 = j - 1;
 		for (i = 1; i <= j-1; ++i) {
 		    Y(i) += temp1 * AP(k);
 		    temp2 += AP(k) * X(i);
@@ -5060,13 +5024,11 @@ static int dspmv(char *uplo, int *n, double *alpha,
 	} else {
 	    jx = kx;
 	    jy = ky;
-	    i__1 = *n;
 	    for (j = 1; j <= *n; ++j) {
 		temp1 = *alpha * X(jx);
 		temp2 = 0.;
 		ix = kx;
 		iy = ky;
-		i__2 = kk + j - 2;
 		for (k = kk; k <= kk+j-2; ++k) {
 		    Y(iy) += temp1 * AP(k);
 		    temp2 += AP(k) * X(ix);
@@ -5086,13 +5048,11 @@ static int dspmv(char *uplo, int *n, double *alpha,
 /*        Form  y  when AP contains the lower triangle. */
 
 	if (*incx == 1 && *incy == 1) {
-	    i__1 = *n;
 	    for (j = 1; j <= *n; ++j) {
 		temp1 = *alpha * X(j);
 		temp2 = 0.;
 		Y(j) += temp1 * AP(kk);
 		k = kk + 1;
-		i__2 = *n;
 		for (i = j + 1; i <= *n; ++i) {
 		    Y(i) += temp1 * AP(k);
 		    temp2 += AP(k) * X(i);
@@ -5106,14 +5066,12 @@ static int dspmv(char *uplo, int *n, double *alpha,
 	} else {
 	    jx = kx;
 	    jy = ky;
-	    i__1 = *n;
 	    for (j = 1; j <= *n; ++j) {
 		temp1 = *alpha * X(jx);
 		temp2 = 0.;
 		Y(jy) += temp1 * AP(kk);
 		ix = jx;
 		iy = jy;
-		i__2 = kk + *n - j;
 		for (k = kk + 1; k <= kk+*n-j; ++k) {
 		    ix += *incx;
 		    iy += *incy;
@@ -5149,7 +5107,6 @@ static double ddot(int *n, double *dx, int *incx, double *dy, int *incy)
 
 
     /* System generated locals */
-    int i__1;
     double ret_val;
 
     /* Local variables */
@@ -5190,7 +5147,6 @@ static double ddot(int *n, double *dx, int *incx, double *dy, int *incy)
     if (*incy < 0) {
 	iy = (-(*n) + 1) * *incy + 1;
     }
-    i__1 = *n;
     for (i = 1; i <= *n; ++i) {
 	dtemp += DX(ix) * DY(iy);
 	ix += *incx;
@@ -5210,7 +5166,6 @@ L20:
     if (m == 0) {
 	goto L40;
     }
-    i__1 = m;
     for (i = 1; i <= m; ++i) {
 	dtemp += DX(i) * DY(i);
 /* L30: */
@@ -5220,7 +5175,6 @@ L20:
     }
 L40:
     mp1 = m + 1;
-    i__1 = *n;
     for (i = mp1; i <= *n; i += 5) {
 	dtemp = dtemp + DX(i) * DY(i) + DX(i + 1) * DY(i + 1) + DX(i + 2) * 
 		DY(i + 2) + DX(i + 3) * DY(i + 3) + DX(i + 4) * DY(i + 4);
@@ -6342,6 +6296,7 @@ are put in for continuous variables it is also used to sort predictor values
 into order statistics to calculate knots in continuous predictors-*/
 
 
+      mesh = (double *)Salloc(10,double);
   levels = (double *)Salloc(2*cases+1,double);
   for(i=0;i<2*cases+1;i++)levels[i]=0.;
   
@@ -6578,7 +6533,7 @@ in after the usual knots for each predictor
 struct matrix1 *a; */
 static double condition()
 {
-   double aa[DIM5][DIM5],bb[DIM5],rcond,tt;
+   double aa[DIM5][DIM5],bb[DIM5],rcond;
    int kpvt[DIM5];
    int i,j,n,na;
    n = XtX_newinverse->nrow; 

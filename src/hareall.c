@@ -1,5 +1,5 @@
 /*
-*  Copyright (C) 1993--2002  Charles Kooperberg
+*  Copyright (C) 1993--2018  Charles Kooperberg
 *
 *  This program is free software; you can redistribute it and/or modify
 *  it under the terms of the GNU General Public License as published by
@@ -129,7 +129,7 @@ static double *raoscorecopy,*newtonscp,*compallss,*complogbasis0,*complogbasis1;
 static double *remdimxty,**raohhh,**getsexx,**compallhhh,**remdimxtx;
 static double *dgvector(),**dgmatrix(),testbasis();
 static float *ddgvector();
-static short **iigmatrix(),*iigvector();
+static short **iigmatrix();
 static int *igvector(),**igmatrix(),zlocation();
 static double newton(),adders(),search(),eint(),xeint();
 static struct space *definegspace(),*hdefinegspace();
@@ -667,6 +667,8 @@ int i0,mind;
    find..  - find location for new knot under various circumstances */
    
 /* initialization */
+   ll=0;
+   uu=0;	
    lloc=0;
    uloc=0;
    bloc=-1;
@@ -2117,7 +2119,7 @@ int ncov,ndata,silent;
 
 {
    int i,j,k,n,bb1=0,bt1=0,nb1,nb2,nt1,nt2,bb2=0,is,bw=0;
-   double criterion,wald=0.,**x,*y,**xtx,*xty;
+   double criterion,wald=0.,*y,**xtx,*xty;
 
 /* i,j,k  - counter
    n      - can this basisfunction be removed? 1=yes, 0=no

@@ -1,5 +1,5 @@
 /*
-*  Copyright (C) 1995--2002  Charles Kooperberg
+*  Copyright (C) 1995--2018  Charles Kooperberg
 *
 *  This program is free software; you can redistribute it and/or modify
 *  it under the terms of the GNU General Public License as published by
@@ -415,6 +415,8 @@ int i0,mind;
    pind..  - pind location for new knot under various circumstances */
    
 /* initialization */
+   ll=0;
+   uu=0;
    bloc = -1;
    crit = -pow((double)10.,(double)20.);
    sorted = v4;

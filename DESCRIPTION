@@ -1,6 +1,6 @@
 Package: polspline
-Version: 1.1.12
-Date: 2015-07-14
+Version: 1.1.13
+Date: 2018-06-14
 Title: Polynomial Spline Routines
 Author: Charles Kooperberg <clk@fredhutch.org>
 Maintainer: Charles Kooperberg <clk@fredhutch.org>
@@ -9,7 +9,7 @@ Description: Routines for the polynomial spline fitting routines
   lspec, polyclass, and polymars, by C. Kooperberg and co-authors.
 Imports: stats, graphics
 License: GPL (>= 2)
-Packaged: 2015-07-14 17:49:13 UTC; clk
 NeedsCompilation: yes
+Packaged: 2018-06-14 19:39:07 UTC; clk
 Repository: CRAN
-Date/Publication: 2015-07-14 21:44:12
+Date/Publication: 2018-06-14 21:55:50 UTC

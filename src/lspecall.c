@@ -1,5 +1,5 @@
 /*
-*  Copyright (C) 1993--2002  Charles Kooperberg
+*  Copyright (C) 1993--2018  Charles Kooperberg
 *
 *  This program is free software; you can redistribute it and/or modify
 *  it under the terms of the GNU General Public License as published by
@@ -29,7 +29,7 @@ void F77_NAME(xdsisl)(double[][DIM5], int *, int *, int *, double *);
 void F77_NAME(xdsidi)(double[][DIM5], int *, int *, int *, double *, int *, double *, int *);
 
 static void tslusolve(),tsluinverse(),tsintsum(),tsallocer(),tspsps2(),tsbasis();
-static void tsb1(),tsb2(),tsb3(),tsb4(),tsb5(),tsrerror();
+static void tsb1(),tsb2(),tsb3(),tsb4(),tsb5();
 static double *tssdvec(),**tssdmat(),***tssdtri(),**uumm,*uuaa,*uuww,*uuvv1,*uuvv2;
 static double *uubetan,**xxcumul,tsraod(),tsraoc(),tsnew(),tslogall();
 static int *tssivec(),*uuika,silent,tsadd(),tsrem();
@@ -416,7 +416,7 @@ static  int tsadd(basis,info,nd,n,kts,mind,xx,bb,cumul,spk,nk,ns,cank,cans,nothe
 double **basis,**info,*kts,*xx,*bb,**cumul;
 int n,*nk,*ns,mind,nd,*spk,cank,cans,*nothere;
 {
-   int i,j,k,bestloc= -1,*ika,bestlod= -1;
+   int i,j,k,bestloc= -1,*ika,bestlod= -1,ix;
    double bestraoc= -1.,nowrao,**mm,r1,*aa,*ww,bestraod= -1.;
 
 /* i,j - counter
@@ -502,7 +502,8 @@ int n,*nk,*ns,mind,nd,*spk,cank,cans,*nothere;
          if(ika[0]==0)i++;
          j=1;
       }
-      for(i=i;i<n;i++){
+      ix=i;
+      for(i=ix;i<n;i++){
          if(i<ika[j]-mind){  
             nowrao=
                tsraoc(i,mm,n,(*nk),xx,kts,cumul,ika[0],ww,aa,bb,basis,nd,spk);
@@ -882,7 +883,7 @@ static double tsnew(data,n,beta,er,score,info,nk,zz,ff,coef2,xx,kk,cumul,
 double *data,*beta,*score,**info,*zz,*ff,***coef2,*xx,*kk,**cumul,**basis,mass;
 int n,*er,nk,ns,nd,*spk,*nothere,*fl;
 {
-   int i,j,k,i1;
+   int i,j,k,i1,jx;
    double logold,lognew,*betan,r,zerror;
    double uu[7],vv[7],xz;
    int k1,k2,k3,l,l2;
@@ -996,7 +997,8 @@ int n,*er,nk,ns,nd,*spk,*nothere,*fl;
             if(beta[j]<mass){
                nothere[spk[j-nk]]=1;
                nothere[0]++;
-               for(j=j;j<nd-1;j++)spk[j-nk]=spk[j+1-nk];
+               jx=j;
+               for(j=jx;j<nd-1;j++)spk[j-nk]=spk[j+1-nk];
                (*er)= -1;
                return 0.;
             }
@@ -1019,7 +1021,7 @@ int n,nk,what,nd,ns,*spk,*fl;
 
 /* what: 0 loglikelihood only, 1 also score and hessian */
 {
-   int i,j,k,uu;
+   int i,j,k,uu,kx;
    double logl,r1,b1,b3;
 
 /* i,j,k - counter
@@ -1075,7 +1077,8 @@ int n,nk,what,nd,ns,*spk,*fl;
             if(fl[2*j]>k)k=fl[2*j];
             uu=fl[2*i+1];
             if(fl[2*j+1]>uu)uu=fl[2*j+1];
-            for(k=k;k<uu;k++)info[i][j]-=basis[k][i]*bb[k]*basis[k][j];
+            kx=k;
+            for(k=kx;k<uu;k++)info[i][j]-=basis[k][i]*bb[k]*basis[k][j];
          }
       }
 

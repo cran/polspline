@@ -1,19 +1,20 @@
 /*
-*  Copyright (C) 1993--2002  Charles Kooperberg
 *
-*  This program is free software; you can redistribute it and/or modify
-*  it under the terms of the GNU General Public License as published by
-*  the Free Software Foundation; either version 2 of the License, or
-*  (at your option) any later version.
+* Copyright [1993-2018] [Charles Kooperberg]
 *
-*  This program is distributed in the hope that it will be useful,
-*  but WITHOUT ANY WARRANTY; without even the implied warranty of
-*  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-*  GNU General Public License for more details.
+*   Licensed under the Apache License, Version 2.0 (the "License");
+*   you may not use this file except in compliance with the License.
+*   You may obtain a copy of the License at
 *
-*  The text of the GNU General Public License, version 2, is available
-*  as http://www.gnu.org/copyleft or by writing to the Free Software
-*  Foundation, 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+*       http://www.apache.org/licenses/LICENSE-2.0
+*
+*   Unless required by applicable law or agreed to in writing, software
+*   distributed under the License is distributed on an "AS IS" BASIS,
+*   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+*   See the License for the specific language governing permissions and
+*   limitations under the License.
+*   Foundation, 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+*
 */
 #include <math.h>
 #include <stdio.h>
@@ -34,13 +35,13 @@ static void coeff() ,start1() ,start2() ,suffstat1() ,suffstat2() ,knotplace();
 static double dens3(),numint(),expin(),dens33(),onesearch();
 static double fun2(),tails(),fun48(),numints(),expin2();
 static void intnum2(),intnum3(),intnum4();
-static void qtop(),ptoq();
+static void qtop(),qtop1(),ptoq();
 static double pqexp(),pqnum(),lpqexpi(),pqdens();
 /******************************************************************************/
 /* this is the main program                                                   */
 /* remove follows at the end                                                  */
 
-int logcensor(idelete,iknotauto,sample,nsample,bound,
+void logcensor(idelete,iknotauto,sample,nsample,bound,
               SorC,ynknots,yknots,ycoef,alpha,wk,wk2,logl)
 
 int *idelete,*iknotauto,nsample[],SorC[],*ynknots;
@@ -72,11 +73,10 @@ double aic,aicmin,r1,rknots[NC],xcoef2[NC][NC];
    alpha - alpha value in aic               
    rknots - copy of knots                                                     */
 
-int i,j,nkstart,iremove=0,iknots2[NC],iknots[NC],xiknots[NC];
+int i,j,nkstart,iremove=0,iknots[NC],xiknots[NC];
 /* local integers
    i,j,k - counter, utility                                                   
    nkstart - number of knots at the beginning of the algorithm
-   iknots2 - copy of iknots
    iremove - number of the knot that is removed                               */
 
 
@@ -95,7 +95,7 @@ int i,j,nkstart,iremove=0,iknots2[NC],iknots[NC],xiknots[NC];
          (void)Rprintf("sample is too small\n");
       else
          SorC[0] = 2;
-      return 0;
+      return;
    }
 
 /* determine the number of starting knots                                     */
@@ -128,9 +128,9 @@ int i,j,nkstart,iremove=0,iknots2[NC],iknots[NC],xiknots[NC];
    for(i=0;i<nknots;i++)yknots[i]=knots[i];
 
 /* some possible errors                                                       */
-   if(SorC[0] == -2)return 0;
-   if(SorC[0] == 647)return 0;
-   if(SorC[0] == 23)return 0;
+   if(SorC[0] == -2)return;
+   if(SorC[0] == 647)return;
+   if(SorC[0] == 23)return;
 
 /* Compute stuff later used for computing sufficient statistics.              */
    suffstat1(suffcombine,sample,nsample);
@@ -141,7 +141,7 @@ int i,j,nkstart,iremove=0,iknots2[NC],iknots[NC],xiknots[NC];
 /* Compute coefficient matrix.                                                */
    itrouble = 0;
    do{   
-      coeff(coef2);
+      coeff(coef2); 
 
 /* Compute sufficient statistics.                                             */
       suffstat2(suffcombine,coef2,sufficient);
@@ -171,7 +171,7 @@ int i,j,nkstart,iremove=0,iknots2[NC],iknots[NC],xiknots[NC];
          if(nknots==nkstart){
              SorC[0] = -1;
              SorC[27]=0;
-             return 0;
+             return;
          }
          if(SorC[0]==-647)
             (void)Rprintf("Smallest number of knots tried is %d\n",nknots+1);
@@ -200,22 +200,19 @@ int i,j,nkstart,iremove=0,iknots2[NC],iknots[NC],xiknots[NC];
          logl[nknots-1]=loglikelihood*nsample[0]+log(qt[1])*nsample[1]; /* &&&&& */
          if(aic <= aicmin){
 
-/* Then we mark the solution iknots2 is put to 0, so we can fill it later     */
+/* Then we mark the solution   */
             aicmin = aic;
             xczheta = czheta;
             xnknots = nknots;
             for(i=0; i<NC; i++){
                xzheta[i] = zheta[i];
                xiknots[i] = iknots[i];
-               iknots2[i] = 0;
                for(j=0;j<NC;j++)
                   xcoef2[i][j]=coef2[i][j];
             }
 
 /* that is we fill it here, iknots contains the rank numbers of the remaining
    knots                                                                      */
-            for(i=0;i<nknots;i++)
-               iknots2[iknots[i]] = 1;
          }
          else{
             r1 = -2. * loglikelihood * nsample[0] + *alpha * 2;
@@ -269,7 +266,7 @@ int i,j,nkstart,iremove=0,iknots2[NC],iknots[NC],xiknots[NC];
    ycoef[0]=ycoef[0]+ycoef[1]*qt[0]+log(qt[1]);
    ycoef[1]=ycoef[1]*qt[1];
    
-   return nkstart;
+   return;
 }
 /******************************************************************************/
 
@@ -890,7 +887,6 @@ double candidate[],sample[],bound[];
 int nsample[],accuracy;
 {
    double r0,r1,likl,r3[NC+1],aa[6],bb[6];
-   double rtt;
    int i1,i2,i3,i4,iv,iw;
    r0=exp((double)(-740));
 
@@ -954,7 +950,6 @@ int nsample[],accuracy;
       }
 /* the right censored data                                                    */
       for(i1=0;i1<nsample[3];i1++){
-         rtt=likl;
          i2=i1+nsample[1]+2*nsample[2];
 /* in which interval is the datapoint                                         */
          for(i3=0;knots[i3]<sample[i2] && i3 < nknots;i3++);
@@ -1547,7 +1542,7 @@ double coef2[][NC];
    coef2[nknots-2][nknots]   = (knots[nknots-3] - knots[nknots-1]) / 
                                (knots[nknots-1] - knots[nknots-2]);
    coef2[nknots-2][nknots+1] = (knots[nknots-2] - knots[nknots-3]) /
-                               (knots[nknots-1] - knots[nknots-2]);
+                               (knots[nknots-1] - knots[nknots-2]);    
 
 /* we first create basis functions that are 0 before knot[i] and constant
    after knot [i+3]                                                           */
@@ -1587,9 +1582,9 @@ double coef2[][NC];
 
 /* The rest is a bit tricking with the correct indices                        */
    for(i=0; i<nknots-1; i++){
-      for(j=i; j<i+4; j++){
-         if(j > 0 && j < nknots+1 && (i != 0 || j != 3)){
-            for(k=i+1; k<j+2; k++){
+      for(j=i; j<i+4; j++){ 
+         for(k=i+1; k<j+2; k++){ 
+            if(j > 0 && j < nknots+1 && (i != 0 || j != 3)){
                if(k != 1){
                   coef[i][0][j] = coef[i][0][j] - 
                                   coef2[i][k] * pow(knots[k-2], 3.);
@@ -1599,9 +1594,9 @@ double coef2[][NC];
                   coef[i][3][j] = coef[i][3][j] + coef2[i][k];
                }
             }
-         }
-      }
-   }
+         }  
+      }  
+   }    
 }
 /******************************************************************************/
 
@@ -1887,7 +1882,7 @@ double rknots[],sample[],bound[],smp2[],smp3[],qt[];
 /* these quantities are defined in lhead.h and the files where they originate */
 
 {
-   int i,j=0,j2,k,kk,ll,ia=0,il;
+   int i,j=0,j2,k,kk,ll,ia=0,il,kx;
 /* local integers
    i k     - counters
    j j2    - is there an odd or an even number of knots?                      */
@@ -2074,7 +2069,8 @@ double rknots[],sample[],bound[],smp2[],smp3[],qt[];
             k = 0;
             for(i=1;i<nknots-1;i++){
                rknots[i]=(rknots[i]-0.5);
-               for(k=k;k<=il;k++){
+               kx=k;
+               for(k=kx;k<=il;k++){
                   if(smp3[k]>=rknots[i]){
                      knots[i]=((rknots[i]-smp3[k-1])*smp2[k]+
                              (smp3[k]-rknots[i])*smp2[k-1])/(smp3[k]-smp3[k-1]);
@@ -2886,17 +2882,15 @@ void pqlsd(coef,knots,bound,ipq,pp,qq,lk,lp)
 double coef[],knots[],pp[],bound[],qq[];
 int *ipq,*lk,*lp;
 {
-   double v1[2],v2[2];
+   double v1[2],v20;
    int ij;
    if((*ipq)==1)
       qtop(coef,knots,bound,pp,qq,*lp,*lk);
    else{
-      v2[0]=knots[2];
-      ij=1;
-      qtop(coef,knots,bound,v1,v2,ij,*lk);
-      v2[0]=v2[0];
-      for(ij=0;ij<*lp;ij++)pp[ij]=pp[ij]*v2[0];
-      ptoq(coef,knots,bound,pp,qq,*lp,*lk,v2[0]);
+      v20=knots[2];
+      qtop1(coef,knots,bound,v1,v20,*lk);
+      for(ij=0;ij<*lp;ij++)pp[ij]=pp[ij]*v20;
+      ptoq(coef,knots,bound,pp,qq,*lp,*lk,v20);
    }
 }
 /******************************************************************************/
@@ -2906,6 +2900,7 @@ int lp,lk;
 {
    double l0,l1,r0,r1, s1,s2,s3,s4,x1,x2,x3,sj,xj;
    int i,j,vr,vl,k;
+   j=0;
    l0 = coef[0];
    l1 = coef[1];
    r0 = l0;
@@ -2963,6 +2958,32 @@ int lp,lk;
    }
 }
 /******************************************************************************/
+static void qtop1(coef,knots,bound,pp,v2,lk)
+double coef[],knots[],bound[],pp[],v2;
+int lk;
+{
+   double l0,l1,r0,r1,s2;
+   int i,j,k,vr,vl;
+   l0 = coef[0];
+   l1 = coef[1];
+   r0 = l0;
+   r1 = l1;
+   for(i=0;i<lk;i++){
+      r0 = r0 - coef[i+2]*knots[i]*knots[i]*knots[i];
+      r1 = r1 + 3.* coef[i+2]*knots[i]*knots[i];
+   }
+   vr = 4;
+   if(bound[2]<0.5)vr=3;
+   vl = 2;
+   if(bound[0]<0.5)vl=1;
+   s2 = pqexp(vl,knots[0],bound[1],l1,l0);
+   for(j=1;j<lk;j++)
+      s2 = s2 + pqnum(knots[j-1],knots[j],j,knots,coef);
+   s2 = s2+fabs(pqexp(vr,knots[lk-1],bound[3],r1,r0));
+   v2=s2;
+   pp[0]=pp[0]/s2;
+}
+/******************************************************************************/
 static void qtop(coef,knots,bound,pp,qq,lp,lk)
 double coef[],knots[],bound[],pp[],qq[];
 int lp,lk;
@@ -3001,7 +3022,7 @@ int lp,lk;
             pp[i] = s2;
          } 
       }
-      if(k==lk && ko != lk){
+      if(k==lk && ko != lk &&i>0){
          s2 = s2 + pqnum(qq[i-1],knots[ko],ko,knots,coef);
          if(k>ko+1)
                for(j=ko+1;j<k;j++)

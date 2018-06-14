@@ -1,19 +1,20 @@
 /*
-*  Copyright (C) 1997--2002  Charles Kooperberg
 *
-*  This program is free software; you can redistribute it and/or modify
-*  it under the terms of the GNU General Public License as published by
-*  the Free Software Foundation; either version 2 of the License, or
-*  (at your option) any later version.
+* Copyright [1993-2018] [Charles Kooperberg]
 *
-*  This program is distributed in the hope that it will be useful,
-*  but WITHOUT ANY WARRANTY; without even the implied warranty of
-*  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-*  GNU General Public License for more details.
+*   Licensed under the Apache License, Version 2.0 (the "License");
+*   you may not use this file except in compliance with the License.
+*   You may obtain a copy of the License at
 *
-*  The text of the GNU General Public License, version 2, is available
-*  as http://www.gnu.org/copyleft or by writing to the Free Software
-*  Foundation, 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+*       http://www.apache.org/licenses/LICENSE-2.0
+*
+*   Unless required by applicable law or agreed to in writing, software
+*   distributed under the License is distributed on an "AS IS" BASIS,
+*   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+*   See the License for the specific language governing permissions and
+*   limitations under the License.
+*   Foundation, 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+*
 */
 #include <math.h>
 #include <stdio.h>
@@ -1719,6 +1720,7 @@ struct datastruct *data;
    double a,b;
    struct basisfunct *bn;
 /* no deep meanings */
+   m=0;
 /* get (*spc).basis.c3 */
    for(i=0;i<(*spc).ndim;i++){
       bn=&((*spc).basis[i]);
@@ -2054,7 +2056,7 @@ int *ipq,*lk,*lp;
 {
    double *kpl,**cpl,*ppl,*pqx,r;
    double *zz,cor;
-   int i,j,nk,fst,lst;
+   int i,j,nk,fst,lst,jx;
    /* Gaussian quadrature coefficients */
    ww6[1 ]= 0.467913934572691; yy6[1 ]= 0.238619186083197;
    ww6[2 ]= 0.360761573048139; yy6[2 ]= 0.661209386466265;
@@ -2178,8 +2180,9 @@ int *ipq,*lk,*lp;
       else ppl[nk]=z1int(kpl[nk-1],cpl[nk-1],-1)+ppl[nk-1];
    }
 /* correction factor */
-   cor=ppl[nk];
+   cor=1.;
 /* correct the density */
+   for(i=0;i<=nk;i++)cpl[i][0]=cpl[i][0]+log(1./ppl[nk]);
    for(i=0;i<=nk;i++)ppl[i]=ppl[i]/ppl[nk];
    j=0;
 /* initialize */
@@ -2196,7 +2199,8 @@ int *ipq,*lk,*lp;
 /* before the first knot */
    fst=j;
    lst=j-1;
-   for(j=j;j<(*lp) && pq[j]<=zz[1];j++) lst=j;
+   jx=j;
+   for(j=jx;j<(*lp) && pq[j]<=zz[1];j++) lst=j;
    if(lst>=fst){
       if((*ipq)==0) getq0(pq,pqx,fst,lst,cpl[0],kpl[0],bnd[0],cor);
       else getp0(pq,pqx,fst,lst,cpl[0],kpl[0],bnd[0],cor);
@@ -2205,23 +2209,26 @@ int *ipq,*lk,*lp;
    for(i=1;i<nk-1;i++){
       fst=j;
       lst=j-1;
-      for(j=j;j<(*lp) && pq[j]<=zz[i+1];j++) lst=j;
+      jx=j;
+      for(j=jx;j<(*lp) && pq[j]<=zz[i+1];j++) lst=j;
       if(lst>=fst){
          if((*ipq)==0)
             getq1(pq,pqx,fst,lst,cpl[i],kpl[i],kpl[i+1],ppl[i],ppl[i+1]);
          else getp1(pq,pqx,fst,lst,cpl[i],kpl[i],kpl[i+1],ppl[i],ppl[i+1]);
       }
    }
-/* beyond the larst knot */
+/* beyond the last knot */
    fst=j;
    lst=j-1;
-   for(j=j;j<(*lp) && pq[j]<zz[nk];j++) lst=j;
+   jx=j;
+   for(j=jx;j<(*lp) && pq[j]<zz[nk];j++) lst=j;
    if(lst>=fst){
       if((*ipq)==0) getq2(pq,pqx,fst,lst,cpl[nk-1],kpl[nk],bnd[2],cor);
       else getp2(pq,pqx,fst,lst,cpl[nk-1],kpl[nk],bnd[2],cor);
    }
 /* outside the range */
-   for(j=j;j<(*lp);j++){
+   jx=j;
+   for(j=jx;j<(*lp);j++){
       if((*ipq)==0){
          if(bnd[2]>0.5)pqx[j]=kpl[nk];
          else pqx[j]= 1.0e100;
@@ -2294,6 +2301,8 @@ int f,l;
    for(i=1;i<=50;i++)y[i]=y[i-1]+r*(f1[2*(i-1)]+4*f1[2*i-1]+f1[2*i])/3.;
    s=(p1-p0)/y[50];
    for(i=0;i<=50;i++)y[i]=p0+y[i]*s;
+   y[0]=p0;
+   y[50]=p1;
    i=0;
    s=2.*r;
    for(j=f;j<=l;j++){
@@ -2302,7 +2311,7 @@ int f,l;
          if(p[j]>=y[i] && p[j]<=y[i+1]) q[j]=k0+s*i+s*(p[j]-y[i])/(y[i+1]-y[i]);
          else i++;
       }
-      while (q[j]<k0);
+      while ((q[j]<k0)&(i<50));
    }
 }
 /******************************************************************************/
