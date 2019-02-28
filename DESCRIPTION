@@ -1,6 +1,6 @@
 Package: polspline
-Version: 1.1.13
-Date: 2018-06-14
+Version: 1.1.14
+Date: 2019-02-27
 Title: Polynomial Spline Routines
 Author: Charles Kooperberg <clk@fredhutch.org>
 Maintainer: Charles Kooperberg <clk@fredhutch.org>
@@ -10,6 +10,6 @@ Description: Routines for the polynomial spline fitting routines
 Imports: stats, graphics
 License: GPL (>= 2)
 NeedsCompilation: yes
-Packaged: 2018-06-14 19:39:07 UTC; clk
+Packaged: 2019-02-27 21:29:57 UTC; clk
 Repository: CRAN
-Date/Publication: 2018-06-14 21:55:50 UTC
+Date/Publication: 2019-02-28 06:30:03 UTC

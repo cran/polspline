@@ -2144,7 +2144,12 @@ int *ipq,*lk,*lp;
          if(i<nk && i>0){
             j=floor((double)(i-1)/4.);
             r=(double)i/4.-j-0.25;
-            kpl[i]=(1.-r)*knots[j]+r*knots[j+1];
+            if(r>0.01){
+               kpl[i]=(1.-r)*knots[j]+r*knots[j+1];
+            }
+            else {
+               kpl[i]=(1.-r)*knots[j];
+            }
          }
          if(i==0){
             kpl[0]=knots[0]-1;

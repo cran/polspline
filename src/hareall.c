@@ -3739,7 +3739,7 @@ int ncov;
 {
    struct subdim **newdim;
    int i;
-   newdim=(struct subdim **)Salloc(ncov,struct subdim *);
+   newdim=(struct subdim **)Salloc((ncov+1),struct subdim *);
    for(i=0;i<=ncov;i++)
       newdim[i]=(struct subdim *)Salloc(ncov,struct subdim);
    return newdim;
