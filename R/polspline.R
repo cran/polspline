@@ -762,62 +762,26 @@ oldlogspline.to.logspline <- function(obj,data)
    nobj$logl <- obj$logl[obj$logl!=0]
    lx <- length(nobj$logl)
    nobj$logl <- cbind(nobj$maxknots+1-(lx:1),c(rep(2,lx-1),1),nobj$logl)
+   class(nobj) <- "logspline"
    if(!missing(data))nobj$range <- obj$range
    else {
       lx <- 1/(nobj$samples+1)
-      nobj$range <- qoldlogspline(c(lx,1-lx),obj)
+      nobj$range <- qlogspline(c(lx,1-lx),nobj)
    }
    nobj$mind
-   class(nobj) <- "logspline"
    nobj
 }
 poldlogspline <- function(q, fit)
 {
-    if(class(fit)!="oldlogspline")
-       stop("fit is not an oldlogspline object")
-        q <- unstrip(q)
-    sq <- rank(q)
-    q <- sort(q)
-    z <- .C("pqlsd",
-        as.double(fit$coef),
-        as.double(fit$knots),
-        as.double(fit$bound),
-        as.integer(1),
-        pp = as.double(q),
-        as.double(q),
-        as.integer(length(fit$knots)),
-        as.integer(length(q)),
-      PACKAGE = "polspline")
-    zz <- z$pp[sq]
-    if(fit$bound[1] > 0)
-        zz[q<fit$bound[2]] <- 0
-    if(fit$bound[3] > 0)
-        zz[q>fit$bound[4]] <- 1
-    zz
+   fitx <- oldlogspline.to.logspline(fit)
+   plogspline(q,fitx)
 }
-
 qoldlogspline <- function(p, fit)
 {
-    if(class(fit)!="oldlogspline")
-       stop("fit is not an oldlogspline object")
-        p <- unstrip(p)
-    sp <- rank(p)
-    p <- sort(p)
-    z <- .C("pqlsd",
-        as.double(fit$coef),
-        as.double(fit$knots),
-        as.double(fit$bound),
-        as.integer(0),
-        as.double(p),
-        qq = as.double(p),
-        as.integer(length(fit$knots)),
-        as.integer(length(p)),
-      PACKAGE = "polspline")
-    zz <- z$qq[sp]
-    zz[p<0] <- NA
-    zz[p>1] <- NA
-    zz
+   fitx <- oldlogspline.to.logspline(fit)
+   qlogspline(p,fitx)
 }
+
 
 roldlogspline <- function(n, fit)
 {

@@ -11,7 +11,6 @@ extern void logcensor(void *, void *, void *, void *, void *, void *, void *, vo
 extern void nlogcensor(void *, void *, void *, void *, void *, void *);
 extern void nlogcensorx(void *);
 extern void polymarsF(void *, void *, void *, void *, void *, void *, void *, void *, void *, void *, void *, void *, void *, void *, void *, void *, void *, void *, void *, void *, void *, void *, void *, void *, void *, void *, void *, void *, void *, void *, void *, void *, void *, void *, void *, void *, void *);
-extern void pqlsd(void *, void *, void *, void *, void *, void *, void *, void *);
 extern void rpqlsd(void *, void *, void *, void *, void *, void *, void *);
 extern void share(void *, void *, void *, void *, void *, void *, void *, void *, void *, void *, void *, void *, void *, void *, void *, void *, void *);
 extern void sharex(void *, void *);
@@ -30,7 +29,6 @@ static const R_CMethodDef CEntries[] = {
     {"nlogcensor",  (DL_FUNC) &nlogcensor,   6},
     {"nlogcensorx", (DL_FUNC) &nlogcensorx,  1},
     {"polymarsF",   (DL_FUNC) &polymarsF,   37},
-    {"pqlsd",       (DL_FUNC) &pqlsd,        8},
     {"rpqlsd",      (DL_FUNC) &rpqlsd,       7},
     {"share",       (DL_FUNC) &share,       17},
     {"sharex",      (DL_FUNC) &sharex,       2},

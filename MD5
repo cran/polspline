@@ -1,6 +1,6 @@
-a7a5f64fe49f5f69a1e75bc94f47a67a *DESCRIPTION
+60628f01828e589e28a395a9089108a8 *DESCRIPTION
 f96b13f59a2e6df0eeee92ce2de9b72b *NAMESPACE
-95433900e4e4f66afec443dfae5254bc *R/polspline.R
+37af4053dda0aad9c9e0cd4b7686e7ea *R/polspline.R
 37193963f1c0ceaa6d1ff5d9ab59ad70 *man/beta.polyclass.Rd
 e5b94deaff45e6d11fbb2f171f2e22b9 *man/clspec.Rd
 4355593c10b2dd4baa7b48d09f0f47d3 *man/cpolyclass.Rd
@@ -40,10 +40,10 @@ d277938947cdfae661c297c10eaeadb0 *man/xhare.Rd
 40fd05f08ea4e7d47fa872d0890dbcab *src/allpack.f
 830497d7c7e42bbb9e22c3ba527c8c70 *src/hareall.c
 5e8d584f0ecd6c61e3d8c0a37288d506 *src/heftall.c
-3975f51f6ed3550a08dc0aee0196cdec *src/lsdall.c
+b4c5ece2af7d27242dfe3583d1f02cc4 *src/lsdall.c
 7761a18e0814653d583923a9a03738c5 *src/lspecall.c
 3ed6a299c32fcb7b91b74e582694b6db *src/nlsd.c
 63c9ef989fe769b13702b1bb464586e2 *src/polyall.c
 54a50978790fbba8bea68f658ef6740b *src/polymars.c
-1c690b88a250be2fe07e94eb030aab7f *src/registerDynamicSymbol.c
+7d6ff3472ebb89f7e61564f626dbaaee *src/registerDynamicSymbol.c
 782c6ba6b56e9842d5854775ce3653e3 *src/x2c.h
