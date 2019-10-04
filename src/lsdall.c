@@ -27,7 +27,7 @@ void F77_NAME(xdsidi)(double[][NC], int *, int *, int *, double *, int *, double
 void F77_NAME(xssort)(double *, double *, int *, int *);
 
 static double knots[NC],coef[NC][4][NC],zheta[NC],czheta,xg[NC],dfunpar[6];
-static int nknots,ng3[NC],ng4[NC],piecedens(),where();
+static int nknots,ng3[NC],ng4[NC],piecedens(); /* where(); */
 static int removeknot(),knotnumber(),numbertester();
 static double liter(),erroradjust(),middle(),error2(),likeli(),linsearch();
 static void fits(),setbounds();
@@ -1880,7 +1880,7 @@ double rknots[],sample[],bound[],smp2[],smp3[],qt[];
 /* these quantities are defined in lhead.h and the files where they originate */
 
 {
-   int i,j=0,j2,k,kk,ll,ia=0,il,kx;
+   int i,j=0,j2,k,kk,ll,ia=0,il,kx,w1,w2,w3,w4,w5,w6;
 /* local integers
    i k     - counters
    j j2    - is there an odd or an even number of knots?                      */
@@ -1898,6 +1898,18 @@ double rknots[],sample[],bound[],smp2[],smp3[],qt[];
    five rule. The essence is to find eps such that s=(nsample[0]-1)/2
    The usual make it a bit larger, smaller, till we have one just
    too large and one just too small.                                          */
+
+   w1=nsample[0];
+   w2=nsample[1];
+   w3=nsample[2];
+   w4=nsample[3];
+   w5=nsample[4];
+   w6=nsample[5];
+   if(SorC[16]==1){
+      nsample[0]=nsample[1]=w2;
+      nsample[2]=nsample[3]=nsample[4]=0;
+      nsample[5]=w2-1;
+   }
 
    qt[0]=-1.;
    qt[1]=1.;
@@ -2211,6 +2223,12 @@ double rknots[],sample[],bound[],smp2[],smp3[],qt[];
       }
    }
    nknots = j+1;
+   nsample[0]=w1;
+   nsample[1]=w2;
+   nsample[2]=w3;
+   nsample[3]=w4;
+   nsample[4]=w5;
+   nsample[5]=w6;
    u3=2./(qt[1]-qt[0]);
    u4=1.-2.*qt[1]/(qt[1]-qt[0]);
    qt[0]=u4;
@@ -2876,7 +2894,7 @@ int nknots,what;
    return cth;
 }
 /******************************************************************************/
-static int where(x,knots,lk)
+/* static int where(x,knots,lk)
 double x,knots[];
 int lk;
 {
@@ -2886,5 +2904,5 @@ int lk;
    for(i=1;i<lk-1;i++)
       if(x<knots[i])return i;
    return lk-1;
-}
+} */
 /******************************************************************************/

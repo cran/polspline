@@ -1030,6 +1030,7 @@ oldlogspline <- function(uncensored, right, left, interval, lbound, ubound,
 # SorC will carry the error messages - in code form
         SorC <- vector(mode = "integer", length = 35)
         SorC[1] <- 1    # the actual function call
+        SorC[17] <- 0
         nsample[6] <- nsample[6]-1
         if(length(table(sample))<3)stop("Not enough unique values")
         z <- .C("logcensor",
@@ -1046,7 +1047,29 @@ oldlogspline <- function(uncensored, right, left, interval, lbound, ubound,
                 as.double(sample),
                 as.double(sample),
                 logl = as.double(rep(0, n1 + 1)),
-      PACKAGE = "polspline")
+        PACKAGE = "polspline")
+        SorC <- z$SorC  # error messages
+        if(SorC[1] == -1 && SorC[28] == 0 && nsample[1]!=nsample[2] && nsample[2]>15){
+           SorC <- vector(mode = "integer", length = 35)
+           SorC[1] <- 1    # the actual function call
+           SorC[17] <- 1
+           z <- .C("logcensor",
+                   as.integer(delete),
+                   as.integer(iautoknot),
+                   as.double(sample),
+                   as.integer(nsample),
+                   bd = as.double(xbound),
+                   SorC = as.integer(SorC),
+                   nk = as.integer(nknots),
+                   kt = as.double(knots),
+                   cf = as.double(c(knots, 0, 0)),
+                   as.double(penalty),
+                   as.double(sample),
+                   as.double(sample),
+                   logl = as.double(rep(0, n1 + 1)),
+            PACKAGE = "polspline")
+        }
+
         bound <- c(z$bd[2], z$bd[3], z$bd[4], z$bd[5])
         SorC <- z$SorC  # error messages
         if(abs(SorC[1]) > 2) {

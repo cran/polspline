@@ -673,7 +673,6 @@ C
       DO 20 I=1,NN
       X(I) = -X(I)
    20 END DO
-C  30 GO TO (100,200),KK
    30 IF (KK.EQ.2) GO TO 200
 C
 C SORT X ONLY
@@ -691,7 +690,6 @@ C
   125 K=I
 C                                  SELECT A CENTRAL ELEMENT OF THE
 C                                  ARRAY AND SAVE IT IN LOCATION T
-C     IJ = I +  (DFLOAT (J-I) * R)
       IJ = I +  INT(DFLOAT (J-I) * R)
       T=X(IJ)
 C                                  IF FIRST ELEMENT OF ARRAY IS GREATER
