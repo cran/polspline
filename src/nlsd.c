@@ -285,6 +285,12 @@ double *data0,*logs,*kts,*dpars;
       five(data0,kts,intpars,(*data).same);
       strt= intpars[2];
    }
+   if(ndmax>0 && strt>ndmax){
+      strt=floor((ndmax+3)/2.);
+   }
+   if(ndmax<0 && strt>(-ndmax)){
+      strt=floor((3-ndmax)/2.);
+   }
 /* they were user provided */
    if(strt>0){
       (*spc).nk=strt;

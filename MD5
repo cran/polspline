@@ -1,4 +1,4 @@
-b5496737df6ad0acefcd613faef4a55a *DESCRIPTION
+6309175e4c666c62cb16ebd951294d9c *DESCRIPTION
 f96b13f59a2e6df0eeee92ce2de9b72b *NAMESPACE
 e5029d1e3e7f5ad7930b51ef6f85d67c *R/polspline.R
 37193963f1c0ceaa6d1ff5d9ab59ad70 *man/beta.polyclass.Rd
@@ -42,7 +42,7 @@ d277938947cdfae661c297c10eaeadb0 *man/xhare.Rd
 5e8d584f0ecd6c61e3d8c0a37288d506 *src/heftall.c
 a000880e550ec75149475d3095840a5d *src/lsdall.c
 7761a18e0814653d583923a9a03738c5 *src/lspecall.c
-3ed6a299c32fcb7b91b74e582694b6db *src/nlsd.c
+32db9f09384a533dc0951018468f0001 *src/nlsd.c
 63c9ef989fe769b13702b1bb464586e2 *src/polyall.c
 54a50978790fbba8bea68f658ef6740b *src/polymars.c
 7d6ff3472ebb89f7e61564f626dbaaee *src/registerDynamicSymbol.c
