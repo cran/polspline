@@ -3304,6 +3304,7 @@ polyclass <- function(data, cov, weight, penalty, maxdim, exclude, include,
    ntdata <- 0
    if(!missing(cv)) it <- 2
    if(!missing(tdata))it <- 1
+   if(!missing(tdata))if(is.factor(tdata)) tdata <- as.integer(tdata)
         if(missing(cv)) cv <- 0
         if(it==1||it==0) cv <- 0
    if(it==2){
@@ -3327,6 +3328,7 @@ polyclass <- function(data, cov, weight, penalty, maxdim, exclude, include,
    MAXSPACE <- z$mk[2]    
    if(missing(data)) stop("there has to be data")
    if(length(data) < 25) stop("not enough data")
+   if(is.factor(data)) data <- as.integer(data)
    if(is.integer(data) == FALSE){
       if(max(abs(as.integer(data) - data)) < 0.001)
          data <- as.integer(data)
@@ -3643,6 +3645,7 @@ ppolyclass <- function(data, cov, fit)
    }
       if(!missing(cov))cov <- unstrip(cov)
       if(!missing(data))data <- unstrip(data)
+      if(!missing(data) && is.factor(data)) data <- as.integer(data)
       if(class(fit)!="polyclass")stop("fit is not a polyclass object")
    if(is.matrix(cov) == FALSE)
       cov <- matrix(cov, ncol = 1)
