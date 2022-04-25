@@ -920,7 +920,6 @@ int *intpars;
 {
    intpars[1]=MAXSPACE;
    intpars[0]=MAXKNOTS;
-   return;
 }
 
 void spoly(intpars,cls,t1cov,iloss,penalty,bbtt,cckk,vexclude,lins,logs,wgt,
@@ -1226,8 +1225,7 @@ float *xxx,*t1cov,*t2cov;
    soutspace(best,data,bbtt,cckk);
    intpars[0]=(*best).ndim; 
    intpars[1]=(*data).nclass; 
-   intpars[2]=(*best).nbas; 
-   return;
+   intpars[2]=(*best).nbas;
 }
 /******************************************************************************/
 
@@ -1282,7 +1280,6 @@ double *cckk,*bbtt;
       for(k=0;k<(*data).nclass;k++)
          bbtt[j*(4+(*data).nclass)+4+k]=(*spc).basis[j].beta[k];
    }
-   return;
 }
 
 /******************************************************************************/
@@ -1405,7 +1402,6 @@ int j;
       }
       wal[i]=val[i]*((*data).wgt[j]);
    }
-   return;
 }
 /******************************************************************************/
 /* this function allocates storage for a data structure */
@@ -3073,7 +3069,6 @@ double *dwald;
          }
       }
    }
-   return;
 }
 /******************************************************************************/
 static void puuu(spc,b1,b2,t1,t2,ncov,ii)

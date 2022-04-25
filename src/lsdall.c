@@ -263,8 +263,6 @@ int i,j,nkstart,iremove=0,iknots[NC],xiknots[NC];
        ycoef[i+2]=ycoef[i+2]*qt[1]*qt[1]*qt[1];
    ycoef[0]=ycoef[0]+ycoef[1]*qt[0]+log(qt[1]);
    ycoef[1]=ycoef[1]*qt[1];
-   
-   return;
 }
 /******************************************************************************/
 
@@ -1695,7 +1693,6 @@ int nsample[];
    for(j=0; j<nknots; j++)
       for(k=j+1; k<nknots+1; k++)
          crossprods[j][k] = crossprods[k][j];
-   return;
 }
 
 /******************************************************************************/

@@ -161,7 +161,6 @@ void nlogcensorx(intpars)
 int *intpars;
 {
       intpars[0]=MAXKNOTS+5;
-      return;
 }
 
 void nlogcensor(intpars,data0,dpars,logs,ad,kts)
@@ -341,7 +340,6 @@ double *data0,*logs,*kts,*dpars;
    }
    data0[0]+=mylog((*spc).cth);
    for(i=0;i<((*spc).nk);i++)kts[i]=(*spc).knots[i];
-   return;
 }
 /******************************************************************************/
 /* the work */
@@ -980,7 +978,6 @@ int besti;
       (*spc).basis[i].beta=0.;
       for(j=0;j<k;j++)(*spc).basis[i].beta+=t1[j][i]*v1[j];
    }
-   return;
 }
 /******************************************************************************/
 /* top iteration - governs bounds */
@@ -1239,7 +1236,6 @@ double *cz,**czz,*what;
          }
       }
    }
-   return;
 }
 /******************************************************************************/
 static int savecoden(spc,i0,i1,cz,czz)
@@ -1269,7 +1265,6 @@ double *v,*v2,**mm,**mm2;
          v[j]=v2[j];
       }
    }
-   return;
 }
 /******************************************************************************/
 /* gets the rao statistic */
@@ -1625,7 +1620,6 @@ int irmax;
       (*spc).basis[i].beta=0.;
       for(j=0;j<k+3;j++)(*spc).basis[i].beta+=mm2[j][i]*r1[j];
    }
-   return;
 }
 /******************************************************************************/
 static void redo1(spc,irmax,k)
@@ -1711,7 +1705,6 @@ struct space *spc;
       r1[k0]=(*spc).basis[k0].beta;
       for(k1=0;k1<i;k1++)r1[k0]-=c1[k0][k1]*(*spc).basis[k1].beta;
    }
-   return;
 }
 /******************************************************************************/
 /* get the c2, c3 and sumunc elements of a bsis function */
@@ -1771,7 +1764,6 @@ struct datastruct *data;
            (*bn).sumunc+=pol3((*bn).c2[l],(*data).data[m]);
       } 
    }
-   return;
 }
 /******************************************************************************/
 /* get c1 - the power basis representation - for a basisfunction */
@@ -1821,7 +1813,6 @@ int i,j;
    c[i+3]=(t[j+2]-t[j])*(t[j]-t[j+1])/((t[j+2]-t[j+3])*(t[j+1]-t[j+3]));
    c[i+2]=(c[i+3]*(t[j+1]-t[j+3])+t[j+1]-t[j])/(t[j+2]-t[j+1]);
    c[i+1]=-1.-c[i+3]-c[i+2];
-   return;
 }
    
 /******************************************************************************/
@@ -1836,7 +1827,6 @@ struct datastruct *data;
    for(i=0;i<(*spc).ndim;i++)getc1((*spc).knots,(*spc).basis[i].c1,i,(*spc).nk);
 /* get (*spc).basis.c2 (*spc).basis.c3 and (*spc).basis.sumunc */
    getc2(spc,data);
-   return;
 }
 /******************************************************************************/
 static int startspace(spc,data,strt,silent)
@@ -1945,7 +1935,6 @@ struct datastruct *data;
    if((*spc).ilow==1) (*spc).basis[0].beta= -1./fabs(s0*(*spc).basis[0].c1[1]);
    if((*spc).iupp==1)(*spc).basis[1].beta=
       -1./fabs(s1*(*spc).basis[1].c2[(*spc).nip][1]);
-   return;
 }
 /******************************************************************************/
 static int rearrange(spc,data)
@@ -2054,7 +2043,6 @@ struct datastruct *data;
    for(i=0;i<3;i++)(*spc).basis[1].iks[i]=kips[i-3+(*spc).nk];
    if((*spc).ndim>2)for(i=0;i<4;i++)(*spc).basis[2].iks[i]=kips[i-4+(*spc).nk];
    for(j=3;j<(*spc).ndim;j++)for(i=0;i<5;i++)(*spc).basis[j].iks[i]=kips[j+i-3];
-   return;
 }
 void rpqlsd(coef,knots,bnd,ipq,pq,lk,lp)
 double *coef,*knots,*pq,*bnd;
@@ -2591,8 +2579,6 @@ double t1,*coef,*results;
    u0 = 720*b3[6];
    f1 = (((((u6*t1+u5)*t1+u4)*t1+u3)*t1+u2)*t1+u1)*t1+u0;
    results[6]=fctf1(b0,b1,t1,f1,j);
-
-   return;
 }
 /******************************************************************************/
 /* computes integrals from t1 to t2  (exactly)
@@ -2680,7 +2666,6 @@ double t1,t2,*coef,*results;
      f1=f1*t1;
      results[i]=b0*(f2-f1)/(double)(i+1);
    }
-   return;
 }
 /******************************************************************************/
 static double fctf1(b0,b1,t1,f1,j)
@@ -2757,7 +2742,6 @@ struct space *s1,*s2;
       for(j=0;j<4;j++)for(k=0;k<(*s1).nip;k++)
          (*s1).basis[i].c2[k][j]=(*s2).basis[i].c2[k][j];
    }
-   return;
 }
 /******************************************************************************/
 static void quadalloc()

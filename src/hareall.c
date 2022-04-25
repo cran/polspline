@@ -2103,7 +2103,6 @@ double r[3],b1,b2,l,u;
    r[0]=(u-l)*e1;
    r[1]=(u*u-l*l)*e1/2.;
    r[2]=(u*u*u-l*l*l)*e1/3.;
-   return;
 }
 /******************************************************************************/
 /* this routine searches all dimensions for something to remove */
@@ -2245,7 +2244,6 @@ int ncov,ndata,silent;
    for(i=0;i<(*spc).ndim;i++) (*spc).basis[i].beta=xty[i];
    
    }
-   return;
 }
 /******************************************************************************/
 /* this routine removes a time knot from the space */
@@ -2369,7 +2367,6 @@ int *ncov,*ndata;
 {
    *ndata=MAXSPACE;
    *ncov=MAXKNOTS;
-   return;
 }
 
 
@@ -2542,8 +2539,7 @@ double *xcov,*bbtt,*cckk;
 
 /* admire the results */
    soutgspace(best,data,bbtt,cckk);
-   *ndata=(*best).ndim; 
-   return;
+   *ndata=(*best).ndim;
 }
 
 /******************************************************************************/
@@ -2606,7 +2602,6 @@ double *cckk,*bbtt;
       bbtt[j*6+4]=(*spc).basis[j].beta;
       bbtt[j*6+5]=(*spc).basis[j].se;
    }
-   return;
 }
 
 /******************************************************************************/
@@ -2691,7 +2686,6 @@ double **cov,*data;
    for(i=1;i<(*best).ndim;i++){
       for(j=0;j<i;j++) (*best).xtx[i][j]=(*best).xtx[j][i];
    }
-   return;
 }
 /******************************************************************************/
 /* this function allocates storage for a data structure */
@@ -3326,7 +3320,6 @@ int ndata;
       getthosep(lin,con,(*spc).nknots,(*spc).knots,ppp,qqq,i,k+1);
       i=k;
    }
-   return;
 }
 /******************************************************************************/
 
@@ -3442,7 +3435,6 @@ int ndata,ip;
 /* probability */
       if(ip==0) pdh[i]=1-s/pdh[i];
    }
-   return;
 }
 
 /******************************************************************************/
@@ -3626,7 +3618,6 @@ double **cov;
       }
       (*best).basis[i].values=vv;
    }
-   return;
 }
 /******************************************************************************/
 

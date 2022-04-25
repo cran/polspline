@@ -109,7 +109,6 @@ void sheftx(nx)
 int *nx;
 {
    *nx=HLENGTH;
-   return;
 }
 
 void sheft(nx,data,delta,nkstart,knots,alpha,tails,iauto,logl,theta,iknots,zerror,cc,
@@ -160,7 +159,6 @@ double *data,*alpha,*theta,*cc,*logl,*knots,*tails;
    tails[2]=(*mod1).tails[2];
    tails[3]=(*mod1).tailse[1];
    tails[4]=(*mod1).tails[4];
-   return;
 }
 static struct model *makemodel()
 /* allocates storage for a model */
@@ -544,7 +542,6 @@ double alpha;
 
 /* get theta in the power basis format */
    thetaswap(mod1);
-   return;
 }
 /******************************************************************************/
 /* checks the knots */
@@ -1336,7 +1333,6 @@ int *zerror,nint,what;
    }
      
    (*mod1).ll=ldif;
-   return;
 }
 /******************************************************************************/
 /* computes l(), S() and H() */
@@ -1729,7 +1725,6 @@ int *zerror;
    if(irmax<nk){
       for(i=irmax;i<nk;i++)(*mod1).knots[i]=(*mod1).knots[i+1];
    }
-   return;
 }
 /******************************************************************************/
 /* this routine checks whether the model is better , gets the SE's for the log
@@ -1834,8 +1829,6 @@ struct model *mod1;
    else  (*mod1).tailse[0]=sqrt(-hh[0][0]);
    if((*mod1).tails[2]>0.5 || (*mod1).theta[nk+1]<= -1.) (*mod1).tailse[1]=0.;
    else  (*mod1).tailse[1]=sqrt(-hh[nk+1][nk+1]);
-
-   return;
 }
 /******************************************************************************/
 /* this routine figures out where to add a knot  using the Rao criterion */

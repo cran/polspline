@@ -967,8 +967,6 @@ according to hierarchical rules
       current_predictor = current_predictor->next_predictor;
       
     }
-  
- return;
 }
 /*==============================================================*/
 static int in_model(int predictor1,
@@ -1203,7 +1201,6 @@ current_predictor2 =
 			     1);
     }
   new_column->data[responses+model_size]=function_values_2->matrix[0];
-  return;
 }
 
 
@@ -3726,7 +3723,6 @@ Flag: 0 for AB (regular multiplicaion (A,B,0)->AB
 	
       }
   }
-  return ;
 }
 
 /*==============================================================*/
@@ -3825,7 +3821,6 @@ static void matrix_multiplication2(struct matrix1 *object_matrixA,
       }
       
     }
-  return ;
 }
 
 /*==============================================================

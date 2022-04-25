@@ -41,7 +41,6 @@ void tspspsx(dims)
 int *dims;
 {
       dims[0]=NBMAX;
-      return;
 }
 
 void tspsps(dims,data,knots,atoms,alpha,logs,theta,ad,mass)
@@ -405,8 +404,6 @@ double *data,*knots,alpha,*logs,*xx,*zz,*theta,mass;
          dims[11]=er;
       }
    }while(add==0||add==1);
-
-   return;
 }
 
 /******************************************************************************/
