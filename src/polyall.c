@@ -120,55 +120,57 @@ struct subdim {
 
 /* workspaces */
 
-static int padddim();
-static double padders1();
-static double padders2();
-static double pearch();
-static double pestbasis();
-static double cripswap();
-static double prao();
-static int pindyl();
-static int pindyr();
-static int pindl();
-static int pindr();
-static int pindx();
-static int pindm();
-static int plocation();
-static void paddbasis();
-static void soutspace();
-static double petvector2();
-static void petvector();
-static struct datastruct *pdefinedata();
-static struct space *pdefinespace();
-static struct basisfunct *pdefinebasis();
-static struct subdim **pdefinedim();
-static int *ispvector();
-static double *dspvector();
-static int **ipmatrix();
-static double **dpmatrix();
-static double aiccv();
-static void aicb2();
-static int aicbest();
-static void predefinespace();
-static void proj();
-static double pnewton();
-static double pcompall();
-static int dlink();
-static void getinfox();
-static double pylog();
-static double pcomp2();
-static int prembas();
-static void premdim();
-static void puuu();
-static void poly();
-static void pconstant();
-static void pswapspace();
-static void computeloss();
-static double getcrit();
-static int plumbertester();
-static void Ppsort();
-static void xpsort();
-static int lusolinv();
+static int padddim(struct space *current, struct space *new, struct space *newt, struct datastruct *data, int mind, int **exclude, int silent, int *lins);
+static double padders1(int i0, int j0, struct space *new, struct space *newt, double crit, struct datastruct *data);
+static double padders2(int i0, int j0, struct space *current, struct space *new, struct space *newt, double crit, struct datastruct *data, int mind, int *lins);
+static double pearch(struct space *new, struct space *newt, struct datastruct *data, int i0, int mind, double crito);
+static double pestbasis(struct space *new, struct space *newt, double criterion, struct datastruct *data, int i0, int j0, int ki, int kj, double ti);
+static double cripswap(struct space *newt, struct datastruct *data, struct space *new, double criterion, int i0, int j0);
+static double prao(struct space *spc, struct datastruct *data);
+static int pindyl(int u, int l, double *x);
+static int pindyr(int u, int l, double *x);
+static int pindl(int *ll, int *uu, int mind, double *x, int nx, double knt);
+static int pindr(int *ll, int *uu, int mind, double *x, int nx, double knt);
+static int pindx(int *ll, int *uu, int nx, int i, int mind);
+static int pindm(int *ll, int *uu, int mind, double *x, int nx, double k0, double k1);
+static int plocation(int what, double *x, int nx, double k);
+static void paddbasis(int i0, int j0, double *arg, struct datastruct *data, struct basisfunct *basis);
+void spolyx(int *intpars);
+void spoly(int *intpars, int *cls, float *t1cov, double *iloss, double *penalty, double *bbtt, double *cckk, int *vexclude, int *lins, double *logs, double *wgt, int *tcls, float *t2cov, double *twgt, double *bbb, float *xxx);
+static void soutspace(struct space *spc, struct datastruct *data, double *bbtt, double *cckk);
+static double petvector2(struct space *best, struct datastruct *data, int i, int k);
+static void petvector(struct space *best, struct datastruct *data, double *val, double *wal, int j);
+static struct datastruct *pdefinedata(int ndata, int ncov, int nclass, int xndata, int *cls, double *wgt, int icov);
+static struct space *pdefinespace(struct datastruct *data);
+static struct basisfunct *pdefinebasis(void);
+static struct subdim **pdefinedim(int ncov);
+static int *ispvector(int l);
+static double *dspvector(int l);
+static int **ipmatrix(int r, int c);
+static double **dpmatrix(int r, int c);
+static double aiccv(double **ranges, double **losses, int *numbers, int k, float *xio, int il);
+static void aicb2(int *ads, double *aics, double **meas, double *logls);
+static int aicbest(int *ads, double *ranges, double *losses, double *logls);
+static void predefinespace(struct datastruct *data, struct space *spc);
+static void proj(struct space *spc, struct datastruct *data, double *bbb, double *anova);
+static double pnewton(struct space *spc, struct datastruct *data);
+static double pcompall(struct space *spc, struct datastruct *data, int what);
+static int dlink(struct space *spc, int j, int k);
+static void getinfox(struct space *spc, struct datastruct *data);
+static double pylog(double x);
+static double pcomp2(struct space *spc, struct datastruct *data);
+static int prembas(struct space *spc, struct datastruct *data, int silent);
+static void premdim(struct space *spc, struct datastruct *data, int silent, double *dwald, int *iwald);
+static void puuu(struct space *spc, int b1, int b2, int t1, int t2, int ncov, int ii);
+static void poly(struct space *best, struct datastruct *data, double **loss, double pen, int ndmax, int mind, int **exclude, int strt, int silent, double **logs, int *ad, int *lins, struct datastruct *tdata, int it, double *aics, struct space *current, struct space *new, struct space *trynew, int naction, int il, int xsingle, struct space *newx);
+static void pconstant(struct space *spc, struct datastruct *data);
+static void pswapspace(struct space *spout, struct space *spin, struct datastruct *data);
+static void computeloss(struct space *spc, struct datastruct *data, double **loss, int naction, double res[3]);
+static double getcrit(struct space *spc, struct datastruct *tdata, struct datastruct *data, int it, double **loss, int silent, double **logs, int *ad, int ii, double *aics, double *pen, int naction, int il);
+static int plumbertester(double aa);
+static void Ppsort(double *ra, int n);
+static void xpsort(double *ra, int n);
+static int lusolinv(double **a, int n, double *b, int k);
 
 static double **w1,**w2,**w3,*v1,*v2,*v3,*v4,*v5,*v6,*v7,*v8;
 static int **iw1,*iv1,*iv2;
@@ -181,10 +183,7 @@ static int maxdim;
 
 /* this routine pearches all dimensions for something to add */
 
-static int padddim(current,new,newt,data,mind,exclude,silent,lins)
-struct space *current,*new,*newt;
-struct datastruct *data;
-int mind,**exclude,silent,*lins;
+static int padddim(struct space *current, struct space *new, struct space *newt, struct datastruct *data, int mind, int **exclude, int silent, int *lins)
 
 /* current - current space
    new     - copy of current space to play with
@@ -254,11 +253,7 @@ int mind,**exclude,silent,*lins;
 
 /* this routine pearches a subdimension for a supspace to add */
 
-static double padders1(i0,j0,new,newt,crit,data)
-int i0,j0;
-struct space *new,*newt;
-struct datastruct *data;
-double crit;
+static double padders1(int i0, int j0, struct space *new, struct space *newt, double crit, struct datastruct *data)
 
 /* i0,j0     - which subspace (see pstruct)
    new       - will be the best space with additions up to now.
@@ -330,11 +325,7 @@ double crit;
 
 /* this routine pearches a subdimension for a supspace to add */
 
-static double padders2(i0,j0,current,new,newt,crit,data,mind,lins)
-int i0,j0,mind,*lins;
-struct space *new,*newt,*current;
-struct datastruct *data;
-double crit;
+static double padders2(int i0, int j0, struct space *current, struct space *new, struct space *newt, double crit, struct datastruct *data, int mind, int *lins)
 
 /* i0,j0     - which subspace (see pstruct)
    new       - will be the best space with additions up to now.
@@ -377,11 +368,7 @@ double crit;
 /* if a new knot is to be added in a one-covariate dimension or in time, we 
    have to pearch, and that is what we do in this routine */
 
-static double pearch(new,newt,data,i0,mind,crito)
-struct space *newt,*new;
-double crito;
-struct datastruct *data;
-int i0,mind;
+static double pearch(struct space *new, struct space *newt, struct datastruct *data, int i0, int mind, double crito)
 
 /* new   - the best added space up to now
    newt  - a space to which we can add
@@ -508,11 +495,7 @@ int i0,mind;
    it checks the criterion (cripswap) - there are lots of possibilities to
    check. */
 
-static double pestbasis(new,newt,criterion,data,i0,j0,ki,kj,ti)
-double ti,criterion;
-int i0,j0,ki,kj;
-struct datastruct *data;
-struct space *new,*newt;
+static double pestbasis(struct space *new, struct space *newt, double criterion, struct datastruct *data, int i0, int j0, int ki, int kj, double ti)
 
 /* new       - best space with added dimensions
    newt      - space to which dimensions are added 
@@ -573,11 +556,7 @@ struct space *new,*newt;
    computes the criterion. If this is an improvement it copies the basis into
    new, then it restores newt. */
 
-static double cripswap(newt,data,new,criterion,i0,j0)
-double criterion;
-struct datastruct *data;
-int i0,j0;
-struct space *new,*newt;
+static double cripswap(struct space *newt, struct datastruct *data, struct space *new, double criterion, int i0, int j0)
 
 /* criterion - best rao p-value up to now
    data      - the data
@@ -622,9 +601,7 @@ struct space *new,*newt;
    and it makes use of the fact that part of b0, b1 and b2 might be known and
    completely at the end, it computes the rao statistic.                      */
 
-static double prao(spc,data)
-struct space *spc;
-struct datastruct *data;
+static double prao(struct space *spc, struct datastruct *data)
 
 /* spc   - the present model 
    data  - the data */
@@ -722,9 +699,7 @@ struct datastruct *data;
 /******************************************************************************/
 /* pinds a new location in an interval (l,b) - that is the lower end might not
    have been tested yet */
-static int pindyl(u,l,x)
-int l,u;
-double *x;
+static int pindyl(int u,int l,double *x)
 {
    int i;
    if(x[l]==x[u])return -1;
@@ -737,9 +712,7 @@ double *x;
 /******************************************************************************/
 /* pinds a new location in an interval (l,u) - that is the upper end might not
    have been tested yet */
-static int pindyr(u,l,x)
-int l,u;
-double *x;
+static int pindyr(int u,int l,double *x)
 {
    int i;
    if(x[l]==x[u])return -1;
@@ -751,9 +724,7 @@ double *x;
 }
 /******************************************************************************/
 /* Finds a possible location for a knot on the interval (0,knot1) */
-static int pindl(ll,uu,mind,x,nx,knt)
-double *x,knt;
-int nx,*ll,*uu,mind;
+static int pindl(int *ll, int *uu, int mind, double *x, int nx, double knt)
 /* ll - lowest number we can pearch on in the future
    uu - highest number we can pearch on in the future
    mind minimum distance between knots
@@ -778,9 +749,7 @@ int nx,*ll,*uu,mind;
 /******************************************************************************/
 /* Finds a possible location for a knot on the interval (knot-last,nx-1) */
 
-static int pindr(ll,uu,mind,x,nx,knt)
-double *x,knt;
-int nx,*ll,*uu,mind;
+static int pindr(int *ll, int *uu, int mind, double *x, int nx, double knt)
 /* ll - lowest number we can pearch on in the future
    uu - highest number we can pearch on in the future
    mind minimum distance between knots
@@ -803,8 +772,7 @@ int nx,*ll,*uu,mind;
 /******************************************************************************/
 /* Finds a possible location for a knot on the interval (0,nx-1) */
 
-static int pindx(ll,uu,nx,i,mind)
-int nx,*ll,*uu,mind,i;
+static int pindx(int *ll, int *uu, int nx, int i, int mind)
 /* ll - lowest number we can pearch on in the future
    uu - highest number we can pearch on in the future
    nx - length of data */
@@ -831,9 +799,7 @@ int nx,*ll,*uu,mind,i;
 /******************************************************************************/
 /* Finds a possible location for a knot on the interval (k0,k1) */
 
-static int pindm(ll,uu,mind,x,nx,k0,k1)
-double *x,k0,k1;
-int nx,*ll,*uu,mind;
+static int pindm(int *ll, int *uu, int mind, double *x, int nx, double k0, double k1)
 /* ll - lowest number we can pearch on in the future
    uu - highest number we can pearch on in the future
    mind minimum distance between knots
@@ -857,9 +823,7 @@ int nx,*ll,*uu,mind;
 /* finds the lowest (if what = 0) or the highest (if what = 1) index of x for
    which x==k */
 
-static int plocation(what,x,nx,k)
-int nx,what;
-double k,*x;
+static int plocation(int what, double *x, int nx, double k)
 
 /* what - see above
    x    - data
@@ -887,11 +851,7 @@ double k,*x;
 /* after another routine has decided to add a basis function, this routine
    actually adds the basis functions */
 
-static void paddbasis(i0,j0,arg,data,basis)
-double *arg;
-struct datastruct *data;
-struct basisfunct *basis;
-int i0,j0;
+static void paddbasis(int i0, int j0, double *arg, struct datastruct *data, struct basisfunct *basis)
 
 /* i0,j0 - which subdimension does this new basisfunction belong to
    arg   - elements 2 and 3: ranknumber of the knot
@@ -915,18 +875,13 @@ int i0,j0;
 /******************************************************************************/
 
 /* the S-I/O routine */
-void spolyx(intpars)
-int *intpars;
+void spolyx(int *intpars)
 {
    intpars[1]=MAXSPACE;
    intpars[0]=MAXKNOTS;
 }
 
-void spoly(intpars,cls,t1cov,iloss,penalty,bbtt,cckk,vexclude,lins,logs,wgt,
-           tcls,t2cov,twgt,bbb,xxx)
-double *penalty,*iloss,*logs,*bbtt,*cckk,*wgt,*twgt,*bbb;
-int *lins,*vexclude,*intpars,*cls,*tcls;
-float *xxx,*t1cov,*t2cov;
+void spoly(int *intpars, int *cls, float *t1cov, double *iloss, double *penalty, double *bbtt, double *cckk, int *vexclude, int *lins, double *logs, double *wgt, int *tcls, float *t2cov, double *twgt, double *bbb, float *xxx)
 
 /* intpars- all sorts of integer parameters
    cls    - the classes
@@ -1232,10 +1187,7 @@ float *xxx,*t1cov,*t2cov;
 /* this is an output routine, it writes the matrices bbtt and cckk - which are
    given as output to S */
 
-static void soutspace(spc,data,bbtt,cckk)
-struct space *spc;
-struct datastruct *data;
-double *cckk,*bbtt;
+static void soutspace(struct space *spc, struct datastruct *data, double *bbtt, double *cckk)
 
 /* spc   - structure describing the model
    data  - data 
@@ -1284,10 +1236,7 @@ double *cckk,*bbtt;
 
 /******************************************************************************/
 /* gets the basisfunctions */
-static double petvector2(best,data,i,k)
-struct space *best;
-struct datastruct *data;
-int i,k;
+static double petvector2(struct space *best, struct datastruct *data, int i, int k)
 
 /* best  - the model
    data - the data */
@@ -1343,11 +1292,7 @@ int i,k;
 }
 /******************************************************************************/
 /* gets the basisfunctions */
-static void petvector(best,data,val,wal,j)
-struct space *best;
-struct datastruct *data;
-double *val,*wal;
-int j;
+static void petvector(struct space *best, struct datastruct *data, double *val, double *wal, int j)
 
 /* best  - the model
    data - the data */
@@ -1406,10 +1351,7 @@ int j;
 /******************************************************************************/
 /* this function allocates storage for a data structure */
 
-static struct datastruct *pdefinedata(ndata,ncov,nclass,xndata,cls,wgt,icov)
-int ncov,ndata,nclass,xndata,icov;
-int *cls;
-double *wgt;
+static struct datastruct *pdefinedata(int ndata, int ncov, int nclass, int xndata, int *cls, double *wgt, int icov)
 {
    struct datastruct *newdata;
    int i;
@@ -1435,8 +1377,7 @@ double *wgt;
 /******************************************************************************/
 /* this function allocates storage for a space */
 
-static struct space *pdefinespace(data)
-struct datastruct *data;
+static struct space *pdefinespace(struct datastruct *data)
 
 {
    int ncov=(*data).ncov,nclass=(*data).nclass;
@@ -1498,7 +1439,7 @@ struct datastruct *data;
 
 /******************************************************************************/
 /* this function allocates storage for an array of basisfunctions */
-static struct basisfunct *pdefinebasis()
+static struct basisfunct *pdefinebasis(void)
 {
    struct basisfunct *nb;
 
@@ -1508,8 +1449,7 @@ static struct basisfunct *pdefinebasis()
 
 /******************************************************************************/
 /* this function allocates storage for a matrix of subdimensions */
-static struct subdim **pdefinedim(ncov)
-int ncov;
+static struct subdim **pdefinedim(int ncov)
 {
    struct subdim **newdim;
    int i;
@@ -1521,8 +1461,7 @@ int ncov;
 }
 
 /******************************************************************************/
-static int *ispvector(l)
-int l;
+static int *ispvector(int l)
 /* allocate an int vector with subscript range v[0...l] */
 {
    int *v,i;
@@ -1531,8 +1470,7 @@ int l;
    return v;
 }
 /******************************************************************************/
-static double *dspvector(l)
-int l;
+static double *dspvector(int l)
 /* allocate a double vector with subscript range v[0...l] */
 {
    double *v;
@@ -1542,8 +1480,7 @@ int l;
    return v;
 }
 /******************************************************************************/
-static int **ipmatrix(r,c)
-int r,c;
+static int **ipmatrix(int r,int c)
 /* allocate an int matrix with subscript range m[0..r][0..c] */
 {
    int i,j,**m;
@@ -1555,8 +1492,7 @@ int r,c;
    return m;
 }
 /******************************************************************************/
-static double **dpmatrix(r,c)
-int r,c;
+static double **dpmatrix(int r,int c)
 /* allocate a double matrix with subscript range m[0..r][0..c] */
 {
    int i,j;
@@ -1569,10 +1505,7 @@ int r,c;
    return m;
 }
 /******************************************************************************/
-static double aiccv(ranges,losses,numbers,k,xio,il)
-int k,*numbers,il;
-double **ranges,**losses;
-float *xio;
+static double aiccv(double **ranges, double **losses, int *numbers, int k, float *xio, int il)
 {
    int *where,i,j,l,m;
    double bestl,bestu,bestx=0.,nowl,nowu,nowx,maxu;
@@ -1626,9 +1559,7 @@ float *xio;
    return xio[3];
 }
 /******************************************************************************/
-static void aicb2(ads,aics,meas,logls)
-int *ads;
-double *aics,*logls,**meas;
+static void aicb2(int *ads, double *aics, double **meas, double *logls)
 {
    int i,j,k,*k1,*k2;
    double *d1,*d3,*d4,*d2;
@@ -1694,9 +1625,7 @@ double *aics,*logls,**meas;
    }
 }
 /******************************************************************************/
-static int aicbest(ads,ranges,losses,logls)
-int *ads;
-double *ranges,*losses,*logls;
+static int aicbest(int *ads, double *ranges, double *losses, double *logls)
 {
    int i,j,k,l,*k1,*k2;
    double *d1,*d3,*d4,*d2;
@@ -1750,10 +1679,7 @@ double *ranges,*losses,*logls;
 /******************************************************************************/
 /* this function re-initializes storage for a space */
 
-static void predefinespace(data,spc)
-struct datastruct *data;
-struct space *spc;
-
+static void predefinespace(struct datastruct *data, struct space *spc)
 {
    int ncov=(*data).ncov,nclass=(*data).nclass,i,j,k,l;
 
@@ -1788,10 +1714,7 @@ struct space *spc;
 }
 
 /******************************************************************************/
-static void proj(spc,data,bbb,anova)
-struct space *spc;
-struct datastruct *data;
-double *bbb,*anova;
+static void proj(struct space *spc, struct datastruct *data, double *bbb, double *anova)
 {
    double x0,x1,x2,x3,x4,vaa,vbb;
    int i,j,k=0,k0=0,k1=0,k2=0,k3=0,k4=0,k5=0,k6=0,ncov=(*data).ncov,nbas=(*spc).nbas;
@@ -2063,9 +1986,7 @@ double *bbb,*anova;
 
 /* this routine does the Newton-Raphson iteration loop */
 
-static double pnewton(spc,data)
-struct datastruct *data; 
-struct space *spc;
+static double pnewton(struct space *spc, struct datastruct *data)
 
 /* spc       - the present model
    data      - the data  */
@@ -2210,10 +2131,7 @@ struct space *spc;
 /******************************************************************************/
 /* this routine computes hessian score and log-likelihood */
 
-static double pcompall(spc,data,what)
-struct space *spc;
-struct datastruct *data;
-int what;
+static double pcompall(struct space *spc, struct datastruct *data, int what)
 
 /* spc   - the present model
    data  - the data 
@@ -2365,18 +2283,14 @@ int what;
 
 /******************************************************************************/
 /* get one link element */
-static int dlink(spc,j,k)
-struct space *spc;
-int j,k;
+static int dlink(struct space *spc, int j, int k)
 {
    if((*spc).basis[j].link1[k]< 0)return -1;
    return (*spc).basis[j].link2[(*spc).basis[j].link1[k]];
 }
 /******************************************************************************/
 /* get the info-x term */
-static void getinfox(spc,data)
-struct space *spc;
-struct datastruct *data;
+static void getinfox(struct space *spc, struct datastruct *data)
 {
    int ndata=(*data).ndata,nclass=(*data).nclass,i,j1,k1,j2,k2,l1,j3;
    int nbas=(*spc).nbas,kk=nclass+1;
@@ -2406,8 +2320,7 @@ struct datastruct *data;
       (*spc).infox[j1][k1]=(*spc).infox[k1][j1];
 }
 /*************/
-static double pylog(x)
-double x;
+static double pylog(double x)
 {
 if(x < 10.e-250)return (double)(-576.);
 else return log(x);
@@ -2415,9 +2328,7 @@ else return log(x);
 /*************/
 /* this routine computes hessian score and log-likelihood  quasi newton*/
 
-static double pcomp2(spc,data)
-struct space *spc;
-struct datastruct *data;
+static double pcomp2(struct space *spc, struct datastruct *data)
 
 /* spc   - the present model
    data  - the data */
@@ -2554,10 +2465,7 @@ struct datastruct *data;
 
 /* this routine pearches all dimensions for a basis function to remove */
 
-static int prembas(spc,data,silent)
-struct space *spc;
-struct datastruct *data;
-int silent;
+static int prembas(struct space *spc, struct datastruct *data, int silent)
 
 /* spc   - the model from which to remove something
    data  - data
@@ -2765,11 +2673,7 @@ int silent;
 
 /* this routine pearches all dimensions for something to remove - it is a mess*/
 
-static void premdim(spc,data,silent,dwald,iwald)
-struct space *spc;
-struct datastruct *data;
-int silent,*iwald;
-double *dwald;
+static void premdim(struct space *spc, struct datastruct *data, int silent, double *dwald, int *iwald)
 
 /* spc   - the model from which to remove something
    data  - data
@@ -3071,9 +2975,7 @@ double *dwald;
    }
 }
 /******************************************************************************/
-static void puuu(spc,b1,b2,t1,t2,ncov,ii)
-struct space *spc;
-int b1,b2,t1,t2,ncov,ii;
+static void puuu(struct space *spc, int b1, int b2, int t1, int t2, int ncov, int ii)
 {
    if(ii==0)(void)Rprintf("   add: ");
    if(ii==1)(void)Rprintf("remove: ");
@@ -3096,12 +2998,11 @@ int b1,b2,t1,t2,ncov,ii;
 
 /* This program does the main control */
 
-static void poly(best,data,loss,pen,ndmax,mind,exclude,strt,silent,logs,ad,lins,
-    tdata,it,aics,current,new,trynew,naction,il,xsingle,newx)
-struct space *best,*current,*new,*trynew,*newx;
-struct datastruct *data,*tdata;
-double **loss,**logs,*aics,pen;
-int ndmax,mind,**exclude,strt,silent,*ad,*lins,it,naction,il,xsingle;
+static void poly(struct space *best, struct datastruct *data, double **loss, double pen,
+		int ndmax, int mind, int **exclude, int strt, int silent, double **logs,
+		int *ad, int *lins, struct datastruct *tdata, int it, double *aics,
+		struct space *current, struct space *new, struct space *trynew, int naction,
+		int il, int xsingle, struct space *newx)
 
 /* best        - the best model up to now
    data        - the data 
@@ -3247,9 +3148,7 @@ int ndmax,mind,**exclude,strt,silent,*ad,*lins,it,naction,il,xsingle;
 
 /* this function initializes a constant hazard space */
 
-static void pconstant(spc,data)
-struct space *spc;
-struct datastruct *data;
+static void pconstant(struct space *spc, struct datastruct *data)
 
 /* spc   - space to be initialized
    data  - the data  */
@@ -3271,10 +3170,7 @@ struct datastruct *data;
 /******************************************************************************/
 
 /* this function copies one space into another - just element by element */
-
-static void pswapspace(spout,spin,data)
-struct space *spin,*spout;
-struct datastruct *data;
+static void pswapspace(struct space *spout, struct space *spin, struct datastruct *data)
 
 /* spin  - input space
    spout - output space
@@ -3338,11 +3234,7 @@ struct datastruct *data;
 }
 /******************************************************************************/
 /* computes the loss for the testset case */
-static void computeloss(spc,data,loss,naction,res)
-struct datastruct *data;
-struct space *spc;
-double **loss,res[3];
-int naction;
+static void computeloss(struct space *spc, struct datastruct *data, double **loss, int naction, double res[3])
 
 /* spc  - the model
    data - the data
@@ -3433,11 +3325,7 @@ int naction;
 }
 /******************************************************************************/
 /* this function computes the criterion and does some other bookkeeping */
-static double getcrit(spc,tdata,data,it,loss,silent,logs,ad,ii,aics,pen,naction,il)
-int it,silent,*ad,ii,naction,il;
-double **loss,**logs,*aics,*pen;
-struct space *spc;
-struct datastruct *tdata,*data;
+static double getcrit(struct space *spc, struct datastruct *tdata, struct datastruct *data, int it, double **loss, int silent, double **logs, int *ad, int ii, double *aics, double *pen, int naction, int il)
 
 /* spc   - the space
    tdata - test data
@@ -3486,8 +3374,7 @@ struct datastruct *tdata,*data;
 }
 /******************************************************************************/
 /* checks a number */
-static int plumbertester(aa)
-double aa;
+static int plumbertester(double aa)
 /* if aa = -Inf: 0
       aa = +Inf: 1
       aa =  NaN: 2
@@ -3505,17 +3392,13 @@ double aa;
 }
 /******************************************************************************/
 /* sort, put result in rb */
-static void Ppsort(ra,n)
-int n;
-double *ra;
+static void Ppsort(double *ra, int n)
 {
    xpsort(ra-1,n);
 }
 /******************************************************************************/
 /* sort */
-static void xpsort(ra,n)
-int n;
-double *ra;
+static void xpsort(double *ra, int n)
 {
    int l,j,ir,i;
    double rra;
@@ -3546,9 +3429,7 @@ double *ra;
    }
 }
 /******************************************************************************/
-static int lusolinv(a,n,b,k)
-int n,k;
-double **a,*b;
+static int lusolinv(double **a, int n, double *b, int k)
 /* various lu things
    k=0 inverse, non symmetric
    k=1 inverse, symmetric

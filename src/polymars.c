@@ -234,7 +234,7 @@ static void matrix_multiplication2(struct matrix1 *object_matrixA,
 /* find possible knot locations for basis functions. Subset of order statistics.
    An array of double. knots_per_pred is used to access this array.
    Also holds levels of categorical variables---*/
-static double *compute_mesh();
+static double *compute_mesh(void);
 
 
 /* Sets up dynamically created variables controlls model selection*/
@@ -291,14 +291,14 @@ static int initial_model(struct basis_function_matrix *model,
 static void standardise_array(double *numbers,int length_of_list,double *mean,double *SD);
 /*checks the initial model if given, as it must be consistant with how the
 proceure adds functions*/
-static int check_input();
+static int check_input(void);
 /*use lapack inversion function. Some preprocessing of the matrix in done 
 first*/
 static int invert_matrix(struct matrix1 *object_matrix);
 /* computes testset RSS if required*/
 static double testset_RSS(struct matrix2 *YtXXtX_expanded,int model_size);
 /* static double condition(struct matrix1 *); */
-static double condition();
+static double condition(void);
 static logical lsame(char *, char *);
 static int xerbla(char *, int *);
 static int idamax(int *n, double *dx, int *incx);
@@ -3055,7 +3055,7 @@ deviatioN
 
 }
 /*==============================================================*/
-static int check_input()
+static int check_input(void)
 /*==============================================================*/
 {
   int i,j;
@@ -6265,7 +6265,7 @@ L80:
 
 
 /*==============================================================*/
-static double *compute_mesh()
+static double *compute_mesh(void)
 /*==============================================================*/
 {
 /*--------------------------------------------------------------
@@ -6526,7 +6526,7 @@ in after the usual knots for each predictor
 
 /* static double condition(a)
 struct matrix1 *a; */
-static double condition()
+static double condition(void)
 {
    double aa[DIM5][DIM5],bb[DIM5],rcond;
    int kpvt[DIM5];

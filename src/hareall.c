@@ -121,42 +121,85 @@ struct subdim {
 
 /* allocation stuff used a lot */
 
-static int glusolve2(),humbertester();
-static void glusolve();
 static int *newtonwhere;
 static double *searchsorted,*searchkts,*searchsorted2,*remdimy,*raoss;
 static double *raoscorecopy,*newtonscp,*compallss,*complogbasis0,*complogbasis1;
 static double *remdimxty,**raohhh,**getsexx,**compallhhh,**remdimxtx;
-static double *dgvector(),**dgmatrix(),testbasis();
-static float *ddgvector();
-static short **iigmatrix();
-static int *igvector(),**igmatrix(),zlocation();
-static double newton(),adders(),search(),eint(),xeint();
-static struct space *definegspace(),*hdefinegspace();
-static int gadddim(),gindl(),gindr(),gindx(),gindm(),gindyl(),gindyr();
-static void constant(),swapgspace(),gremdim(),gluinverse(),getse();
-static void soutgspace(),houtgspace(),poutgspace(),uuu(),sort(),hsort(),xhsort();
-static double critswap();
-static void addbasis(),tswapout(),upbasis(),veint(),upbasis2();
-static int tswapin();
-static double fct1(),fct2(),grao(),condition(),compall(),complog(),hcomplog();
-static void cleanupt(),cleanup1(),basisswap();
-static struct datastruct *definedata();
-static void getvector(),hareallocer();
-static struct basisfunct *definebasis();
-static struct subdim **definedim();
-static struct basisfunct *hdefinebasis();
-static struct subdim **hdefinedim();
-static void getvectors(),getthosep(),upbasis3();
+
+static void hare(struct space *best, struct datastruct *data, double alpha, int ndmax, int mind, int **exclude, int strt, int silent, double *logs, int *ad, int *lins);
+static void constant(struct space *spc, struct datastruct *data, int strt);
+static void swapgspace(struct space *spout, struct space *spin, int ndata, int ncov);
+static int gadddim(struct space *current, struct space *new, struct space *newt, struct datastruct *data, int mind, int **exclude, int silent, int *lins);
+static double adders(int i0, int j0, struct space *current, struct space *new, struct space *newt, double criterion, struct datastruct *data, int mind, int *lins);
+static double search(struct space *new, struct space *newt, struct datastruct *data, int i0, int mind);
+static double testbasis(struct space *new, struct space *newt, double criterion, struct datastruct *data, int i0, int j0, int ki, int kj, double ti);
+static int tswapin(struct space *spc, int ncov);
+static void tswapout(struct space *spc, int ncov, int position);
+static void addbasis(int i0, int j0, double *arg, struct datastruct *data, struct basisfunct *basis);
+static double fct1(double x, double *t, int i);
+static double fct2(double x, double y, double *t);
+static double critswap(struct space *newt, struct datastruct *data, struct space *new, double criterion, int i0, int j0, int ij);
+static double grao(struct space *spc, struct datastruct *data);
+static void getse(struct space *spc);
+static int gindyl(int u, int l, double *x);
+static int gindyr(int u, int l, double *x);
+static int gindl(int *ll, int *uu, int mind, double *x, int nx, double knt);
+static int gindr(int *ll, int *uu, int mind, double *x, int nx, double knt);
+static int gindx(int *ll, int *uu, int nx, int i);
+static int gindm(int *ll, int *uu, int mind, double *x, int nx, double k0, double k1);
+static int zlocation(int what, double *x, int nx, double k);
+static double newton(struct space *spc, struct datastruct *data, int precision, int silent, int *oops);
+static double compall(struct space *spc, double *data, int *delta, int ndata, int iter, int *where, int *same);
+static void upbasis(double *knots, int nknots, double **basis0, double **basis1, double *basis2, int idt, int ifc, struct basisfunct *basf, int where, int il);
+static double complog(struct space *spc, double *data, int *delta, int ndata, int iwhere, int *vwhere, int *same);
+static void upbasis2(double *knots, double *basis0, double *basis1, double *basis2, int idt, struct basisfunct *basf, int where);
+static double eint(double b1, double b2, double l, double u);
+static void veint(double r[3], double b1, double b2, double l, double u);
+static void gremdim(struct space *spc, int ncov, int ndata, int silent);
+static void cleanupt(int ki, struct space *spc, int ncov);
+static void cleanup1(int i0, int ki, struct space *spc, int ncov);
+static void basisswap(struct basisfunct *bs1, struct basisfunct *bs2, int ndata);
+static void uuu(struct space *spc, int b1, int b2, int t1, int t2, int ncov, int ii);
+void sharex(int *ncov, int *ndata);
+void share(int *ncov, int *ndata, double *time, int *delta, double *xcov, double *penalty, int *mindis, int *ndmax, double *bbtt, double *cckk, int *vexclude, int *lins, int *silent, double *logs, int *fitter, int *ad, int *strt);
+static void soutgspace(struct space *spc, struct datastruct *data, double *bbtt, double *cckk);
+static void getvector(struct space *best, int ndata, int ncov, double **cov, double *data);
+static struct datastruct *definedata(int ndata, int ncov);
+static struct space *definegspace(int ncov, int ndata);
+static struct basisfunct *definebasis(void);
+static struct subdim **definedim(int ncov);
+static int *igvector(int l);
+static float *ddgvector(int l);
+static double *dgvector(int l);
+static short int **iigmatrix(int r, int c);
+static int **igmatrix(int r, int c);
+static double **dgmatrix(int r, int c);
+static int humbertester(double aa);
+static void glusolve(double **a, int n, double *b);
+static int glusolve2(double **a, int n, double *b);
+static void gluinverse(double **a, int n);
+static void sort(double *ra, double *rb, int n);
+static void hsort(double *ra, int n);
+static void xhsort(double *ra, int n);
+static double condition(double **a, int n);
+static void hareallocer(int ndata);
+void ssumm(double *penalty, int *sample, double *logl, int *llogl, double *spcs, double *fcts, int *ndim, int *ncov);
+void sphare(int *ncov, int *ndim, int *ndata, double *xcov, int *ip, double *pdh, double *cckk, double *bbtt);
+static void poutgspace(struct space *spc, double *ppp, double *qqq, int ndata);
+static void getthosep(double *lin, double *con, int nk, double *kts, double *ppp, double *qqq, int i1, int i2);
+static void houtgspace(struct space *spc, double *pdh, double *qqq, int ndata, int ip);
+static double hcomplog(struct space *spc, double data, int idt, double *basis0, double *basis1);
+static void upbasis3(double *knots, double *basis0, double *basis1, double *basis2, int idt, struct basisfunct *basf, int where, double time);
+static void getvectors(struct space *best, int ndata, int ncov, double **cov);
+static double xeint(double b1, double b2, double l, double c);
+static struct space *hdefinegspace(int ncov, int ndata);
+static struct basisfunct *hdefinebasis(void);
+static struct subdim **hdefinedim(int ncov);
 
 /******************************************************************************/
 
 /* This program does the main control */
-static void hare(best,data,alpha,ndmax,mind,exclude,strt,silent,logs,ad,lins)
-struct space *best;
-struct datastruct *data;
-double alpha,*logs;
-int ndmax,mind,**exclude,strt,silent,*ad,*lins;
+static void hare(struct space *best, struct datastruct *data, double alpha, int ndmax, int mind, int **exclude, int strt, int silent, double *logs, int *ad, int *lins)
 
 /* best        - the best model up to now
    data        - the data 
@@ -288,10 +331,7 @@ int ndmax,mind,**exclude,strt,silent,*ad,*lins;
 
 /* this function initializes a constant hazard space */
 
-static void constant(spc,data,strt)
-struct space *spc;
-struct datastruct *data;
-int strt;
+static void constant(struct space *spc, struct datastruct *data, int strt)
 
 /* spc   - space to be initialized
    data  - the data 
@@ -353,9 +393,7 @@ int strt;
 
 /* this function copies one space into another - just element by element */
 
-static void swapgspace(spout,spin,ndata,ncov)
-struct space *spin,*spout;
-int ndata,ncov;
+static void swapgspace(struct space *spout, struct space *spin, int ndata, int ncov)
 
 /* spin  - input space
    spout - output space
@@ -444,10 +482,7 @@ int ndata,ncov;
 
 /* this routine searches all dimensions for something to add */
 
-static int gadddim(current,new,newt,data,mind,exclude,silent,lins)
-struct space *current,*new,*newt;
-struct datastruct *data;
-int mind,**exclude,silent,*lins;
+static int gadddim(struct space *current, struct space *new, struct space *newt, struct datastruct *data, int mind, int **exclude, int silent, int *lins)
 
 /* current - current space
    new     - copy of current space to play with
@@ -510,11 +545,7 @@ int mind,**exclude,silent,*lins;
 
 /* this routine searches a subdimension for a supspace to add */
 
-static double adders(i0,j0,current,new,newt,criterion,data,mind,lins)
-int i0,j0,mind,*lins;
-struct space *new,*newt,*current;
-struct datastruct *data;
-double criterion;
+static double adders(int i0, int j0, struct space *current, struct space *new, struct space *newt, double criterion, struct datastruct *data, int mind, int *lins)
 
 /* i0,j0     - which subspace (see hstruct)
    current   - sometimes we need two of them (see newt)
@@ -630,10 +661,7 @@ double criterion;
 /* if a new knot is to be added in a one-covariate dimension or in time, we 
    have to search, and that is what we do in this routine */
 
-static double search(new,newt,data,i0,mind)
-struct space *newt,*new;
-struct datastruct *data;
-int i0,mind;
+static double search(struct space *new, struct space *newt, struct datastruct *data, int i0, int mind)
 
 /* new   - the best added space up to now
    newt  - a space to which we can add
@@ -774,11 +802,7 @@ int i0,mind;
    it checks the criterion (critswap) - there are lots of possibilities to
    check. */
 
-static double testbasis(new,newt,criterion,data,i0,j0,ki,kj,ti)
-double ti,criterion;
-int i0,j0,ki,kj;
-struct datastruct *data;
-struct space *new,*newt;
+static double testbasis(struct space *new, struct space *newt, double criterion, struct datastruct *data, int i0, int j0, int ki, int kj, double ti)
 
 /* new       - best space with added dimensions
    newt      - space to which dimensions are added 
@@ -868,9 +892,7 @@ struct space *new,*newt;
    position. The output argument position is the position of the new basis
    function */
 
-static int tswapin(spc,ncov)
-struct space *spc;
-int ncov;
+static int tswapin(struct space *spc, int ncov)
 
 /* spc  - the space that has to be reorganized 
    ncov - number of covariates */
@@ -924,10 +946,7 @@ int ncov;
 /******************************************************************************/
 
 /* removes the time knot on position from a space */
-static void tswapout(spc,ncov,position)
-
-struct space *spc;
-int ncov,position;
+static void tswapout(struct space *spc, int ncov, int position)
 
 /* spc      - the space to remove a time-knot from
    ncov     - number of covariates
@@ -965,11 +984,7 @@ int ncov,position;
 /* after another routine has decided to add a basis function, this routine
    actually adds the basis function */
 
-static void addbasis(i0,j0,arg,data,basis)
-double *arg;
-struct datastruct *data;
-struct basisfunct *basis;
-int i0,j0;
+static void addbasis(int i0, int j0, double *arg, struct datastruct *data, struct basisfunct *basis)
 
 /* i0,j0 - which subdimension does this new basisfunction belong to
    arg   - elements 2 and 3: ranknumber of the knot
@@ -1040,9 +1055,7 @@ int i0,j0;
    of one covariate (plus possibly time). If t[2(or3)]<0, the function is linear
    in x while if t[2(or 3)]>0 the function is proportional to (x-t[0(or 1)])+.*/
 
-static double fct1(x,t,i)
-double x,*t;
-int i;
+static double fct1(double x, double *t, int i)
 
 /* t - see description above
    x - value in dimension 1 
@@ -1071,8 +1084,7 @@ int i;
    of two covariates. If t[2]<0/t[3]<0, the function is linear in x/y while
    if t[2]>0/t[3]>=0 the function is proportional to (x-t[1])+/(y-t[1])+. */
 
-static double fct2(x,y,t)
-double x,y,*t;
+static double fct2(double x, double y, double *t)
 
 /* t - see description above
    x - value in dimension 1
@@ -1095,11 +1107,7 @@ double x,y,*t;
    computes the criterion. If this is an improvement it copies the basis into
    new, then it restores newt. */
 
-static double critswap(newt,data,new,criterion,i0,j0,ij)
-double criterion;
-struct datastruct *data;
-int i0,j0,ij;
-struct space *new,*newt;
+static double critswap(struct space *newt, struct datastruct *data, struct space *new, double criterion, int i0, int j0, int ij)
 
 /* criterion - best rao p-value up to now
    data      - the data
@@ -1163,9 +1171,7 @@ struct space *new,*newt;
    and it makes use of the fact that part of b0, b1 and b2 might be known and
    completely at the end, it computes the rao statistic.                      */
 
-static double grao(spc,data)
-struct space *spc;
-struct datastruct *data;
+static double grao(struct space *spc,struct datastruct *data)
 
 /* spc   - the present model 
    data  - the data */
@@ -1329,8 +1335,7 @@ struct datastruct *data;
 
    return -raoc;
 }
-static void getse(spc)
-struct space *spc;
+static void getse(struct space *spc)
 {
    int i,j;
    double **xx;
@@ -1344,9 +1349,8 @@ struct space *spc;
 /******************************************************************************/
 /* finds a new location in an interval (l,b) - that is the lower end might not
    have been tested yet */
-static int gindyl(u,l,x)
-int l,u;
-double *x;
+
+static int gindyl(int u, int l, double *x)
 {
    int i;
    if(x[l]==x[u])return -1;
@@ -1359,9 +1363,8 @@ double *x;
 /******************************************************************************/
 /* finds a new location in an interval (b,u) - that is the upper end might not
    have been tested yet */
-static int gindyr(u,l,x)
-int l,u;
-double *x;
+
+static int gindyr(int u, int l, double *x)
 {
    int i;
    if(x[l]==x[u])return -1;
@@ -1380,9 +1383,7 @@ double *x;
    nx - length of data
    knt- knot */
 
-static int gindl(ll,uu,mind,x,nx,knt)
-double *x,knt;
-int nx,*ll,*uu,mind;
+static int gindl(int *ll, int *uu, int mind, double *x, int nx, double knt)
 {
 
 /* i  - utility
@@ -1407,9 +1408,7 @@ int nx,*ll,*uu,mind;
    nx - length of data
    knt- knot */
 
-static int gindr(ll,uu,mind,x,nx,knt)
-double *x,knt;
-int nx,*ll,*uu,mind;
+static int gindr(int *ll, int *uu, int mind, double *x, int nx, double knt)
 {
 
 /* i  - utility
@@ -1431,8 +1430,7 @@ int nx,*ll,*uu,mind;
    uu - highest number we can search on in the future
    nx - length of data */
 
-static int gindx(ll,uu,nx,i)
-int nx,*ll,*uu,i;
+static int gindx(int *ll, int *uu, int nx, int i)
 {
    if(i==0){
       *ll=0;
@@ -1458,9 +1456,7 @@ int nx,*ll,*uu,i;
    k0 - knot
    k1 - knot */
 
-static int gindm(ll,uu,mind,x,nx,k0,k1)
-double *x,k0,k1;
-int nx,*ll,*uu,mind;
+static int gindm(int *ll, int *uu, int mind, double *x, int nx, double k0, double k1)
 {
 /* zlocation - finds ll */
 
@@ -1481,9 +1477,7 @@ int nx,*ll,*uu,mind;
    nx   - length data
    k    - see above */
 
-static int zlocation(what,x,nx,k)
-int nx,what;
-double k,*x;
+static int zlocation(int what, double *x, int nx, double k)
 {
    int i;
    if(what==1){
@@ -1509,10 +1503,7 @@ double k,*x;
 
 /* this routine does the Newton-Raphson iteration loop */
 
-static double newton(spc,data,precision,silent,oops)
-int *oops,silent,precision;
-struct datastruct *data; 
-struct space *spc;
+static double newton(struct space *spc, struct datastruct *data, int precision, int silent, int *oops)
 
 /* spc   - the present model
    data  - the data 
@@ -1635,10 +1626,7 @@ struct space *spc;
 
 /* this routine computes hessian score and log-likelihood */
 
-static double compall(spc,data,delta,ndata,iter,where,same)
-struct space *spc;
-int ndata,*delta,iter,*where,*same;
-double *data;
+static double compall(struct space *spc, double *data, int *delta, int ndata, int iter, int *where, int *same)
 
 /* spc   - the present model
    data  - the data (only the times)
@@ -1790,10 +1778,7 @@ double *data;
 /* this routine updates basis0, basis1 and basis2 (spc.b0, spc.b1 and spc.b2)
    for one basisfunction for one datapoint, for the hessian/score/logl case */
 
-static void upbasis(knots,nknots,basis0,basis1,basis2,idt,ifc,basf,where,il)
-int nknots,idt,ifc,where,il;
-double **basis0,**basis1,*basis2,*knots;
-struct basisfunct *basf;
+static void upbasis(double *knots, int nknots, double **basis0, double **basis1, double *basis2, int idt, int ifc, struct basisfunct *basf, int where, int il)
 
 /* knots  - time-knots
    nknots - number of time-knots
@@ -1854,10 +1839,7 @@ struct basisfunct *basf;
 /* this function computes the log-likelihood (log-density) of a vector (one)
    datapoint */
 
-static double complog(spc,data,delta,ndata,iwhere,vwhere,same)
-struct space *spc;
-int ndata,*delta,iwhere,*vwhere,*same;
-double *data;
+static double complog(struct space *spc, double *data, int *delta, int ndata, int iwhere, int *vwhere, int *same)
 
 /* spc   - the present model
    data  - the data (only time)
@@ -1981,10 +1963,7 @@ double *data;
 /* comprable to upbasis, but does less, since only the loglikelihood will
    be computed */
 
-static void upbasis2(knots,basis0,basis1,basis2,idt,basf,where)
-int idt,where;
-double *basis0,*basis1,*basis2,*knots;
-struct basisfunct *basf;
+static void upbasis2(double *knots, double *basis0, double *basis1, double *basis2, int idt, struct basisfunct *basf, int where)
 
 /* knots  - time-knots
    basis2 - lambda in a datapoint
@@ -2027,8 +2006,7 @@ struct basisfunct *basf;
             /
            l            */
 
-static double eint(b1,b2,l,u)
-double b1,b2,l,u;
+static double eint(double b1, double b2, double l, double u)
 
 /* just work it out */
 {
@@ -2059,8 +2037,7 @@ double b1,b2,l,u;
             /
            l            */
 
-static void veint(r,b1,b2,l,u)
-double r[3],b1,b2,l,u;
+static void veint(double r[3], double b1, double b2, double l, double u)
 
 /* just work it out */
 {
@@ -2107,9 +2084,7 @@ double r[3],b1,b2,l,u;
 /******************************************************************************/
 /* this routine searches all dimensions for something to remove */
 
-static void gremdim(spc,ncov,ndata,silent)
-struct space *spc;
-int ncov,ndata,silent;
+static void gremdim(struct space *spc, int ncov, int ndata, int silent)
 
 /* spc  - the model from which to remove something
    ncov - number of covariates
@@ -2248,9 +2223,7 @@ int ncov,ndata,silent;
 /******************************************************************************/
 /* this routine removes a time knot from the space */
 
-static void cleanupt(ki,spc,ncov)
-struct space *spc;
-int ki,ncov;
+static void cleanupt(int ki, struct space *spc, int ncov)
 
 /* spc   - space to be reduced
    ki    - ranknumber of knot
@@ -2280,9 +2253,7 @@ int ki,ncov;
 /******************************************************************************/
 /* this routine removes a covariate knot from the space */
 
-static void cleanup1(i0,ki,spc,ncov)
-struct space *spc;
-int i0,ki,ncov;
+static void cleanup1(int i0, int ki, struct space *spc, int ncov)
 
 /* spc   - space to be reduced
    i0    - which covariate
@@ -2313,9 +2284,7 @@ int i0,ki,ncov;
 /******************************************************************************/
 /* copy one basisfunction into another */
 
-static void basisswap(bs1,bs2,ndata)
-struct basisfunct *bs1,*bs2;
-int ndata;
+static void basisswap(struct basisfunct *bs1, struct basisfunct *bs2, int ndata)
 
 /* bs1   - basisfunction out
    bs2   - basisfunction in
@@ -2337,9 +2306,7 @@ int ndata;
    }
 }
 
-static void uuu(spc,b1,b2,t1,t2,ncov,ii)
-struct space *spc;
-int b1,b2,t1,t2,ncov,ii;
+static void uuu(struct space *spc, int b1, int b2, int t1, int t2, int ncov, int ii)
 {
    if(ii==0)(void)Rprintf("added: ");
    else (void)Rprintf("removed: ");
@@ -2362,22 +2329,14 @@ int b1,b2,t1,t2,ncov,ii;
 
 /* the S-I/O routine */
 
-void sharex(ncov,ndata)
-int *ncov,*ndata;
+void sharex(int *ncov,int *ndata)
 {
    *ndata=MAXSPACE;
    *ncov=MAXKNOTS;
 }
 
 
-void share(ncov,ndata,time,delta,xcov,penalty,mindis,ndmax,bbtt,cckk,vexclude,
-          lins,silent,logs,fitter,ad,strt)
-
-double *time;
-double *penalty,*logs;
-int *delta,*silent,*fitter,*ad,*lins,*strt;
-int *mindis,*ncov,*ndmax,*ndata,*vexclude;
-double *xcov,*bbtt,*cckk;
+void share(int *ncov, int *ndata, double *time, int *delta, double *xcov, double *penalty, int *mindis, int *ndmax, double *bbtt, double *cckk, int *vexclude, int *lins, int *silent, double *logs, int *fitter, int *ad, int *strt)
 
 /* time   - the times
    penalty- alpha(bic)
@@ -2546,11 +2505,7 @@ double *xcov,*bbtt,*cckk;
 
 /* this is an output routine, it writes the matrices bbtt and cckk - which are
    given as output to S */
-
-static void soutgspace(spc,data,bbtt,cckk)
-struct space *spc;
-struct datastruct *data;
-double *cckk,*bbtt;
+static void soutgspace(struct space *spc, struct datastruct *data, double *bbtt, double *cckk)
 
 /* spc   - structure describing the model
    data  - data 
@@ -2605,10 +2560,7 @@ double *cckk,*bbtt;
 }
 
 /******************************************************************************/
-static void getvector(best,ndata,ncov,cov,data)
-struct space *best;
-int ndata,ncov;
-double **cov,*data;
+static void getvector(struct space *best, int ndata, int ncov, double **cov, double *data)
 
 /* best  - the model
    ndata - number of datapoints
@@ -2690,8 +2642,7 @@ double **cov,*data;
 /******************************************************************************/
 /* this function allocates storage for a data structure */
 
-static struct datastruct *definedata(ndata,ncov)
-int ncov,ndata;
+static struct datastruct *definedata(int ndata,int ncov)
 {
    struct datastruct *newdata;
    /* newdata=(struct datastruct *)S_alloc((long)1,sizeof(struct datastruct)); */
@@ -2707,8 +2658,7 @@ int ncov,ndata;
 
 /* this function allocates storage for a space */
 
-static struct space *definegspace(ncov,ndata)
-int ncov,ndata;
+static struct space *definegspace(int ncov,int ndata)
 
 /* ncov  - number of covariates */
 
@@ -2786,7 +2736,7 @@ int ncov,ndata;
 /******************************************************************************/
 
 /* this function allocates storage for an array of basisfunctions */
-static struct basisfunct *definebasis()
+static struct basisfunct *definebasis(void)
 {
    struct basisfunct *nb;
 
@@ -2797,8 +2747,7 @@ static struct basisfunct *definebasis()
 /******************************************************************************/
 
 /* this function allocates storage for a matrix of subdimensions */
-static struct subdim **definedim(ncov)
-int ncov;
+static struct subdim **definedim(int ncov)
 {
    struct subdim **newdim;
    int i;
@@ -2810,8 +2759,7 @@ int ncov;
 }
 
 /******************************************************************************/
-static int *igvector(l)
-int l;
+static int *igvector(int l)
 /* allocate an int vector with subscript range v[0...l] */
 {
    int *v,i;
@@ -2820,8 +2768,7 @@ int l;
    return v;
 }
 /******************************************************************************/
-static float *ddgvector(l)
-int l;
+static float *ddgvector(int l)
 /* allocate a float vector with subscript range v[0...l] */
 {
    float *v;
@@ -2831,8 +2778,7 @@ int l;
    return v;
 }
 /******************************************************************************/
-static double *dgvector(l)
-int l;
+static double *dgvector(int l)
 /* allocate a double vector with subscript range v[0...l] */
 {
    double *v;
@@ -2842,8 +2788,7 @@ int l;
    return v;
 }
 /******************************************************************************/
-static short int **iigmatrix(r,c)
-int r,c;
+static short int **iigmatrix(int r,int c)
 /* allocate an int matrix with subscript range m[0..r][0..c] */
 {
    short int i,j,**m;
@@ -2855,8 +2800,7 @@ int r,c;
    return m;
 }
 /******************************************************************************/
-static int **igmatrix(r,c)
-int r,c;
+static int **igmatrix(int r,int c)
 /* allocate an int matrix with subscript range m[0..r][0..c] */
 {
    int i,j,**m;
@@ -2868,8 +2812,7 @@ int r,c;
    return m;
 }
 /******************************************************************************/
-static double **dgmatrix(r,c)
-int r,c;
+static double **dgmatrix(int r,int c)
 /* allocate a double matrix with subscript range m[0..r][0..c] */
 {
    int i,j;
@@ -2882,8 +2825,7 @@ int r,c;
    return m;
 }
 /******************************************************************************/
-static int humbertester(aa)
-double aa;
+static int humbertester(double aa)
 /* if aa = -Inf: 0
       aa = +Inf: 1
       aa =  NaN: 2
@@ -2900,9 +2842,7 @@ double aa;
    return 2;
 }
 /******************************************************************************/
-static void glusolve(a,n,b)
-int n;
-double **a,*b;
+static void glusolve(double **a,int n,double *b)
 {
    double aa[DIM5][DIM5],bb[DIM5];
    int kpvt[DIM5],info;
@@ -2920,9 +2860,7 @@ double **a,*b;
    for(i=0;i<n;i++)b[i]=bb[i];
 }
 /******************************************************************************/
-static int glusolve2(a,n,b)
-int n;
-double **a,*b;
+static int glusolve2(double **a,int n,double *b)
 {
    double aa[DIM5][DIM5],bb[DIM5];
    int kpvt[DIM5],info;
@@ -2939,9 +2877,7 @@ double **a,*b;
    return 1;
 }
 /******************************************************************************/
-static void gluinverse(a,n)
-int n;
-double **a;
+static void gluinverse(double **a,int n)
 {
    double aa[DIM5][DIM5],bb[DIM5],det[2];
    int kpvt[DIM5],info,inert[3];
@@ -2959,9 +2895,7 @@ double **a;
    }
 }
 /******************************************************************************/
-static void sort(ra,rb,n)
-int n;
-double *ra,*rb;
+static void sort(double *ra,double *rb,int n)
 {
    int i;
    for(i=0;i<n;i++)ra[i]=rb[i];
@@ -2970,16 +2904,12 @@ double *ra,*rb;
 /* sort */
 /******************************************************************************/
 /* sort, put result in rb */
-static void hsort(ra,n)
-int n;
-double *ra;
+static void hsort(double *ra,int n)
 {
    xhsort(ra-1,n);
 }
 /******************************************************************************/
-static void xhsort(ra,n)
-int n;
-double *ra;
+static void xhsort(double *ra,int n)
 {
    int l,j,ir,i;
    double rra;
@@ -3010,9 +2940,7 @@ double *ra;
    }
 }
 /******************************************************************************/
-static double condition(a,n)
-int n;
-double **a;
+static double condition(double **a,int n)
 {
    double aa[DIM5][DIM5],bb[DIM5],rcond;
    int kpvt[DIM5];
@@ -3024,8 +2952,7 @@ double **a;
    return rcond;
 }
 /******************************************************************************/
-static void hareallocer(ndata)
-int ndata;
+static void hareallocer(int ndata)
 {
    newtonwhere=igvector(ndata+1);
    searchsorted=dgvector(ndata+1);
@@ -3048,9 +2975,7 @@ int ndata;
 /******************************************************************************/
 /* this function prints out the tables for hare.summary */
 
-void ssumm(penalty,sample,logl,llogl,spcs,fcts,ndim,ncov)
-int *sample,*llogl,*ncov,*ndim;
-double *penalty,*logl,*spcs,*fcts;
+void ssumm(double *penalty, int *sample, double *logl, int *llogl, double *spcs, double *fcts, int *ndim, int *ncov)
 
 /* penalty   - penalty term used
    sample    - sample size
@@ -3167,9 +3092,7 @@ double *penalty,*logl,*spcs,*fcts;
 
 /* the C-I/O routine */
 
-void sphare(ncov,ndim,ndata,xcov,ip,pdh,cckk,bbtt)
-double *pdh,*xcov,*cckk,*bbtt;
-int *ncov,*ndim,*ip,*ndata;
+void sphare(int *ncov, int *ndim, int *ndata, double *xcov, int *ip, double *pdh, double *cckk, double *bbtt)
 
 /* ncov          - number of covariates
    ndim          - dimensionality of the space
@@ -3265,10 +3188,7 @@ int *ncov,*ndim,*ip,*ndata;
 
 /* this routine is used in the qhare case */
 
-static void poutgspace(spc,ppp,qqq,ndata)
-struct space *spc;
-double *ppp,*qqq;
-int ndata;
+static void poutgspace(struct space *spc, double *ppp, double *qqq, int ndata)
 
 /* spc   - the model fitted
    ppp   - the probabilities (in)
@@ -3325,9 +3245,7 @@ int ndata;
 
 /* this one geths the quantiles for some p's */
 
-static void getthosep(lin,con,nk,kts,ppp,qqq,i1,i2)
-double *lin,*con,*ppp,*qqq,*kts;
-int i1,i2,nk;
+static void getthosep(double *lin, double *con, int nk, double *kts, double *ppp, double *qqq, int i1, int i2)
 
 /* lin - linear term
    con - constant term
@@ -3380,10 +3298,7 @@ int i1,i2,nk;
 
 /* this routine computes pdh from qqq */
 
-static void houtgspace(spc,pdh,qqq,ndata,ip)
-struct space *spc;
-double *pdh,*qqq;
-int ndata,ip;
+static void houtgspace(struct space *spc, double *pdh, double *qqq, int ndata, int ip)
 
 /* spc   - structure describing the model
    pdh   - probabilities/densities/hazard
@@ -3441,10 +3356,7 @@ int ndata,ip;
 
 /* this function computes the density in one datapoint */
 
-static double hcomplog(spc,data,idt,basis0,basis1)
-struct space *spc;
-double data,*basis0,*basis1;
-int idt;
+static double hcomplog(struct space *spc, double data, int idt, double *basis0, double *basis1)
 
 /* spc   - the present model
    data  - the data (only time) 
@@ -3515,10 +3427,7 @@ int idt;
 /* comprable to upbasis, but does less, since only the loglikelihood will
    be computed */
 
-static void upbasis3(knots,basis0,basis1,basis2,idt,basf,where,time)
-int idt,where;
-double *basis0,*basis1,*basis2,*knots,time;
-struct basisfunct *basf;
+static void upbasis3(double *knots, double *basis0, double *basis1, double *basis2, int idt, struct basisfunct *basf, int where, double time)
 
 /* knots  - time-knots
    basis0 - element constant term of lambda[between-2-knots,datapoint]
@@ -3560,10 +3469,7 @@ struct basisfunct *basf;
 
 /* this function computes the vector part of a basisfunction */
 
-static void getvectors(best,ndata,ncov,cov)
-struct space *best;
-int ndata,ncov;
-double **cov;
+static void getvectors(struct space *best,int ndata,int ncov,double **cov)
 
 /* best  - the model
    ndata - number of datapoints
@@ -3630,8 +3536,7 @@ solves for t  c= |e          dx
                  /
                 l            */
 
-static double xeint(b1,b2,l,c)
-double b1,b2,l,c;
+static double xeint(double b1,double b2,double l,double c)
 
 /* just work it out */
 {
@@ -3646,8 +3551,7 @@ double b1,b2,l,c;
 
 /* this function allocates storage for a space */
 
-static struct space *hdefinegspace(ncov,ndata)
-int ncov,ndata;
+static struct space *hdefinegspace(int ncov,int ndata)
 
 /* ncov  - number of covariates */
 
@@ -3714,7 +3618,7 @@ int ncov,ndata;
 /******************************************************************************/
 
 /* this function allocates storage for an array of basisfunctions */
-static struct basisfunct *hdefinebasis()
+static struct basisfunct *hdefinebasis(void)
 {
    struct basisfunct *nb;
 
@@ -3725,8 +3629,7 @@ static struct basisfunct *hdefinebasis()
 /******************************************************************************/
 
 /* this function allocates storage for a matrix of subdimensions */
-static struct subdim **hdefinedim(ncov)
-int ncov;
+static struct subdim **hdefinedim(int ncov)
 {
    struct subdim **newdim;
    int i;

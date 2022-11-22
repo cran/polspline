@@ -30,33 +30,69 @@ void F77_NAME(xdgefa)(double[][HLENGTH], int *, int *, int *, int *);
 void F77_NAME(xdgesl)(double[][HLENGTH], int *, int *, int *, double *, int *);
 
 
-static double hmylog();
+static double hmylog(double x);
 
 
 /* MAXKNOTS is the maximum number of knots in a model
    HLENGTH   is the generic vector length */
 
-static void hlusolve(),hluinverse(),hlusolve2();
-static int *ihvector(),**ihmatrix();
-static double *dhvector(),**dhmatrix(),***dstriparray();
 static double *wkddd,*wkvec1,*wkvec2,**wkmat1,*wkphi,**wkmat,*wkphi2,*wkxx,*wkcand;
 static double *wkmasterpt,*wkphi3,*wkse3,*wkphi4,**wkhh,**wkpowdat,**wkpowvec;
 static double **wkinfo2,*wkscore2,*wkscore3,*wknewbas,*wknewdata,*wkphi7,**wkmat33;
 static double *wksorted;
-static void heft(),hstart2();
-static void intprep(),getcoef(),start(),thetaswap(),tossit(),nstart(),getcoefx();
-static void hiter(),hknotplace(),dubmodel(),hetse(),allocer();
-static int add(),hlocation();
-static void midblob(),basis(),lgrange();
-static int hopplus();
-static double summer(),ilambda(),xlambda();
-static int step();
-static double summer2(),lambda();
-static int step2();
-static void hremoveknot(),getse2();
-static void thetaform(),newnew();
-static int hindyl(),hindyr(),hindl(),hindr(),hindx(),hindm();
-static double hrao();
+
+void sheftx(int *nx);
+void sheft(int *nx, double *data, int *delta, int *nkstart, double *knots, double *alpha, double *tails, int *iauto, double *logl, double *theta, int *iknots, int *zerror, double *cc, int *nkmax, int *ad, int *mindist);
+static struct model *makemodel(void);
+static struct datas *makedata(int i);
+static double ***dstriparray(int r, int c, int s);
+static int *ihvector(int l);
+static double *dhvector(int l);
+static int **ihmatrix(int r, int c);
+static double **dhmatrix(int r, int c);
+static void heft(struct datas *dat, int nkstart, double alpha, struct model *mod1, int iauto, int *zerror, int nkmax, int mind);
+static void hknotplace(int *nkstart, struct model *mod1);
+static void getcoef(struct model *m1);
+static void getcoefx(double **coef2, double ***coef3, double *knots, int **icoef, int nk);
+static void start(struct model *mod1, struct datas *dat);
+static void hstart2(double *theta, int nk, double **basdata1, double **basdata2, int nx, double *tails);
+static void nstart(struct model *mod1, struct datas *dat, int nkstart);
+static void thetaswap(struct model *mod1);
+static void intprep(int *nint, int nintx, struct model *mod1, struct datas *dat, int what);
+static void midblob(int *where, int j, int i, int nint, double *basvec, double *mult, int nx, double *data);
+static void lgrange(double a, double b, double c, double d, double n, double u, double v, double *mult, int j);
+static int hopplus(double *xx, double *data, int i, int j);
+static void basis(double *x, int nx, double *knots, int nk, double **basmat, double cc, int **icoef, double ***coef3);
+static void hiter(struct model *mod1, struct datas *dat, int *zerror, int nint, int what);
+static double summer(struct model *mod1, int what, int nint, struct datas *dat);
+static double summer2(double *score, double **hessian, int what, int nk, int ndata, int nint, double *theta, double **basdata, double **basint, int *delta, double *mult);
+static double lambda(int nk, double **basis, double *theta, int which);
+static int step(struct datas *dat, struct model *mod1, int *itails, double *ldif, int nint, int *zerror, int what);
+static int step2(int nx, int *delta, int nint, double **basmat, double *mult, double *theta, int nk, double **basdata, double **hessian, int *zerror, double *score, int *itails, double *ldif, int what);
+static void tossit(struct model *mod1, struct model *modmin, double alpha, int *zerror);
+static void hremoveknot(struct model *mod1, int *zerror);
+static void hetse(struct model *mod1, struct model *modmin, double alpha);
+static void getse2(struct model *mod1);
+static int add(struct model *mod1, struct datas *dat, int nint, int *zerror, struct model *modmin, int mind);
+static double hrao(struct model *mod1, struct datas *dat, double cand, int nint, double **powvec, double **powdat, int ipowvec[3], int ipowdat[3]);
+static void newnew(double *knots, int nk, double cand, double *newbas, double *newdata, int nint, struct datas *dat, double *basvec, double **powdat, double **powvec, int ipowdat[3], int ipowvec[3]);
+static void thetaform(struct model *mod1, int besti);
+static int hindyl(int u, int l, double *x);
+static int hindyr(int u, int l, double *x);
+static int hindl(int *ll, int *uu, int mind, double *x, int nx, double knt);
+static int hindr(int *ll, int *uu, int mind, double *x, int nx, double knt);
+static int hindx(int *ll, int *uu, int nx);
+static int hindm(int *ll, int *uu, int mind, double *x, int nx, double k0, double k1);
+static int hlocation(int what, double *x, int nx, double k);
+static void dubmodel(struct model *m2, struct model *m1);
+static void hlusolve(double **a, int n, double *b, int *k);
+static void hlusolve2(double **a, int n, double *b, int *k);
+static void hluinverse(double **a, int n);
+void heftpq(double *knots, double *cc, double *thetak, double *thetal, double *thetap, int *what, double *pp, double *qq, int *nk, int *np);
+static double xlambda(double *knots, double cc, double *thetak, double *thetal, double *thetap, int nk, double x);
+static double ilambda(double *knots, double cc, double *thetak, double *thetal, double *thetap, int nk, double z1, double z2, int i);
+static void allocer(int nd, int i00);
+static double hmylog(double x);
 
 struct model {
    int nk,*iknots,**icoef,nk1,*ad;
@@ -100,22 +136,15 @@ struct datas {
    cc     - c=number
    basdata1 - used for numerical integrations
    basdata2 - used for numerical integrations  */
-static struct model *makemodel();
-static struct datas *makedata();
+
 /******************************************************************************/
 /* this routine looks ugly - and is ugly. It only relates the S-variables to
    the C-variables - almost all should be self explanatory                    */
-void sheftx(nx)
-int *nx;
+void sheftx(int *nx)
 {
    *nx=HLENGTH;
 }
-
-void sheft(nx,data,delta,nkstart,knots,alpha,tails,iauto,logl,theta,iknots,zerror,cc,
-      nkmax,ad,mindist)
-int *nx,*delta,*nkmax,*nkstart,*zerror,*iknots,*iauto,*ad,*mindist;
-double *data,*alpha,*theta,*cc,*logl,*knots,*tails;
-
+void sheft(int *nx, double *data, int *delta, int *nkstart, double *knots, double *alpha, double *tails, int *iauto, double *logl, double *theta, int *iknots, int *zerror, double *cc, int *nkmax, int *ad, int *mindist)
 {
    int i;
    struct model *mod1;
@@ -160,7 +189,7 @@ double *data,*alpha,*theta,*cc,*logl,*knots,*tails;
    tails[3]=(*mod1).tailse[1];
    tails[4]=(*mod1).tails[4];
 }
-static struct model *makemodel()
+static struct model *makemodel(void)
 /* allocates storage for a model */
 {
    int i;
@@ -189,9 +218,8 @@ static struct model *makemodel()
    (*m1).hessian=dhmatrix(HLENGTH,HLENGTH);
    return m1;
 }
-static struct datas *makedata(i)
+static struct datas *makedata(int i)
 /* allocates storage for a data-datastructure with i observations */
-int i;
 {
    struct datas *d1;
    d1=(struct datas *)Salloc(1,struct datas);
@@ -206,8 +234,7 @@ int i;
    return d1;
 }
 /******************************************************************************/
-static double ***dstriparray(r,c,s)
-int r,c,s;
+static double ***dstriparray(int r,int c,int s)
 {
    int i,j,k;
    double ***m;
@@ -223,8 +250,7 @@ int r,c,s;
    return m;
 }
 /******************************************************************************/
-static int *ihvector(l)
-int l;
+static int *ihvector(int l)
 /* allocate an int vector with subscript range v[0...l] */
 {
    int i,*v;
@@ -233,8 +259,7 @@ int l;
    return v;
 }
 /******************************************************************************/
-static double *dhvector(l)
-int l;
+static double *dhvector(int l)
 /* allocate a double vector with subscript range v[0...l] */
 {
    double *v;
@@ -244,8 +269,7 @@ int l;
    return v;
 }
 /******************************************************************************/
-static int **ihmatrix(r,c)
-int r,c;
+static int **ihmatrix(int r,int c)
 /* allocate an int matrix with subscript range m[0..r][0..c] */
 {
    int i,j,**m;
@@ -257,8 +281,7 @@ int r,c;
    return m;
 }
 /******************************************************************************/
-static double **dhmatrix(r,c)
-int r,c;
+static double **dhmatrix(int r,int c)
 /* allocate a double matrix with subscript range m[0..r][0..c] */
 {
    int i,j;
@@ -274,12 +297,7 @@ int r,c;
 
 /* this is the main loop */
 
-static void heft(dat,nkstart,alpha,mod1,iauto,zerror,nkmax,mind)
-
-struct datas *dat;
-struct model *mod1;
-int nkstart,iauto,nkmax,*zerror,mind;
-double alpha;
+static void heft(struct datas *dat, int nkstart, double alpha, struct model *mod1, int iauto, int *zerror, int nkmax, int mind)
 
 /* dat    - the data
    nkstart- starting number of knots
@@ -294,7 +312,7 @@ double alpha;
 {
    int i00;
 
-   struct model *modmin,*modold,*makemodel();
+   struct model *modmin,*modold,*makemodel(void);
 
    int nint1=20,nint2=50,nint,nintx1=2,nintx2=6,nintx=0,i,j,addi=0,nkmax2,ndd;
    double r,newk,lold[HLENGTH],*ddd;
@@ -547,10 +565,7 @@ double alpha;
 /* checks the knots */
 
 
-static void hknotplace(nkstart,mod1)
-
-int *nkstart;
-struct model *mod1;
+static void hknotplace(int *nkstart,struct model *mod1)
 
 /* nkstart - starting number of knots
    mod1    - model */
@@ -618,16 +633,12 @@ tails are 0;  this leads to differnt basis functions for B(1), B(nk-2)
 and B(nk-1). B(1) is linear left of the first knot. B(nk-2) is constant to
 the right of the last knot and B(nk-1) is constant 1 everywhere */
 
-static void getcoef(m1)
-struct model *m1;
+static void getcoef(struct model *m1)
 {
    getcoefx((*m1).coef2,(*m1).coef3,(*m1).knots,(*m1).icoef,(*m1).nk);
 }
 
-static void getcoefx(coef2,coef3,knots,icoef,nk)
-
-double **coef2,***coef3,*knots;
-int nk,**icoef;
+static void getcoefx(double **coef2, double ***coef3, double *knots, int **icoef, int nk)
 
 /* coef2 - first index: basis function number-1,
            second index: 0:1, 1:x, 2:(x-t1)+^3,  3:(x-t2)+^3, 4:(x-t3)+^3,.....
@@ -736,18 +747,13 @@ int nk,**icoef;
 /* computes the starting values removal stage - L2 projection on a smaller
    space  */
 
-static void start(mod1,dat)
-struct model *mod1;
-struct datas *dat;
+static void start( struct model *mod1,struct datas *dat)
 {
    hstart2((*mod1).theta,(*mod1).nk,(*dat).basdata1,(*dat).basdata2,
           (*dat).nd,(*mod1).tails);
 }
 
-static void hstart2(theta,nk,basdata1,basdata2,nx,tails)
-
-int nk,nx;
-double *theta,**basdata1,**basdata2,*tails;
+static void hstart2(double *theta, int nk, double **basdata1, double **basdata2, int nx, double *tails)
 
 /* theta     - theta 
    nk        - present number of knots
@@ -823,10 +829,7 @@ double *theta,**basdata1,**basdata2,*tails;
 
 /* starting values after a knot was added - L2 projection on a larger space */
 
-static void nstart(mod1,dat,nkstart)
-struct model *mod1;
-struct datas *dat;
-int nkstart;
+static void nstart(struct model *mod1,struct datas *dat,int nkstart)
 
 /* mod1  - the model
    dat   - the data
@@ -875,8 +878,7 @@ int nkstart;
 /* This function changes theta from the basisfunction representation into the
    truncated power basis representation */
 
-static void thetaswap(mod1)
-struct model *mod1;
+static void thetaswap(struct model *mod1)
 
 {
    double *phi;
@@ -906,11 +908,7 @@ struct model *mod1;
 /* these routines compute the multipliers for the integrals */
 
 
-static void intprep(nint,nintx,mod1,dat,what)
-
-int *nint,nintx,what;
-struct model *mod1;
-struct datas *dat;
+static void intprep(int *nint, int nintx, struct model *mod1, struct datas *dat, int what)
 
 /* nint    - number of integration points per knot-interval
    nintx   - extra integration points before first knot and in last interval
@@ -1030,10 +1028,7 @@ struct datas *dat;
 
 /* this one integrates between two integration points */
 
-static void midblob(where,j,i,nint,basvec,mult,nx,data)
-
-int nint,j,i,*where,nx;
-double *basvec,*mult,*data;
+static void midblob(int *where, int j, int i, int nint, double *basvec, double *mult, int nx, double *data)
 
 /* see all above */
 
@@ -1088,10 +1083,7 @@ double *basvec,*mult,*data;
 /* this computes the integral shown below, for q=0,1 and 2. It adds the
    results to row j of mult */
 
-static void lgrange(a,b,c,d,n,u,v,mult,j)
-
-double a,b,c,d,n,u,v,*mult;
-int j;
+static void lgrange(double a, double b, double c, double d, double n, double u, double v, double *mult, int j)
 
 /*  a,b,c,d,n,u,v - see below
     j             - row of mult to which the integral should be added
@@ -1130,19 +1122,14 @@ int j;
 
 /******************************************************************************/
 /* silly, but needed in intprep */
-static int hopplus(xx,data,i,j)
-double *xx,*data;
-int i,j;
+static int hopplus(double *xx,double *data,int i,int j)
 {
    xx[i]=data[j];
    if(xx[i]>xx[i-1])return i+1;
    return i;
 }
 /******************************************************************************/
-static void basis(x,nx,knots,nk,basmat,cc,icoef,coef3)
-
-double *x,*knots,**basmat,cc,***coef3;
-int nx,nk,**icoef;
+static void basis(double *x, int nx, double *knots, int nk, double **basmat, double cc, int **icoef, double ***coef3)
 
 /* x      - sorted vector of data points, in which the basisfunctions are to be
             computed
@@ -1204,12 +1191,7 @@ int nx,nk,**icoef;
 /******************************************************************************/
 /* the main Newton Raphson loop */ 
 
-
-static void hiter(mod1,dat,zerror,nint,what)
-
-struct model *mod1;
-struct datas *dat;
-int *zerror,nint,what;
+static void hiter(struct model *mod1, struct datas *dat, int *zerror, int nint, int what)
 
 /* mod1   - model
    dat    - data
@@ -1337,19 +1319,13 @@ int *zerror,nint,what;
 /******************************************************************************/
 /* computes l(), S() and H() */
 
-static double summer(mod1,what,nint,dat)
-struct model *mod1;
-int nint,what;
-struct datas *dat;
+static double summer(struct model *mod1, int what, int nint, struct datas *dat)
 {
    return summer2((*mod1).score,(*mod1).hessian,what,(*mod1).nk,(*dat).nd,nint,
         (*mod1).theta,(*dat).basdata1,(*mod1).basmat,(*dat).delta,(*mod1).mult);
 }
 
-static double summer2(score,hessian,what,nk,ndata,nint,theta,basdata,basint,delta,mult)
-
-double *score,**hessian,*theta,**basdata,**basint,*mult;
-int what,nk,ndata,nint,*delta;
+static double summer2(double *score, double **hessian, int what, int nk, int ndata, int nint, double *theta, double **basdata, double **basint, int *delta, double *mult)
 
 /* score   - score function
    hessian - hessian
@@ -1423,10 +1399,7 @@ int what,nk,ndata,nint,*delta;
 
 /* this routine computes lambda(theta) */
 
-static double lambda(nk,basis,theta,which)
-
-double **basis,*theta;
-int nk,which;
+static double lambda(int nk,double **basis,double *theta,int which)
 
 /* nk        - number of knots
    theta[k]  - theta of B(k), (for k=1....k-1)
@@ -1448,21 +1421,14 @@ int nk,which;
 /******************************************************************************/
 /* this routine does one Newton Raphson step */
 
-static int step(dat,mod1,itails,ldif,nint,zerror,what)
-struct model *mod1;
-struct datas *dat;
-int *itails,nint,*zerror,what;
-double *ldif;
+static int step(struct datas *dat, struct model *mod1, int *itails, double *ldif, int nint, int *zerror, int what)
 {
    return step2((*dat).nd,(*dat).delta,nint,(*mod1).basmat,(*mod1).mult,
           (*mod1).theta,(*mod1).nk,(*dat).basdata1,(*mod1).hessian,zerror,
           (*mod1).score,itails,ldif,what);
 }
 
-static int step2(nx,delta,nint,basmat,mult,theta,nk,basdata,hessian,zerror,score,
-         itails,ldif,what)
-int nx,*delta,nint,nk,*zerror,*itails,what;
-double **basmat,*mult,*theta,**basdata,**hessian,*score,*ldif;
+static int step2(int nx, int *delta, int nint, double **basmat, double *mult, double *theta, int nk, double **basdata, double **hessian, int *zerror, double *score, int *itails, double *ldif, int what)
 
 /* nx     - sample size
    delta  - censoring (0=yes, 1=no)
@@ -1565,11 +1531,7 @@ double **basmat,*mult,*theta,**basdata,**hessian,*score,*ldif;
 /******************************************************************************/
 /* this routine does the post-processing in the case of knot removal */
 
-static void tossit(mod1,modmin,alpha,zerror)
-
-struct model *mod1,*modmin;
-double alpha;
-int *zerror;
+static void tossit(struct model *mod1,struct model *modmin,double alpha,int *zerror)
        
 /* mod1   - present model
    modmin - minimum aic model
@@ -1603,10 +1565,7 @@ int *zerror;
 /* selects which knot to remove */
 
 
-static void hremoveknot(mod1,zerror)
-
-struct model *mod1;
-int *zerror;
+static void hremoveknot(struct model *mod1,int *zerror)
 
 /* mod1 - model
    zerror- zerror status */
@@ -1730,10 +1689,7 @@ int *zerror;
 /* this routine checks whether the model is better , gets the SE's for the log
    terms */
 
-static void hetse(mod1,modmin,alpha)
-
-struct model *mod1,*modmin;
-double alpha;
+static void hetse(struct model *mod1,struct model *modmin,double alpha)
        
 /* mod1   - present model
    modmin - minimum aic model
@@ -1760,10 +1716,7 @@ double alpha;
 /******************************************************************************/
 /* finds the SEs */
 
-
-static void getse2(mod1)
-
-struct model *mod1;
+static void getse2(struct model *mod1)
 
 /* mod1 - model
    zerror- zerror status */
@@ -1833,10 +1786,7 @@ struct model *mod1;
 /******************************************************************************/
 /* this routine figures out where to add a knot  using the Rao criterion */
 
-static int add(mod1,dat,nint,zerror,modmin,mind)
-struct model *mod1,*modmin;
-struct datas *dat;
-int nint,*zerror,mind;
+static int add(struct model *mod1, struct datas *dat, int nint, int *zerror, struct model *modmin, int mind)
 
 /* mod1   - present model
    dat    - data                     
@@ -2011,12 +1961,7 @@ int nint,*zerror,mind;
 /******************************************************************************/
 /* these routines compute the rao-score statistic in cand */
 
-static double hrao(mod1,dat,cand,nint,powvec,powdat,ipowvec,ipowdat)
-double **powvec,**powdat,cand;
-struct model *mod1;
-struct datas *dat;
-int nint,ipowvec[3],ipowdat[3];
-
+static double hrao(struct model *mod1, struct datas *dat, double cand, int nint, double **powvec, double **powdat, int ipowvec[3], int ipowdat[3])
 {
    double **info2,*score2,*score3,*newbas,*newdata,lm0,lam,r;
    int i,j,nk=(*mod1).nk;
@@ -2123,11 +2068,7 @@ int nint,ipowvec[3],ipowdat[3];
 /******************************************************************************/
 /* computes the new basisfunction */
 
-static void newnew(knots,nk,cand,newbas,newdata,nint,dat,basvec,
-         powdat,powvec,ipowdat,ipowvec)
-double *knots,cand,*newbas,*newdata,*basvec,**powdat,**powvec;
-int nk,nint,ipowdat[3],ipowvec[3];
-struct datas *dat;
+static void newnew(double *knots, int nk, double cand, double *newbas, double *newdata, int nint, struct datas *dat, double *basvec, double **powdat, double **powvec, int ipowdat[3], int ipowvec[3])
 
 /* see all above */
 
@@ -2227,10 +2168,7 @@ struct datas *dat;
    }
 }
 /******************************************************************************/
-static void thetaform(mod1,besti)
-
-struct model *mod1;
-int besti;
+static void thetaform(struct model *mod1,int besti)
 
 /* mod1  - present model
    besti - index of new basisfunction */
@@ -2259,9 +2197,7 @@ int besti;
 /******************************************************************************/
 /* finds a new location in an interval (l,b) - that is the lower end might not
    have been tested yet */
-static int hindyl(u,l,x)
-int l,u;
-double *x;
+static int hindyl(int u,int l,double *x)
 {
    int i;
    if(x[l]==x[u])return -1;
@@ -2274,9 +2210,7 @@ double *x;
 /******************************************************************************/
 /* finds a new location in an interval (b,u) - that is the upper end might not
    have been tested yet */
-static int hindyr(u,l,x)
-int l,u;
-double *x;
+static int hindyr(int u,int l,double *x)
 {
    int i;
    if(x[l]==x[u])return -1;
@@ -2295,9 +2229,7 @@ double *x;
    nx - length of data
    knt- knot */
 
-static int hindl(ll,uu,mind,x,nx,knt)
-double *x,knt;
-int nx,*ll,*uu,mind;
+static int hindl(int *ll, int *uu, int mind, double *x, int nx, double knt)
 {
 
 /* i  - utility
@@ -2321,10 +2253,7 @@ int nx,*ll,*uu,mind;
    x  - data
    nx - length of data
    knt- knot */
-
-static int hindr(ll,uu,mind,x,nx,knt)
-double *x,knt;
-int nx,*ll,*uu,mind;
+static int hindr(int *ll, int *uu, int mind, double *x, int nx, double knt)
 {
 
 /* i  - utility
@@ -2346,8 +2275,7 @@ int nx,*ll,*uu,mind;
    uu - highest number we can search on in the future
    nx - length of data */
 
-static int hindx(ll,uu,nx)
-int nx,*ll,*uu;
+static int hindx(int *ll,int *uu,int nx)
 {
    *ll=0;
    *uu=nx-1;
@@ -2363,9 +2291,7 @@ int nx,*ll,*uu;
    k0 - knot
    k1 - knot */
 
-static int hindm(ll,uu,mind,x,nx,k0,k1)
-double *x,k0,k1;
-int nx,*ll,*uu,mind;
+static int hindm(int *ll, int *uu, int mind, double *x, int nx, double k0, double k1)
 {
 /* hlocation - finds ll */
 
@@ -2386,9 +2312,7 @@ int nx,*ll,*uu,mind;
    nx   - length data
    k    - see above */
 
-static int hlocation(what,x,nx,k)
-int nx,what;
-double k,*x;
+static int hlocation(int what,double *x,int nx,double k)
 {
    int i;
    if(what==1){
@@ -2406,9 +2330,8 @@ double k,*x;
    return nx;
 }
 /******************************************************************************/
-static void dubmodel(m2,m1)
+static void dubmodel(struct model *m2,struct model *m1)
 /* copies model m1 into model m2 */
-struct model *m1,*m2;
 {
    int i1,i2;
    (*m2).tailse[0]=(*m1).tailse[0];
@@ -2431,9 +2354,7 @@ struct model *m1,*m2;
    for(i1=0;i1<5;i1++) (*m2).tails[i1]=(*m1).tails[i1];
 }
 /******************************************************************************/
-static void hlusolve(a,n,b,k)
-int n,*k;
-double **a,*b;
+static void hlusolve(double **a,int n,double *b,int *k)
 {
    double aa[HLENGTH][HLENGTH],bb[HLENGTH];
    int kpvt[HLENGTH],info;
@@ -2450,9 +2371,7 @@ double **a,*b;
    for(i=0;i<n;i++)b[i]=bb[i];
 }
 /******************************************************************************/
-static void hlusolve2(a,n,b,k)
-int n,*k;
-double **a,*b;
+static void hlusolve2(double **a,int n,double *b,int *k)
 {
    double aa[HLENGTH][HLENGTH],bb[HLENGTH];
    int kpvt[HLENGTH],info;
@@ -2470,9 +2389,7 @@ double **a,*b;
    for(i=0;i<n;i++)b[i]=bb[i];
 }
 /******************************************************************************/
-static void hluinverse(a,n)
-int n;
-double **a;
+static void hluinverse(double **a,int n)
 {
    double aa[HLENGTH][HLENGTH],bb[HLENGTH],det[2]; int inert[3];
    int kpvt[HLENGTH],info;
@@ -2492,9 +2409,7 @@ double **a;
 /******************************************************************************/
 /* computes heft probabilities or quantiles */
 
-void heftpq(knots,cc,thetak,thetal,thetap,what,pp,qq,nk,np)
-int *what,*np,*nk;
-double *knots,*cc,*thetak,*thetal,*thetap,*pp,*qq;
+void heftpq(double *knots, double *cc, double *thetak, double *thetal, double *thetap, int *what, double *pp, double *qq, int *nk, int *np)
 
 /* knots   - knots
    cc      - median of data
@@ -2603,9 +2518,7 @@ double *knots,*cc,*thetak,*thetal,*thetap,*pp,*qq;
 
 /******************************************************************************/
 
-static double xlambda(knots,cc,thetak,thetal,thetap,nk,x)
-double *knots,cc,*thetak,*thetal,*thetap,x;
-int nk;
+static double xlambda(double *knots, double cc, double *thetak, double *thetal, double *thetap, int nk, double x)
 
 /* computes exp(lambda(x)), all quantities, see above */
 
@@ -2630,9 +2543,7 @@ int nk;
 
 /******************************************************************************/
 
-static double ilambda(knots,cc,thetak,thetal,thetap,nk,z1,z2,i)
-double *knots,cc,*thetak,*thetal,*thetap,z1,z2;
-int nk,i;
+static double ilambda(double *knots, double cc, double *thetak, double *thetal, double *thetap, int nk, double z1, double z2, int i)
 
 /* integrates exp(lambda(x)) from z1 to z2, which is between knot[i-1] and
    knot[i] (knot[-1]=0, knot[nk]=infty) */
@@ -2691,8 +2602,7 @@ int nk,i;
    }
    return f;
 }
-static void allocer(nd,i00)
-int nd,i00;
+static void allocer(int nd,int i00)
 {
    wkddd=dhvector(nd);
    wkvec2=wkddd;
@@ -2719,8 +2629,7 @@ int nd,i00;
    wknewdata=dhvector(nd);
    wkmat33=dhmatrix(3,3);
 }
-static double hmylog(x)
-double x;
+static double hmylog(double x)
 {
 if(x < 10.e-250)return (double)(-575.64627);
 else return log(x);

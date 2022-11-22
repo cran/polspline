@@ -28,24 +28,45 @@ void F77_NAME(xdsifa)(double[][DIM5], int *, int *, int *, int *);
 void F77_NAME(xdsisl)(double[][DIM5], int *, int *, int *, double *);
 void F77_NAME(xdsidi)(double[][DIM5], int *, int *, int *, double *, int *, double *, int *);
 
-static void tslusolve(),tsluinverse(),tsintsum(),tsallocer(),tspsps2(),tsbasis();
-static void tsb1(),tsb2(),tsb3(),tsb4(),tsb5();
-static double *tssdvec(),**tssdmat(),***tssdtri(),**uumm,*uuaa,*uuww,*uuvv1,*uuvv2;
-static double *uubetan,**xxcumul,tsraod(),tsraoc(),tsnew(),tslogall();
-static int *tssivec(),*uuika,silent,tsadd(),tsrem();
+static double **uumm,*uuaa,*uuww,*uuvv1,*uuvv2;
+static double *uubetan,**xxcumul;
+static int *uuika;
+static int silent;
+
+void tspspsx(int *dims);
+void tspsps(int *dims, double *data, double *knots, int *atoms, double *alpha, double *logs, double *theta, int *ad, double *mass);
+static void tspsps2(int *dims, double *data, double *knots, double alpha, double *logs, double *theta, int *ad, double *xx, double *zz, int *atoms, int *nothere, double mass);
+static int tsadd(double **basis, double **info, int nd, int n, double *kts, int mind, double *xx, double *bb, double **cumul, int *spk, int *nk, int *ns, int cank, int cans, int *nothere);
+static double tsraod(int loc, double **mm, int nk, int nd, double *xx, double *bb, double **basis, int n);
+static double tsraoc(int loc, double **mm, int n, int nk, double *xx, double *kts, double **cumul, int ika, double *ww, double *aa, double *bb, double **basis, int nd, int *spk);
+static int tsrem(double **info, int *nk, double *beta, double *kts, double **coef, int *ns, int *spk, int nd);
+static double tsnew(double *data, int n, double *beta, int *er, double *score, double **info, int nk, double *zz, double *ff, double ***coef2, double *xx, double *kk, double **cumul, int nd, int *spk, double **basis, int ns, int *nothere, double mass, int *fl);
+static double tslogall(double *bb, double *beta, double *score, double **info, int n, int nk, double *data, int what, double *xx, double **cumul, double **basis, int nd, int *spk, int ns, int *fl);
+static void tsbasis(double **basis, double *kk, int n, int nb, double **coef, double *xx, double ***coef2, int *fl);
+static void tsb5(double **coef, double *kk, int col, int row, int i);
+static void tsb1(double **coef, int col, int row);
+static void tsb2(double **coef, double *kk, int col, int row, int i);
+static void tsb3(double **coef, double *kk, int col, int row, int i);
+static void tsb4(double **coef, double *kk, int col, int row, int i);
+static int *tssivec(int nh);
+static double *tssdvec(int nh);
+static double ***tssdtri(int r, int c, int s);
+static double **tssdmat(int nrh, int nch);
+static void tsintsum(double rr[], int k0, int k1, double f);
+static void tslusolve(double **a, int n, double *b);
+static void tsluinverse(double **a, int n);
+static void tsallocer(void);
+
 /******************************************************************************/
 /* This function controls the updown movements */
 /******************************************************************************/
 
-void tspspsx(dims)
-int *dims;
+void tspspsx(int *dims)
 {
       dims[0]=NBMAX;
 }
 
-void tspsps(dims,data,knots,atoms,alpha,logs,theta,ad,mass)
-	int *dims,*atoms,*ad;
-	double *data,*knots,*alpha,*logs,*theta,*mass;
+void tspsps(int *dims, double *data, double *knots, int *atoms, double *alpha, double *logs, double *theta, int *ad, double *mass)
 
 /* for most variables see tspsps2 below */
 {
@@ -206,9 +227,7 @@ void tspsps(dims,data,knots,atoms,alpha,logs,theta,ad,mass)
 /******************************************************************************/
 /* does the work */
 /******************************************************************************/
-static void tspsps2(dims,data,knots,alpha,logs,theta,ad,xx,zz,atoms,nothere,mass)
-int *dims,*atoms,*ad,*nothere;
-double *data,*knots,alpha,*logs,*xx,*zz,*theta,mass;
+static void tspsps2(int *dims, double *data, double *knots, double alpha, double *logs, double *theta, int *ad, double *xx, double *zz, int *atoms, int *nothere, double mass)
 {
 /* dims - various integer parameters
    data - periodogram
@@ -409,9 +428,7 @@ double *data,*knots,alpha,*logs,*xx,*zz,*theta,mass;
 /******************************************************************************/
 /* adds a basis function */
 /******************************************************************************/
-static  int tsadd(basis,info,nd,n,kts,mind,xx,bb,cumul,spk,nk,ns,cank,cans,nothere)
-double **basis,**info,*kts,*xx,*bb,**cumul;
-int n,*nk,*ns,mind,nd,*spk,cank,cans,*nothere;
+static int tsadd(double **basis, double **info, int nd, int n, double *kts, int mind, double *xx, double *bb, double **cumul, int *spk, int *nk, int *ns, int cank, int cans, int *nothere)
 {
    int i,j,k,bestloc= -1,*ika,bestlod= -1,ix;
    double bestraoc= -1.,nowrao,**mm,r1,*aa,*ww,bestraod= -1.;
@@ -573,9 +590,7 @@ int n,*nk,*ns,mind,nd,*spk,cank,cans,*nothere;
 /******************************************************************************/
 /* computes the rao statistic atom */
 /******************************************************************************/
-static double tsraod(loc,mm,nk,nd,xx,bb,basis,n)
-double *xx,**mm,**basis,*bb;
-int nd,nk,loc,n;
+static double tsraod(int loc, double **mm, int nk, int nd, double *xx, double *bb, double **basis, int n)
 {
    int i,j;
    double *vv,bbn,r1;
@@ -613,9 +628,7 @@ int nd,nk,loc,n;
 /******************************************************************************/
 /* computes the rao statistic continuous knot */
 /******************************************************************************/
-static double tsraoc(loc,mm,n,nk,xx,kts,cumul,ika,ww,aa,bb,basis,nd,spk)
-int n,nd,loc,ika,nk,*spk;
-double *xx,*kts,**mm,**cumul,*aa,*ww,*bb,**basis;
+static double tsraoc(int loc, double **mm, int n, int nk, double *xx, double *kts, double **cumul, int ika, double *ww, double *aa, double *bb, double **basis, int nd, int *spk)
 {
    int i,j;
    double *vv,bbn,xlc,r1,b1,b2,aax[8],bsx,bbpi,b1pi,b3pi,x,y;
@@ -796,9 +809,7 @@ double *xx,*kts,**mm,**cumul,*aa,*ww,*bb,**basis;
 /******************************************************************************/
 /* removes a knot */
 /******************************************************************************/
-static int tsrem(info,nk,beta,kts,coef,ns,spk,nd)
-double **coef,*beta,**info,*kts;
-int *nk,*ns,*spk,nd;
+static int tsrem(double **info, int *nk, double *beta, double *kts, double **coef, int *ns, int *spk, int nd)
 {
    int irmax=4,i,j,k;
    double se,phi,ratmax=0;
@@ -875,10 +886,7 @@ int *nk,*ns,*spk,nd;
 /******************************************************************************/
 /* does the newton raphson iterations */
 /******************************************************************************/
-static double tsnew(data,n,beta,er,score,info,nk,zz,ff,coef2,xx,kk,cumul,
-		           nd,spk,basis,ns,nothere,mass,fl)
-double *data,*beta,*score,**info,*zz,*ff,***coef2,*xx,*kk,**cumul,**basis,mass;
-int n,*er,nk,ns,nd,*spk,*nothere,*fl;
+static double tsnew(double *data, int n, double *beta, int *er, double *score, double **info, int nk, double *zz, double *ff, double ***coef2, double *xx, double *kk, double **cumul, int nd, int *spk, double **basis, int ns, int *nothere, double mass, int *fl)
 {
    int i,j,k,i1,jx;
    double logold,lognew,*betan,r,zerror;
@@ -1012,9 +1020,7 @@ int n,*er,nk,ns,nd,*spk,*nothere,*fl;
 /******************************************************************************/
 /* compute loglikelihood, hessian and score */
 /******************************************************************************/
-static double tslogall(bb,beta,score,info,n,nk,data,what,xx,cumul,basis,nd,spk,ns,fl)
-double *beta,*score,**info,*data,*bb,*xx,**cumul,**basis;
-int n,nk,what,nd,ns,*spk,*fl;
+static double tslogall(double *bb, double *beta, double *score, double **info, int n, int nk, double *data, int what, double *xx, double **cumul, double **basis, int nd, int *spk, int ns, int *fl)
 
 /* what: 0 loglikelihood only, 1 also score and hessian */
 {
@@ -1138,9 +1144,7 @@ int n,nk,what,nd,ns,*spk,*fl;
 /******************************************************************************/
 /* compute the basis functions */
 /******************************************************************************/
-static void tsbasis(basis,kk,n,nb,coef,xx,coef2,fl)
-double **basis,*kk,**coef,*xx,***coef2;
-int n,nb,*fl;
+static void tsbasis(double **basis, double *kk, int n, int nb, double **coef, double *xx, double ***coef2, int *fl)
 {
    int i,j,k;
    double r1;
@@ -1211,9 +1215,7 @@ int n,nb,*fl;
 /******************************************************************************/
 /* basis functions 5 and beyond - B-splines */
 /******************************************************************************/
-static void tsb5(coef,kk,col,row,i)
-int col,row,i;
-double **coef,*kk;
+static void tsb5(double **coef, double *kk, int col, int row, int i)
 {
    double uu[5],vv[5],r0,r1;
    int j;
@@ -1243,9 +1245,7 @@ double **coef,*kk;
 /******************************************************************************/
 /* basis function 1 - constant */
 /******************************************************************************/
-static void tsb1(coef,col,row)
-int col,row;
-double **coef;
+static void tsb1(double **coef,int col,int row)
 {
    coef[row][col]=1.;
 }
@@ -1253,9 +1253,7 @@ double **coef;
 /******************************************************************************/
 /* basis function  2 squarish */
 /******************************************************************************/
-static void tsb2(coef,kk,col,row,i)
-int col,row,i;
-double **coef,*kk;
+static void tsb2(double **coef, double *kk, int col, int row, int i)
 {
    coef[row][2]=1.;
    coef[row][col]=2*PIL/(3.*((PIL-kk[i+1])*(PIL-kk[i+1])-(PIL-kk[i])*(PIL-kk[i])));
@@ -1265,9 +1263,7 @@ double **coef,*kk;
 /******************************************************************************/
 /* basis function 3 squarish */
 /******************************************************************************/
-static void tsb3(coef,kk,col,row,i)
-int col,row,i;
-double **coef,*kk;
+static void tsb3(double **coef, double *kk, int col, int row, int i)
 {
    double r;
    coef[row][0]=1.;
@@ -1286,9 +1282,7 @@ double **coef,*kk;
 /******************************************************************************/
 /* basis function 4 S-ish */
 /******************************************************************************/
-static void tsb4(coef,kk,col,row,i)
-int col,row,i;
-double **coef,*kk;
+static void tsb4(double **coef, double *kk, int col, int row, int i)
 {
    coef[row][col]=1.;
    coef[row][col+2]= (kk[i+1]-kk[i])*(kk[i+3]-kk[i])/
@@ -1312,8 +1306,7 @@ double **coef,*kk;
 /******************************************************************************/
 /* i-vector */
 /******************************************************************************/
-static int *tssivec(nh)
-int nh;
+static int *tssivec(int nh)
 {
    int *v,i;
    v=(int *)Salloc(nh+1,int);
@@ -1325,8 +1318,7 @@ int nh;
 /******************************************************************************/
 /* d-vector */
 /******************************************************************************/
-static double *tssdvec(nh)
-int nh;
+static double *tssdvec(int nh)
 {
    double *v;
    int i;
@@ -1338,8 +1330,7 @@ int nh;
 /******************************************************************************/
 /* d-3d array */
 /******************************************************************************/
-static double ***tssdtri(r,c,s)
-int r,c,s;
+static double ***tssdtri(int r,int c,int s)
 {
    int i,j,k;
    double ***m;
@@ -1356,8 +1347,7 @@ int r,c,s;
 /* d-matrix */
 /******************************************************************************/
 
-static double **tssdmat(nrh,nch)
-int nrh,nch;
+static double **tssdmat(int nrh,int nch)
 {
    int i,j;
    double **m;
@@ -1371,9 +1361,7 @@ int nrh,nch;
 /******************************************************************************/
 /* cumulative sums */
 /******************************************************************************/
-static void tsintsum(rr,k0,k1,f)
-int k0,k1;
-double f,rr[];
+static void tsintsum(double rr[],int k0,int k1,double f)
 {
    double ff,l0,l1,m0,m1;
    l0=(double)k0*(k0+1.);
@@ -1394,9 +1382,7 @@ double f,rr[];
                      -l0*m0*(1.-3.*k0*(1.-(double)k0*k0*(double)(2.+k0))))/42;
 }
 /******************************************************************************/
-static void tslusolve(a,n,b)
-int n;
-double **a,*b;
+static void tslusolve(double **a,int n,double *b)
 {
    static double aa[DIM5][DIM5],bb[DIM5];
    static int kpvt[DIM5];
@@ -1412,9 +1398,7 @@ double **a,*b;
    for(i=0;i<n;i++)b[i]=bb[i];
 }
 /******************************************************************************/
-static void tsluinverse(a,n)
-int n;
-double **a;
+static void tsluinverse(double **a,int n)
 {
    static double aa[DIM5][DIM5],bb[DIM5];
    double det[2];
@@ -1434,7 +1418,7 @@ double **a;
    }
 }
 /******************************************************************************/
-static void tsallocer()
+static void tsallocer(void)
 {
    uuika=tssivec(NBMAX+1);
 

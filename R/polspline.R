@@ -148,7 +148,7 @@ hare <- function(data, delta, cov, penalty, maxdim, exclude,
    bbtt <- matrix(0, ncol = 6, nrow = abs(maxdim))
    cckk <- matrix(0, ncol = (MAXKNOTS + 1), nrow = (ncov + 1))
    if(!missing(fit)) {
-                if(class(fit)!="hare")
+                if(!inherits(fit, "hare"))
          stop("fit is not a hare object")
       fitter <- fit$ndim
       if(fit$ncov != ncov)
@@ -231,7 +231,7 @@ hare <- function(data, delta, cov, penalty, maxdim, exclude,
 plot.hare <- function(x, cov, n = 100, which = 0, what = "d", time, add = FALSE,
    xlim, xlab, ylab, type, ...)
 {
-    if(class(x)!="hare")
+    if(!inherits(x, "hare"))
        stop("x is not a hare object")
     if(!missing(cov))cov <- unstrip(cov)
     if(!missing(time))time <- unstrip(time)
@@ -314,7 +314,7 @@ print.hare <- function(x,...)
 }
 summary.hare <- function(object,...)
 {
-    if(class(object)!="hare")
+    if(!inherits(object, "hare"))
        stop("object is not a hare object")
              fit <- object
    s3 <- as.vector(t(fit$logl))
@@ -337,31 +337,31 @@ summary.hare <- function(object,...)
 }
 dhare <- function(q,cov,fit)
 {
-    if(class(fit)!="hare")
+    if(!inherits(fit, "hare"))
        stop("fit is not a hare object")
    xhare(3, q,cov,fit)
 }
 hhare <- function(q,cov,fit)
 {
-    if(class(fit)!="hare")
+    if(!inherits(fit, "hare"))
        stop("fit is not a hare object")
    xhare(2, q,cov,fit)
 }
 phare <- function(q,cov,fit)
 {
-    if(class(fit)!="hare")
+    if(!inherits(fit, "hare"))
        stop("fit is not a hare object")
    xhare(0, q,cov,fit)
 }
 qhare <- function(p,cov,fit)
 {
-    if(class(fit)!="hare")
+    if(!inherits(fit, "hare"))
        stop("fit is not a hare object")
    xhare(1, p,cov,fit)
 }
 rhare <- function(n, cov,fit)
 {
-    if(class(fit)!="hare")
+    if(!inherits(fit, "hare"))
        stop("fit is not a hare object")
    xhare(1, runif(n), cov,fit)
 }
@@ -374,7 +374,7 @@ xhare <- function(arg1,arg2,arg3,arg4)
     q <- arg2
     cov <- arg3
     fit <- arg4
-    if(class(fit)!="hare")
+    if(!inherits(fit, "hare"))
        stop("fit is not a hare object")
         zz <- 0
    if(missing(arg4)) {
@@ -556,7 +556,7 @@ heft <- function(data, delta, penalty, knots, leftlin, shift,
 plot.heft <- function(x, n = 100, what = "d", add = FALSE, xlim, xlab, ylab, type,
     ...)
 {
-    if(class(x)!="heft")
+    if(!inherits(x, "heft"))
        stop("x is not a heft object")
         fit <- x
    if(missing(xlim)) {
@@ -598,7 +598,7 @@ print.heft <- function(x,...)
 }
 summary.heft <- function(object,...)
 {
-    if(class(object)!="heft")
+    if(!inherits(object, "heft"))
        stop("object is not a heft object")
         fit <- object 
    ul <- fit$penalty
@@ -669,7 +669,7 @@ summary.heft <- function(object,...)
 }
 dheft <- function(q, fit)
 {
-    if(class(fit)!="heft")
+    if(!inherits(fit, "heft"))
        stop("fit is not a heft object")
    y <- hheft(q, fit)
    z <- 1 - pheft(q, fit)
@@ -677,7 +677,7 @@ dheft <- function(q, fit)
 }
 hheft <- function(q, fit)
 {
-    if(class(fit)!="heft")
+    if(!inherits(fit, "heft"))
        stop("fit is not a heft object")
         q <- unstrip(q)
    y <- fit$thetap[1] + q * fit$thetap[2] + fit$thetal[1] * log(q/(q + fit$
@@ -691,7 +691,7 @@ hheft <- function(q, fit)
 }
 pheft <- function(q, fit)
 {
-    if(class(fit)!="heft")
+    if(!inherits(fit, "heft"))
        stop("fit is not a heft object")
         q <- unstrip(q)
    sq <- rank(q)
@@ -714,7 +714,7 @@ pheft <- function(q, fit)
 }
 qheft <- function(p, fit)
 {
-    if(class(fit)!="heft")
+    if(!inherits(fit, "heft"))
        stop("fit is not a heft object")
         p <- unstrip(p)
    sp <- rank(p)
@@ -740,7 +740,7 @@ qheft <- function(p, fit)
 }
 rheft <- function(n, fit)
 {
-    if(class(fit)!="heft")
+    if(!inherits(fit, "heft"))
        stop("fit is not a heft object")
    pp <- runif(n)
    qheft(pp, fit)
@@ -785,7 +785,7 @@ qoldlogspline <- function(p, fit)
 
 roldlogspline <- function(n, fit)
 {
-    if(class(fit)!="oldlogspline")
+    if(!inherits(fit, "oldlogspline"))
        stop("fit is not an oldlogspline object")
     pp <- runif(n)
     qoldlogspline(pp, fit)
@@ -794,7 +794,7 @@ roldlogspline <- function(n, fit)
 doldlogspline <- function(q, fit)
 {
     x <- q
-    if(class(fit)!="oldlogspline")
+    if(!inherits(fit, "oldlogspline"))
        stop("fit is not an oldlogspline object")
         q <- unstrip(q)
     y <- fit$coef[1] + x * fit$coef[2]
@@ -814,7 +814,7 @@ doldlogspline <- function(q, fit)
 plot.oldlogspline <- function(x, n = 100, what = "d", xlim, xlab = "", ylab = "", type = "l", add = FALSE, ...)
 {
     fit <- x
-    if(class(fit)!="oldlogspline")
+    if(!inherits(fit, "oldlogspline"))
        stop("fit is not an oldlogspline object")
         if(missing(xlim)) {
                 u1 <- qoldlogspline(0.01, fit)
@@ -850,7 +850,7 @@ print.oldlogspline <- function(x,...)
 }
 summary.oldlogspline <- function(object,...)
 {
-    if(class(object)!="oldlogspline")
+    if(!inherits(object, "oldlogspline"))
        stop("fit is not an oldlogspline object")
     fit <- object
     if(fit$delete==FALSE)stop(paste("summary.oldlogspline can only provide",
@@ -1294,7 +1294,7 @@ lspec <- function(data, period, penalty, minmass, knots, maxknots, atoms,
 }
 clspec <- function(lag, fit, cov = TRUE, mm)
 {
-        if(class(fit)!="lspec")
+        if(!inherits(fit, "lspec"))
           stop("fit is not an lspec object")
         if(!missing(lag))lag <- unstrip(lag)
    llag <- abs(lag)
@@ -1321,7 +1321,7 @@ clspec <- function(lag, fit, cov = TRUE, mm)
 }
 dlspec <- function(freq, fit)
 {
-        if(class(fit)!="lspec")
+        if(!inherits(fit, "lspec"))
           stop("fit is not an lspec object")
         if(!missing(freq))freq <- unstrip(freq)
    freq <- freq - floor(freq/(2 * pi)) * 2 * pi
@@ -1346,7 +1346,7 @@ dlspec <- function(freq, fit)
 }
 plspec <- function(freq, fit, mm)
 {
-        if(class(fit)!="lspec")
+        if(!inherits(fit, "lspec"))
           stop("fit is not an lspec object")
         if(!missing(freq))freq <- unstrip(freq)
         if(missing(mm)) {
@@ -1383,7 +1383,7 @@ plspec <- function(freq, fit, mm)
 }
 rlspec <- function(n, fit, mean = 0, cosmodel = FALSE, mm)
 {
-        if(class(fit)!="lspec")
+        if(!inherits(fit, "lspec"))
           stop("fit is not an lspec object")
         if(missing(mm)) {
                 mm <- max(c(1024, fit$sample, n))
@@ -1417,7 +1417,7 @@ rlspec <- function(n, fit, mean = 0, cosmodel = FALSE, mm)
 plot.lspec <- function(x, what = "b", n, add = FALSE, xlim, ylim, xlab, ylab, type, ...)
 {
         fit <- x
-        if(class(fit)!="lspec")
+        if(!inherits(fit, "lspec"))
           stop("fit is not an lspec object")
    if(add) {
       plim <- (par()$usr)[1:2]
@@ -1566,7 +1566,7 @@ print.lspec <- function(x,...)
 summary.lspec <- function(object,...)
 {
         fit <- object
-        if(class(fit)!="lspec")
+        if(!inherits(fit, "lspec"))
           stop("fit is not an lspec object")
    aa <- " Logspline Spectral Estimation\n"
    aa <- paste(aa,"=============================\n")
@@ -2306,7 +2306,7 @@ predict.polymars<-function(object,x,classify=FALSE,intercept,...)
   }
  if(!missing(x))x <- unstrip(x)
  # some error checking
-                if(class(object)!="polymars")
+                if(!inherits(object, "polymars"))
          stop("object is not a polymars object")
   pmars.model <- object
  # The x matrix number of columns can be of length equal to the number of 
@@ -2508,7 +2508,7 @@ print.polymars<-function(x,...)
 ################################################################################################
 summary.polymars<-function(object,...)
 {
-       if(class(object)!="polymars")
+       if(!inherits(object, "polymars"))
         stop("object is not a polymars object")
         pmars.model <- object
         cat("Call:\n")
@@ -2544,7 +2544,7 @@ plot.polymars<-function(x,predictor1,response,predictor2,xx,add=FALSE,n,xyz=FALS
  #intercept        same as for predict function. =TRUE intercepr is included =FALSE it is left out, or can
  #                 be given a numerical value.
 
-       if(class(x)!="polymars")
+       if(!inherits(x, "polymars"))
         stop("x is not a polymars object")
  pmars.model <- x
  if(missing(xx))xx<-pmars.model$ranges.and.medians[3,]
@@ -2783,7 +2783,7 @@ plot.polymars<-function(x,predictor1,response,predictor2,xx,add=FALSE,n,xyz=FALS
 ################################################################################################
 persp.polymars<-function(x, predictor1, predictor2, response, n= 33,xlim,ylim,xx,contour.polymars,main,intercept,...)
 {
-       if(class(x)!="polymars")
+       if(!inherits(x, "polymars"))
         stop("x is not a polymars object")
   pmars.model <- x
  # used by the plot.polymars function
@@ -2880,7 +2880,7 @@ design.polymars<-function(object,x)
  
  if(!missing(x))x <- unstrip(x)
  # some error checking
-                if(class(object)!="polymars")
+                if(!inherits(object, "polymars"))
          stop("object is not a polymars object")
   pmars.model <- object
  # The x matrix number of columns can be of length equal to the number of 
@@ -3142,7 +3142,7 @@ logspline <- function(x, lbound, ubound, maxknots=0, knots, nknots=0,
 }
 plogspline <- function(q, fit)
 {
-    if(class(fit)!="logspline")
+    if(!inherits(fit, "logspline"))
        stop("fit is not a logspline object")
    if(!missing(q))q <- unstrip(q)
     sq <- rank(q)
@@ -3163,7 +3163,7 @@ plogspline <- function(q, fit)
 }
 qlogspline <- function(p, fit)
 {
-    if(class(fit)!="logspline")
+    if(!inherits(fit, "logspline"))
        stop("fit is not a logspline object")
    if(!missing(p))p <- unstrip(p)
     sp <- rank(p)
@@ -3184,14 +3184,14 @@ qlogspline <- function(p, fit)
 }
 rlogspline <- function(n, fit)
 {
-    if(class(fit)!="logspline")
+    if(!inherits(fit, "logspline"))
        stop("fit is not a logspline object")
     pp <- runif(n)
     qlogspline(pp, fit)
 }
 dlogspline <- function(q, fit)
 {
-    if(class(fit)!="logspline")
+    if(!inherits(fit, "logspline"))
        stop("fit is not a logspline object")
    if(!missing(q))q <- unstrip(q)
     x <- q
@@ -3206,7 +3206,7 @@ dlogspline <- function(q, fit)
 plot.logspline <-function(x, n = 100, what = "d", add = FALSE, xlim, xlab = "", ylab = "", type = "l", ...)
 {
         fit <- x
-    if(class(fit)!="logspline")
+    if(!inherits(fit, "logspline"))
        stop("fit is not a logspline object")
         if(add){
                 plim <- (par()$usr)[1:2]
@@ -3248,7 +3248,7 @@ print.logspline <- function(x,...)
 summary.logspline <- function(object,...)
 {
         fit <- object
-    if(class(fit)!="logspline")
+    if(!inherits(fit, "logspline"))
        stop("fit is not a logspline object")
    ul <- fit$penalty
    um <- fit$samples[1]
@@ -3473,7 +3473,7 @@ polyclass <- function(data, cov, weight, penalty, maxdim, exclude, include,
    bbtt <- matrix(0, ncol = 4 + max(data), nrow = abs(maxdim))
    cckk <- matrix(0, ncol = (MAXKNOTS + 1), nrow = ncov+1)
    if(!missing(fit)) {
-      if(class(fit)!="polyclass")stop("fit is not a polyclass object")
+      if(!inherits(fit, "polyclass"))stop("fit is not a polyclass object")
       fitter <- (fit$nclass-1)*(fit$nbas)
       if(fit$ncov != ncov)
          stop("ncov and fit's ncov are different")
@@ -3615,7 +3615,7 @@ polyclass <- function(data, cov, weight, penalty, maxdim, exclude, include,
 }
 cpolyclass <- function(cov, fit)
 {
-      if(class(fit)!="polyclass")stop("fit is not a polyclass object")
+      if(!inherits(fit, "polyclass"))stop("fit is not a polyclass object")
       if(!missing(cov))cov <- unstrip(cov)
    xxx <- ppolyclass(cov, fit)
    yyy <- fit$classnames
@@ -3646,7 +3646,7 @@ ppolyclass <- function(data, cov, fit)
       if(!missing(cov))cov <- unstrip(cov)
       if(!missing(data))data <- unstrip(data)
       if(!missing(data) && is.factor(data)) data <- as.integer(data)
-      if(class(fit)!="polyclass")stop("fit is not a polyclass object")
+      if(!inherits(fit, "polyclass"))stop("fit is not a polyclass object")
    if(is.matrix(cov) == FALSE)
       cov <- matrix(cov, ncol = 1)
    if(length(cov[1,  ]) != fit$ncov) {
@@ -3709,7 +3709,7 @@ ppolyclass <- function(data, cov, fit)
 }
 plot.polyclass <- function(x,cov,  which, lims, what, data, n, xlab, ylab, zlab, ...)
 {
-      if(class(x)!="polyclass")stop("x is not a polyclass object")
+      if(!inherits(x, "polyclass"))stop("x is not a polyclass object")
       if(!missing(cov))cov <- unstrip(cov)
      fit <- x
    here <- c(-1, -1)
@@ -3837,7 +3837,7 @@ plot.polyclass <- function(x,cov,  which, lims, what, data, n, xlab, ylab, zlab,
 }
 rpolyclass <- function(n, cov, fit)
 {
-      if(class(fit)!="polyclass")stop("fit is not a polyclass object")
+      if(!inherits(fit, "polyclass"))stop("fit is not a polyclass object")
      if(!missing(cov))cov <- unstrip(cov)
    if(n < 1)
       stop("n is wrong")
@@ -3866,7 +3866,7 @@ print.polyclass <- function(x,...)
 }
 summary.polyclass <- function(object,...)
 {
-      if(class(object)!="polyclass")stop("object is not a polyclass object")
+      if(!inherits(object, "polyclass"))stop("object is not a polyclass object")
     fit <- object
    it <- fit$method
    cat("========================POLYCLASS summary=======================\n")
@@ -3968,7 +3968,7 @@ summary.polyclass <- function(object,...)
 }
 beta.polyclass <- function(fit, which, xsp = 0.4, cex)
 {
-      if(class(fit)!="polyclass")stop("fit is not a polyclass object")
+      if(!inherits(fit, "polyclass"))stop("fit is not a polyclass object")
  plot(c(0, 1), c(0, 1), axes = FALSE, xlab = "", xlim = c(0.1, 0.9), ylim =
                 c(0.1, 0.9), ylab = "", type = "n")
         lines(c(0, 1, 1, 0, 0), c(1, 1, 0, 0, 1))
