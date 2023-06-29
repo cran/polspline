@@ -1,4 +1,4 @@
-8c3b28df459297f396c045afd2e94f24 *DESCRIPTION
+790f74734ec107e3d55c8e9bf56c21a4 *DESCRIPTION
 3f4f90b44a765116f3e2844a961d7f17 *NAMESPACE
 570e899c17e12b33fe28db4376bcc882 *R/polspline.R
 16a930fc75b5d7ed229609efae3ccbf9 *man/beta.polyclass.Rd
@@ -37,7 +37,7 @@ a8e06750d307c1242f3fe22183c2ebe8 *man/summary.lspec.Rd
 c5099be9838f431d7dfb5d8e894f28b6 *man/unstrip.Rd
 3b5e962e50e4f213d31670522834d250 *man/xhare.Rd
 8290d2e9740414e315237f0d5d4024bb *src/Makevars
-910e8cf3a5dea39fffba5db2d281662d *src/allpack.f
+5e5873b500e169a013fdd11dfd92ae97 *src/allpack.f
 13edd720cc09461e0064645a2456038d *src/hareall.c
 5a6a88ad102db0082dcbcb1ec2c6d617 *src/heftall.c
 e2b523fee3d37720e8273827811768a1 *src/lsdall.c
