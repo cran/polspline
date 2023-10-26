@@ -1,13 +1,13 @@
-790f74734ec107e3d55c8e9bf56c21a4 *DESCRIPTION
+9abd56b415f15b28c46d9b4aee42a92b *DESCRIPTION
 3f4f90b44a765116f3e2844a961d7f17 *NAMESPACE
-570e899c17e12b33fe28db4376bcc882 *R/polspline.R
+a64f01f04a4ed97f18a0a35938cf76b1 *R/polspline.R
 16a930fc75b5d7ed229609efae3ccbf9 *man/beta.polyclass.Rd
 54e6d03497918fa20145ae82a0fcce5f *man/clspec.Rd
 1cebcd38e7d6c94230242cbc027d92a5 *man/cpolyclass.Rd
 6a3557b2f3fef3a5d5cc2f4d3a3ab290 *man/design.polymars.Rd
 948a25be763cab4e0f93a50870c0f891 *man/dhare.Rd
 81b02b7e678c82332c52d18a6cf31d81 *man/dheft.Rd
-adab32151cf465d4226204697341c1f1 *man/dlogspline.Rd
+b061f6d635b03d0e0cbec32904767529 *man/dlogspline.Rd
 5e3e90bc87cc9871a2627c47da038a68 *man/doldlogspline.Rd
 a86be24c8ec507bf8ca3548002f7491f *man/hare.Rd
 d29fae8a413ecffd313626e9fb5a1a83 *man/heft.Rd
